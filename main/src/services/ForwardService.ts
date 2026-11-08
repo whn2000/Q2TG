@@ -47,6 +47,7 @@ import qfaceChannelMap from '../constants/qfaceChannelMap';
 import { FaceElemEx } from '../client/NapCatClient/convert';
 import nameColor from '../constants/nameColor';
 import memberRoleCache from '../helpers/memberRoleCache';
+import atHelper from '../helpers/atHelper';
 import { GroupRole } from '@icqqjs/icqq/lib/common';
 import path from 'path';
 import { fileTypeFromBuffer, fileTypeFromFile, FileTypeResult } from 'file-type';
@@ -286,21 +287,28 @@ export default class ForwardService {
           }
           case 'at': {
             if (!elem.text) {
-              if (isNaN(elem.qq as number)) {
-                elem.text = `@${elem.qq === 'all' ? '全体成员' : elem.qq}`;
+              if (isNaN(elem.qq as number) || elem.qq === 'all') {
+                elem.text = `@全体成员`;
               }
               else {
-                const member = (pair.qq as Group).pickMember(elem.qq as number);
-                const info = await member.renew();
-                elem.text = `@${info.card || info.nickname}`;
+                try {
+                  const member = (pair.qq as Group).pickMember(elem.qq as number);
+                  const info = await member.renew();
+                  elem.text = `@${info?.card || info?.nickname || elem.qq}`;
+                }
+                catch {
+                  elem.text = `@${elem.qq}`;
+                }
               }
             }
             if (env.WEB_ENDPOINT && typeof elem.qq === 'number' && !((pair.flags | this.instance.flags) & flags.DISABLE_RICH_HEADER)) {
               message += `<a href="${helper.generateRichHeaderUrl(pair.apiKey, elem.qq)}">[<i>${helper.htmlEscape(elem.text)}</i>]</a>`;
               isContainAtOrChannelFace = true;
-              break;
             }
-            // 如果不是，接下来会处理并且把 text 放在 [] 里
+            else {
+              message += `<b>${helper.htmlEscape(elem.text)}</b> `;
+            }
+            break;
           }
           case 'face':
             // 判断 tgs 表情
@@ -946,7 +954,14 @@ export default class ForwardService {
             message.message.substring(0, message.message.indexOf(':')) + ': \n';
         }
         else {
-          useText(message.message);
+          if (!((pair.flags | this.instance.flags) & flags.DISABLE_AT_PARSE)) {
+            const candidates = await atHelper.getGroupMemberCandidates(pair);
+            const parsedElements = atHelper.parseTextWithAtMentions(message.message, candidates);
+            chain.push(...parsedElements);
+          }
+          else {
+            useText(message.message);
+          }
           brief += message.message;
         }
       }
@@ -970,6 +985,22 @@ export default class ForwardService {
               user_id: Number(quote.qqSenderId),
               time: quote.time,
             };
+
+            const replyQq = Number(quote.qqSenderId);
+            if (
+              replyQq &&
+              replyQq !== this.oicq.uin &&
+              !((pair.flags | this.instance.flags) & flags.DISABLE_REPLY_AT)
+            ) {
+              const alreadyHasAt = chain.some(it => typeof it === 'object' && it.type === 'at' && (it as any).qq === replyQq);
+              if (!alreadyHasAt) {
+                chain.unshift(' ');
+                chain.unshift({
+                  type: 'at',
+                  qq: replyQq,
+                } as any);
+              }
+            }
           }
           else {
             source = {

@@ -21,6 +21,12 @@ export const messageElemToNapCatSendable = async (elem: SendableElem): Promise<{
   });
   switch (elem.type) {
     case 'at':
+      return noTmp({
+        type: 'at',
+        data: {
+          qq: String((elem as any).qq),
+        },
+      } as any);
     case 'text':
     case 'face':
       return noTmp({

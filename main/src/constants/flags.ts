@@ -20,6 +20,8 @@ enum flags {
   ALWAYS_FORWARD_TG_FILE = 1 << 18,
   QQ_HEADER_IMAGE = 1 << 19,
   DISABLE_ERROR_NOTIFY = 1 << 20,
+  DISABLE_REPLY_AT = 1 << 21,
+  DISABLE_AT_PARSE = 1 << 22,
 }
 
 export default flags;

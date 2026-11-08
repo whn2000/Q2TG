@@ -63495,6 +63495,9 @@ var init_OicqClient = __esm({
       async getGroupList() {
         return await Promise.all(Array.from(this.oicq.gl.values()).map((g) => this.pickGroup(g.group_id)));
       }
+      async getCustomFaceList(count = 1000) {
+        return [];
+      }
       async createSpoilerImageEndpoint(image, nickname, title) {
         const msgList = [{
           user_id: this.oicq.uin,
@@ -65459,6 +65462,22 @@ var init_client = __esm({
           gid: it.group_id,
           name: it.group_name
         }));
+      }
+      async getCustomFaceList(count = 1000) {
+        try {
+          const res = await this.callApi("fetch_custom_face_detail", { count });
+          if (Array.isArray(res)) {
+            return res.map((item) => ({
+              url: item.url || "",
+              md5: item.md5 || "",
+              desc: item.desc || item.ocrWord || item.modifyWord || ""
+            })).filter((x) => !!x.url);
+          }
+          return [];
+        } catch (e) {
+          this.logger.warn("获取 QQ 收藏表情失败", e);
+          return [];
+        }
       }
       pickGroup(groupId) {
         return NapCatGroup.create(this, groupId);
@@ -80831,6 +80850,214 @@ async function getAboutText(entity, html2) {
   return text;
 }
 
+// src/services/StickerService.ts
+var DEFAULT_EMOJIS = [
+  "\uD83D\uDC4D", "\uD83D\uDE00", "\uD83D\uDE02", "\uD83D\uDE0D", "\uD83E\uDD14", "\uD83D\uDE0E", "\uD83C\uDF89", "\uD83D\uDD25", "\u2728", "\uD83D\uDC31",
+  "\uD83E\uDD7A", "\uD83E\uDD23", "\uD83D\uDC4C", "\uD83D\uDC4F", "\uD83E\uDD73", "\uD83D\uDE2D", "\uD83E\uDD24", "\uD83E\uDEE0", "\uD83E\uDEE1", "\uD83D\uDE44",
+  "\uD83D\uDC96", "\uD83D\uDCAf", "\uD83D\uDE4F", "\uD83D\uDC40", "\uD83E\uDD10", "\uD83D\uDE34", "\uD83D\uDE43", "\uD83D\uDE07", "\uD83D\uDC7B", "\uD83C\uDF1F"
+];
+var EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u;
+var StickerService = class {
+  log = (0, import_log4js5.getLogger)("StickerService");
+  botToken = env_default.TG_BOT_TOKEN;
+
+  async callBotApi(method, body, isMultipart = false) {
+    const url = `https://api.telegram.org/bot${this.botToken}/${method}`;
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: isMultipart ? void 0 : { "Content-Type": "application/json" },
+          body: isMultipart ? body : JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          return data;
+        }
+        if (data.error_code === 429) {
+          const waitSec = data.parameters?.retry_after || 5;
+          this.log.warn(`[callBotApi] 429 Rate limited on ${method}, waiting ${waitSec + 1}s...`);
+          await new Promise((r) => setTimeout(r, (waitSec + 1) * 1e3));
+          retries--;
+          continue;
+        }
+        this.log.warn(`[callBotApi] ${method} returned error:`, data);
+        return data;
+      } catch (e) {
+        retries--;
+        this.log.warn(`[callBotApi] Request error on ${method}:`, e.message);
+        if (retries > 0) {
+          await new Promise((r) => setTimeout(r, 2e3));
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  pickEmoji(desc, index) {
+    if (desc) {
+      const match = desc.match(EMOJI_REGEX);
+      if (match && match[0]) {
+        return match[0];
+      }
+    }
+    return DEFAULT_EMOJIS[index % DEFAULT_EMOJIS.length];
+  }
+
+  async convertImageToWebp(imageUrl) {
+    const sharpMod = require("sharp");
+    const sharp = sharpMod.default || sharpMod;
+    const res = await fetch(imageUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    });
+    const origBuf = Buffer.from(await res.arrayBuffer());
+    return await sharp(origBuf)
+      .resize(512, 512, { fit: "inside", withoutEnlargement: false })
+      .webp({ quality: 90 })
+      .toBuffer();
+  }
+
+  async uploadStickerFile(userId, webpBuffer) {
+    const formData = new FormData();
+    formData.append("user_id", userId.toString());
+    formData.append("sticker_format", "static");
+    formData.append("sticker", new Blob([webpBuffer], { type: "image/webp" }), "sticker.webp");
+    const res = await this.callBotApi("uploadStickerFile", formData, true);
+    if (!res.ok || !res.result?.file_id) {
+      throw new Error(res.description || "uploadStickerFile failed");
+    }
+    return res.result.file_id;
+  }
+
+  async importCustomFaces(userId, uin, instanceId, botUsername, faces, onProgress) {
+    const total = faces.length;
+    if (total === 0) {
+      return { total: 0, success: 0, failed: 0, packs: [] };
+    }
+    const readyStickers = [];
+    let failCount = 0;
+    let completedCount = 0;
+    let lastProgressTime = 0;
+
+    const reportProgress = async (text, force = false) => {
+      const now = Date.now();
+      if (force || now - lastProgressTime > 2500) {
+        lastProgressTime = now;
+        try {
+          await onProgress?.(text);
+        } catch (_) {}
+      }
+    };
+
+    await reportProgress(`🎨 准备处理 ${total} 个 QQ 收藏表情，正在转换并上传到 Telegram...`, true);
+
+    const concurrency = 3;
+    let nextIndex = 0;
+    const worker = async () => {
+      while (nextIndex < total) {
+        const i = nextIndex++;
+        const face = faces[i];
+        try {
+          const webpBuf = await this.convertImageToWebp(face.url);
+          const fileId = await this.uploadStickerFile(userId, webpBuf);
+          const emoji = this.pickEmoji(face.desc, i);
+          readyStickers.push({ fileId, emoji });
+        } catch (e) {
+          this.log.warn(`[importCustomFaces] 处理第 ${i + 1} 个表情失败 (${face.url}):`, e.message);
+          failCount++;
+        } finally {
+          completedCount++;
+          const percent = Math.round((completedCount / total) * 100);
+          await reportProgress(`🎨 正在转换上传表情: ${completedCount}/${total} (${percent}%)，已就绪: ${readyStickers.length} 个`);
+        }
+      }
+    };
+
+    const workers = Array.from({ length: concurrency }, () => worker());
+    await Promise.all(workers);
+
+    if (readyStickers.length === 0) {
+      return { total, success: 0, failed: failCount, packs: [] };
+    }
+
+    const MAX_PER_PACK = 120;
+    const packCount = Math.ceil(readyStickers.length / MAX_PER_PACK);
+    const createdPacks = [];
+
+    await reportProgress(`📦 表情上传完成（成功 ${readyStickers.length}，跳过 ${failCount}）。正在生成 ${packCount} 个表情包...`, true);
+
+    for (let p = 0; p < packCount; p++) {
+      const packNum = p + 1;
+      const chunk = readyStickers.slice(p * MAX_PER_PACK, (p + 1) * MAX_PER_PACK);
+      const packSuffix = packCount === 1 ? "" : `_${packNum}`;
+      const cleanBotName = botUsername.replace(/[^a-zA-Z0-9_]/g, "");
+      const rawPackName = `qq_fav${packSuffix}_${uin}_by_${cleanBotName}`;
+      const packName = rawPackName.replace(/[^a-zA-Z0-9_]/g, "_").replace(/_+/g, "_").slice(0, 64);
+      const packTitle = packCount === 1 ? "QQ 收藏表情" : `QQ 收藏表情 (${packNum})`;
+
+      await reportProgress(`📦 正在生成表情包 [${packTitle}] (${chunk.length} 个表情)...`, true);
+
+      try {
+        await this.callBotApi("deleteStickerSet", { name: packName });
+      } catch (_) {}
+
+      const initialStickers = chunk.slice(0, 50).map((s) => ({
+        sticker: s.fileId,
+        format: "static",
+        emoji_list: [s.emoji]
+      }));
+
+      const createRes = await this.callBotApi("createNewStickerSet", {
+        user_id: Number(userId),
+        name: packName,
+        title: packTitle,
+        sticker_format: "static",
+        stickers: initialStickers
+      });
+
+      if (!createRes.ok) {
+        this.log.error(`[importCustomFaces] 创建表情包 ${packName} 失败:`, createRes);
+        continue;
+      }
+
+      for (let j = 50; j < chunk.length; j++) {
+        const stk = chunk[j];
+        await this.callBotApi("addStickerToSet", {
+          user_id: Number(userId),
+          name: packName,
+          sticker: {
+            sticker: stk.fileId,
+            format: "static",
+            emoji_list: [stk.emoji]
+          }
+        });
+        if (j % 10 === 0) {
+          await reportProgress(`📦 表情包 [${packTitle}]: 已写入 ${j + 1}/${chunk.length} 个表情...`);
+        }
+        await new Promise((r) => setTimeout(r, 100));
+      }
+
+      createdPacks.push({
+        name: packName,
+        title: packTitle,
+        link: `https://t.me/addstickers/${packName}`,
+        count: chunk.length
+      });
+    }
+
+    return {
+      total,
+      success: readyStickers.length,
+      failed: failCount,
+      packs: createdPacks
+    };
+  }
+};
+
 // src/services/ConfigService.ts
 init_random();
 init_posthog();
@@ -80846,6 +81073,7 @@ var ConfigService = class {
     this.log = (0, import_log4js5.getLogger)(`ConfigService - ${instance.id}`);
     this.owner = tgBot.getChat(this.instance.owner);
   }
+  stickerService = new StickerService();
   owner;
   log;
   getAssociateLink(roomId) {
@@ -81167,6 +81395,56 @@ ${group.gid}`;
 \u2022 \u597D\u53CB\u6210\u529F: ${friendRes?.success ?? 0}\uFF0C\u5931\u8D25: ${friendRes?.failed ?? 0}`
     );
   }
+  async importStickers(targetCount) {
+    const ownerChat = await this.owner;
+    const statusMsg = await ownerChat.sendMessage("\u{1F3A8} \u6B63\u5728\u4ECE QQ \u8BFB\u53D6\u6536\u85CF\u8868\u60C5\u5217\u8868...");
+    const faces = await this.oicq.getCustomFaceList(targetCount || 1000);
+    if (!faces || faces.length === 0) {
+      await statusMsg.edit({
+        text: "\u274C \u672A\u83B7\u53D6\u5230 QQ \u6536\u85CF\u8868\u60C5\u3002\u8BF7\u786E\u8BA4 QQ \u662F\u5426\u5DF2\u767B\u5F55\uFF0C\u4E14\u5DF2\u5728\u624B\u673A/\u7535\u8111 QQ \u4E2D\u6DFB\u52A0\u4E86\u81EA\u5B9A\u4E49\u6536\u85CF\u8868\u60C5\u3002"
+      });
+      return;
+    }
+    const botUsername = this.tgBot.me?.username || "bot";
+    const ownerId = this.instance.owner.toString();
+    let lastText = "";
+    const onProgress = async (text) => {
+      if (text !== lastText) {
+        lastText = text;
+        try {
+          await statusMsg.edit({ text });
+        } catch (_) {}
+      }
+    };
+    try {
+      const result = await this.stickerService.importCustomFaces(
+        ownerId,
+        this.oicq.uin,
+        this.instance.id,
+        botUsername,
+        faces,
+        onProgress
+      );
+      if (result.packs.length === 0) {
+        await statusMsg.edit({
+          text: `\u26A0\uFE0F \u8868\u60C5\u5904\u7406\u5B8C\u6BD5\uFF0C\u4F46\u672A\u80FD\u6210\u529F\u521B\u5EFA\u8868\u60C5\u5305\uFF08\u5171\u8BFB\u53D6 ${result.total} \u4E2A\uFF0C\u5931\u8D25 ${result.failed} \u4E2A\uFF09\u3002`
+        });
+        return;
+      }
+      const packListText = result.packs.map((p, idx) => {
+        return `${idx + 1}. <a href="${p.link}">${p.title}</a> (\u5171 ${p.count} \u4E2A\u8868\u60C5)`;
+      }).join("\n");
+      const finishSummary = `\u{1F389} <b>QQ \u6536\u85CF\u8868\u60C5\u5BFC\u5165\u5B8C\u6210\uFF01</b>\n\n\u2022 \u626B\u63CF\u5230 QQ \u6536\u85CF\u8868\u60C5: ${result.total} \u4E2A\n\u2022 \u6210\u529F\u5BFC\u5165: ${result.success} \u4E2A\n` + (result.failed > 0 ? `\u2022 \u8DF3\u8FC7\u5931\u8D25: ${result.failed} \u4E2A\n` : "") + `\u2022 \u751F\u6210\u8868\u60C5\u5305: ${result.packs.length} \u5957\n\n<b>\u70B9\u51FB\u4E0B\u65B9\u94FE\u63A5\u4E00\u952E\u6DFB\u52A0\u5230 Telegram\uFF1A</b>\n${packListText}\n\n\u{1F4A1} <i>\u6DFB\u52A0\u540E\u5373\u53EF\u5728\u4EFB\u610F Telegram \u4F1A\u8BDD\u4E2D\u4F7F\u7528\uFF1B\u5728\u5173\u8054\u7FA4/\u597D\u53CB\u804A\u5929\u4E2D\u53D1\u9001\u8FD9\u4E9B\u8868\u60C5\u5C06\u81EA\u52A8\u8F6C\u53D1\u81F3 QQ\uFF01</i>`;
+      await statusMsg.edit({ text: finishSummary });
+    } catch (e) {
+      this.log.error("importStickers error:", e);
+      init_posthog();
+      posthog_default.capture("importStickers \u51FA\u9519", { error: e.message });
+      await statusMsg.edit({
+        text: `\u274C \u5BFC\u5165\u8868\u60C5\u5305\u8FC7\u7A0B\u4E2D\u53D1\u751F\u9519\u8BEF: <code>${e.message}</code>`
+      });
+    }
+  }
   async promptNewQqChat(chat) {
     const message2 = await (await this.owner).sendMessage({
       message: "\u4F60" + ("gid" in chat ? "\u52A0\u5165\u4E86\u4E00\u4E2A\u65B0\u7684\u7FA4" : "\u589E\u52A0\u4E86\u4E00" + random_default.pick("\u4F4D", "\u4E2A", "\u53EA", "\u5934") + "\u597D\u53CB") + "\uFF1A\n" + await getAboutText(chat, true) + "\n\u8981\u521B\u5EFA\u5173\u8054\u7FA4\u5417",
@@ -81394,6 +81672,14 @@ var ConfigController = class {
             message: await editFlags(messageSplit, this.instance)
           });
           return true;
+        case "/import_stickers":
+        case "/import_emojis":
+        case "/import_sticker":
+        case "/import_emoji": {
+          const count = messageSplit[1] ? parseInt(messageSplit[1], 10) : void 0;
+          await this.configService.importStickers(count);
+          return true;
+        }
       }
       if (this.instance.workMode === "personal") {
         switch (command) {
@@ -82411,6 +82697,10 @@ var commonPrivateCommands = [
   new import_telegram6.Api.BotCommand({
     command: "alive",
     description: "\u72B6\u6001\u4FE1\u606F"
+  }),
+  new import_telegram6.Api.BotCommand({
+    command: "import_stickers",
+    description: "🎨 一键导入 QQ 收藏表情到 Telegram 表情包"
   })
 ];
 var groupPrivateCommands = [

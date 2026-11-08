@@ -1,7 +1,19 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { file } from 'tmp-promise';
-import silk from 'silk-sdk';
 import fsP from 'fs/promises';
+
+let silkPkg: any;
+function getSilk() {
+  if (!silkPkg) {
+    try {
+      silkPkg = require('silk-sdk');
+    }
+    catch (e) {
+      throw new Error('silk-sdk native bindings not available on this platform/environment');
+    }
+  }
+  return silkPkg;
+}
 
 const conventOggToPcm = (oggPath: string, tmpFilePath: string): Promise<void> => {
   return new Promise(resolve => {
@@ -36,7 +48,7 @@ export default {
   async encode(oggPath: string): Promise<Buffer> {
     const { path, cleanup } = await file();
     await conventOggToPcm(oggPath, path);
-    const bufSilk = silk.encode(path, {
+    const bufSilk = getSilk().encode(path, {
       tencent: true,
     });
     await cleanup();
@@ -44,7 +56,7 @@ export default {
   },
 
   async decode(bufSilk: Buffer, outputPath: string): Promise<void> {
-    const bufPcm = silk.decode(bufSilk);
+    const bufPcm = getSilk().decode(bufSilk);
     const { path, cleanup } = await file();
     await fsP.writeFile(path, bufPcm);
     await conventPcmToOgg(path, outputPath);

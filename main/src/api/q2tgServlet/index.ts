@@ -14,8 +14,17 @@ let app = new Elysia()
       const data = await db.forwardMultiple.findFirst({
         where: { id: uuid },
       });
+      if (!data) {
+        return { error: 'Record not found' };
+      }
       const pair = Pair.getByDbId(data.fromPairId);
+      if (!pair || !pair.qq) {
+        return { error: 'Pair not found' };
+      }
       const messages = await pair.qq.getForwardMsg(data.resId, data.fileName);
+      if (!messages) {
+        return { error: 'Message not found' };
+      }
       if (pair.qqClient instanceof OicqClient) {
         await pair.qqClient.refreshImageRKey(messages);
       }

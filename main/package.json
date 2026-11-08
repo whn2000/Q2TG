@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc && tsx build.ts",
+    "test": "tsx --test tests/**/*.test.ts",
     "start": "prisma db push --accept-data-loss --skip-generate && node --enable-source-maps build/index.js",
     "prisma": "prisma",
     "import": "ts-node tools/import"

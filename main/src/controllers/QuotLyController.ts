@@ -2,7 +2,13 @@ import Instance from '../models/Instance';
 import Telegram from '../client/Telegram';
 import { getLogger, Logger } from 'log4js';
 import { Api } from 'telegram';
-import quotly from 'quote-api/methods/generate.js';
+let quotlyPkg: any;
+async function getQuotly() {
+  if (!quotlyPkg) {
+    quotlyPkg = (await import('quote-api/methods/generate.js')).default;
+  }
+  return quotlyPkg;
+}
 import { CustomFile } from 'telegram/client/uploads';
 import db from '../models/db';
 import BigInteger from 'big-integer';
@@ -297,6 +303,7 @@ export default class {
     if (!quoteMessage.text && !quoteMessage.media && !quoteMessage.voice) {
       throw new Error('不支持的消息类型');
     }
+    const quotly = await getQuotly();
     const res = await quotly({
       botToken: env.TG_BOT_TOKEN,
       type,

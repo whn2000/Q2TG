@@ -1,12 +1,25 @@
 import { GroupRole } from '@icqqjs/icqq/lib/common';
-import { createCanvas, loadImage, CanvasRenderingContext2D } from 'canvas';
 import * as fs from 'fs';
+
+let canvasPkg: any;
+function getCanvas() {
+  if (!canvasPkg) {
+    try {
+      canvasPkg = require('canvas');
+    }
+    catch (e) {
+      throw new Error('Canvas native bindings not available on this platform/environment');
+    }
+  }
+  return canvasPkg;
+}
 
 const WIDTH = 450;
 const HEIGHT = 150;
 const avatarSize = 110;
 
 const drawAvatar = async (avatarPath: string) => {
+  const { createCanvas, loadImage } = getCanvas();
   const avatarImage = await loadImage(avatarPath);
   const avatarSize = avatarImage.naturalHeight;
 
@@ -26,7 +39,7 @@ const drawAvatar = async (avatarPath: string) => {
   return canvas;
 };
 
-function drawTextWithEllipsis(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, x: number, y: number) {
+function drawTextWithEllipsis(ctx: any, text: string, maxWidth: number, x: number, y: number) {
   // Measure the full text width
   let textWidth = ctx.measureText(text).width;
 
@@ -50,7 +63,7 @@ function drawTextWithEllipsis(ctx: CanvasRenderingContext2D, text: string, maxWi
   ctx.fillText(text + ellipsis, x, y);
 }
 
-function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
+function drawRoundedRect(ctx: any, x: number, y: number, width: number, height: number, radius: number) {
   ctx.beginPath();
   ctx.moveTo(x + radius, y); // 起点（左上圆角右侧）
 
@@ -74,6 +87,7 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, wi
 }
 
 const makeHeaderImage = async (nameColor: string, avatarPath: string, name: string, title: string, role: GroupRole) => {
+  const { createCanvas } = getCanvas();
   const canvas = createCanvas(WIDTH, HEIGHT);
   const canvasCtx = canvas.getContext('2d');
 

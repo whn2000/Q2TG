@@ -42,15 +42,34 @@ export class NapCatClient extends QQClient {
     });
   }
 
-  private readonly echoMap = new Map<string, { resolve: (result: any) => void; reject: (result: any) => void }>();
+  private readonly echoMap = new Map<string, {
+    resolve: (result: any) => void;
+    reject: (result: any) => void;
+    timer?: NodeJS.Timeout;
+  }>();
   private echoSeq = 0;
 
-  public async callApi<T extends keyof WSSendReturn>(action: T, params?: WSSendParam[T]): Promise<WSSendReturn[T]> {
+  public async callApi<T extends keyof WSSendReturn>(action: T, params?: WSSendParam[T], timeoutMs = 30000): Promise<WSSendReturn[T]> {
     return new Promise<WSSendReturn[T]>((resolve, reject) => {
       const echo = `${new Date().getTime()}-${this.echoSeq++}-${random.int(100000, 999999)}`;
-      this.echoMap.set(echo, { resolve, reject });
-      this.ws.send(JSON.stringify({ action, params, echo }));
-      this.logger.debug('send', JSON.stringify({ action, params, echo }));
+      const timer = setTimeout(() => {
+        if (this.echoMap.has(echo)) {
+          this.echoMap.delete(echo);
+          this.logger.warn(`API 调用超时 [${action}]: echo=${echo}`);
+          reject(new Error(`NapCat API 调用超时 [${action}] (${timeoutMs}ms)`));
+        }
+      }, timeoutMs);
+
+      this.echoMap.set(echo, { resolve, reject, timer });
+      try {
+        this.ws.send(JSON.stringify({ action, params, echo }));
+        this.logger.debug('send', JSON.stringify({ action, params, echo }));
+      }
+      catch (err) {
+        clearTimeout(timer);
+        this.echoMap.delete(echo);
+        reject(err);
+      }
     });
   }
 
@@ -60,6 +79,7 @@ export class NapCatClient extends QQClient {
     if (data.echo) {
       const promise = this.echoMap.get(data.echo);
       if (!promise) return;
+      if (promise.timer) clearTimeout(promise.timer);
       this.echoMap.delete(data.echo);
       if (data.status === 'ok') {
         promise.resolve(data.data);

@@ -454,7 +454,7 @@ export default class ForwardService {
           case 'record': {
             url = elem.url;
             if (!url && pair.qq instanceof Contactable && elem.md5 === 'ntptt') {
-              url = await pair.qq.getPttUrl(elem);
+              url = await (pair.qq as any).getPttUrl(elem);
             }
             else if (!url && this.oicq instanceof OicqClient) {
               const refetchMessage = await this.oicq.oicq.getMsg(event.messageId);
@@ -731,8 +731,8 @@ export default class ForwardService {
   }
 
   public async forwardFromTelegram(message: Api.Message, pair: Pair): Promise<Array<QQMessageSent>> {
+    const tempFiles: FileResult[] = [];
     try {
-      const tempFiles: FileResult[] = [];
       let chain: (string | SendableElem)[] = [];
       const senderId = Number(message.senderId || message.sender?.id) || pair.tgId;
       this.log.debug('senderId', senderId);
@@ -1106,7 +1106,6 @@ export default class ForwardService {
           });
         }
       }
-      tempFiles.forEach(it => it.cleanup());
       return qqMessages;
     }
     catch (e) {
@@ -1122,6 +1121,16 @@ export default class ForwardService {
       }
       catch {
       }
+    }
+    finally {
+      tempFiles.forEach(it => {
+        try {
+          it.cleanup();
+        }
+        catch (err) {
+          this.log.debug('清理临时文件失败', err);
+        }
+      });
     }
   }
 }

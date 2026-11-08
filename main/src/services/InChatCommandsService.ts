@@ -46,10 +46,30 @@ export default class InChatCommandsService {
           if (sender instanceof OicqMember) {
             memberInfo = await sender.renew();
           }
+          else if (sender && 'renew' in sender && typeof (sender as any).renew === 'function') {
+            memberInfo = await (sender as any).renew();
+          }
+          else if (sender && 'info' in sender && (sender as any).info) {
+            memberInfo = (sender as any).info;
+          }
+          else {
+            memberInfo = {
+              user_id: Number(messageInfo.qqSenderId),
+              card: '',
+              nickname: String(messageInfo.qqSenderId),
+              title: '',
+              role: 'member',
+              sex: 'unknown',
+              age: 0,
+              join_time: 0,
+              last_sent_time: 0,
+            };
+          }
 
-          textToSend += `<b>发送者：</b>${memberInfo.title ? `「<i>${memberInfo.title}</i>」` : ''}` +
-            `${memberInfo.card || memberInfo.nickname}(<code>${sender.uin}</code>)\n`;
-          if (memberInfo.role !== 'member') {
+          const displayName = memberInfo?.card || memberInfo?.nickname || String(sender?.uin || messageInfo.qqSenderId);
+          textToSend += `<b>发送者：</b>${memberInfo?.title ? `「<i>${memberInfo.title}</i>」` : ''}` +
+            `${displayName}(<code>${sender?.uin || messageInfo.qqSenderId}</code>)\n`;
+          if (memberInfo?.role && memberInfo.role !== 'member') {
             textToSend += `<b>职务：</b>${memberInfo.role === 'owner' ? '群主' : '管理员'}\n`;
           }
         }

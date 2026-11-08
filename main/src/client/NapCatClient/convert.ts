@@ -5,6 +5,7 @@ import { file as createTempFileBase, FileResult } from 'tmp-promise';
 import fsP from 'fs/promises';
 import env from '../../models/env';
 import fs from 'fs';
+import path from 'path';
 import { Readable } from 'node:stream';
 import { FaceElem } from '@icqqjs/icqq/lib/message/elements';
 
@@ -55,10 +56,23 @@ export const messageElemToNapCatSendable = async (elem: SendableElem): Promise<{
         });
         elem.file = file.path;
       }
+      if (typeof elem.file === 'string') {
+        const normalizedFile = path.normalize(elem.file);
+        const normalizedCacheDir = path.normalize(env.CACHE_DIR);
+        if (normalizedFile.startsWith(normalizedCacheDir)) {
+          const relativePath = path.relative(normalizedCacheDir, normalizedFile).replace(/\\/g, '/');
+          elem.file = path.posix.join('/app/.config/QQ/NapCat/temp', relativePath);
+        }
+        else if (elem.file.includes('data\\cache\\') || elem.file.includes('data/cache/')) {
+          const sub = elem.file.split(/data[\\/]cache[\\/]/)[1];
+          if (sub) {
+            elem.file = `/app/.config/QQ/NapCat/temp/${sub.replace(/\\/g, '/')}`;
+          }
+        }
+      }
       if (!/^(https?|file):\/\//.test(elem.file) && elem.file.startsWith('/')) {
         elem.file = `file://${elem.file}`;
       }
-      elem.file = elem.file.replace('D:\\Projects\\Q2TG\\next\\main\\data\\cache\\', '/app/.config/QQ/NapCat/temp/');
       return {
         elem: {
           type: elem.type,
@@ -105,6 +119,7 @@ export type NapCatForwardElem = {
 export type FaceElemEx = FaceElem & {
   resultId?: string,
   chainCount?: number,
+  stickerType?: number,
 }
 
 export type ImageElemEx = ImageElem & {

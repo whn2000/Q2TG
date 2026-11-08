@@ -85,6 +85,7 @@ model Message {
   richHeaderUsed Boolean  @default(false)
   ignoreDelete   Boolean  @default(false) /// rmq rmt
 
+  @@index([instanceId, qqRoomId, seq, rand])
   @@index([qqRoomId, qqSenderId, seq, rand, pktnum, time, instanceId])
   @@index([tgChatId, tgMsgId, instanceId])
 }

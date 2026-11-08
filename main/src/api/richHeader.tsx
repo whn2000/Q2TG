@@ -162,29 +162,17 @@ export default new Elysia()
             {memberInfo.nickname}
           </div>}
           <div class="secondary">
-            {params.userId}
+            QQ: {params.userId}
             {profile.QID && <span style="padding-left: 1em">QID: {profile.QID}</span>}
-            {profile.email && <span style="padding-left: 1em">{profile.email}</span>}
           </div>
-          {location && <div class="secondary">{location}</div>}
-          {birthday &&
-            <div class="detailItem">
-              <div class="secondary">生日</div>
-              {birthday}
-            </div>
-          }
-          <div class="detailItem">
+          {memberInfo.join_time ? <div class="detailItem">
             <div class="secondary">加入时间</div>
             {format(new Date(memberInfo.join_time * 1000), 'yyyy-MM-dd HH:mm')}
-          </div>
-          <div class="detailItem">
+          </div> : null}
+          {memberInfo.last_sent_time ? <div class="detailItem">
             <div class="secondary">上次发言时间</div>
             {format(new Date(memberInfo.last_sent_time * 1000), 'yyyy-MM-dd HH:mm')}
-          </div>
-          <div class="detailItem">
-            <div class="secondary">注册时间</div>
-            {format(new Date(profile.regTimestamp * 1000), 'yyyy-MM-dd HH:mm')}
-          </div>
+          </div> : null}
         </div>
       </div>
       </body>

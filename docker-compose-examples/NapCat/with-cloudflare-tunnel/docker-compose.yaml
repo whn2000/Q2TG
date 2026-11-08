@@ -55,7 +55,7 @@ services:
     volumes:
       - q2tg:/app/data
       - cache:/app/.config/QQ/NapCat/temp
-      - /var/run/docker.sock:/var/run/docker.sock
+      #- /var/run/docker.sock:/var/run/docker.sock # NapCat 模式无需挂载 docker.sock
     environment:
       - TG_API_ID=
       - TG_API_HASH=

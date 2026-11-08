@@ -36,6 +36,9 @@ export default new Elysia()
   .get('/telegramAvatar/:instanceId/:userId', async ({ params, error, set }) => {
     log.debug('请求头像', params.userId);
     const instance = Instance.instances.find(it => it.id.toString() === params.instanceId);
+    if (!instance || !instance.tgBot) {
+      return error(404, 'Instance not found');
+    }
     const avatar = await getUserAvatarPath(instance.tgBot, params.userId);
 
     if (!avatar) {

@@ -65420,30 +65420,33 @@ var init_client = __esm({
       }
       async getFriendsWithCluster() {
         const data = await this.callApi("get_friends_with_category");
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          return [];
+        }
         if (data[0].buddyList === void 0) {
           const categories = /* @__PURE__ */ new Map();
           for (const _entry of data) {
             const it = _entry;
             let category = categories.get(it.categoryId);
             if (!category) {
-              category = { name: it.categoryName || it.categroyName, friends: [] };
+              category = { name: it.categoryName || it.categroyName || "默认分组", friends: [] };
               categories.set(it.categoryId, category);
             }
             category.friends.push(NapCatFriend.createExisted(this, {
-              nickname: it.nick || it.nickname,
-              uid: parseInt(it.uin),
-              remark: it.remark
+              nickname: it.nickname || it.nick || "",
+              uid: Number(it.user_id ?? it.uin),
+              remark: it.remark || ""
             }));
           }
           return Array.from(categories.values());
         }
         return data.map((it) => ({
-          name: it.categoryName || it.categroyName,
+          name: it.categoryName || it.categroyName || "默认分组",
           // typo in API
-          friends: it.buddyList.map((friend) => NapCatFriend.createExisted(this, {
-            nickname: friend.nick,
-            uid: parseInt(friend.uin),
-            remark: friend.remark
+          friends: (it.buddyList || []).map((friend) => NapCatFriend.createExisted(this, {
+            nickname: friend.nickname || friend.nick || "",
+            uid: Number(friend.user_id ?? friend.uin),
+            remark: friend.remark || ""
           }))
         }));
       }
@@ -80740,13 +80743,14 @@ var {
 // src/utils/urls.ts
 var https2 = __toESM(require("node:https"));
 function getAvatarUrl(room) {
-  if (!room) return "";
+  if (!room || (typeof room === "number" && isNaN(room))) return "";
   if (typeof room === "object" && "uin" in room) {
     room = room.uin;
   }
   if (typeof room === "object" && "gid" in room) {
     room = -room.gid;
   }
+  if (typeof room === "number" && isNaN(room)) return "";
   return room < 0 ? `https://p.qlogo.cn/gh/${-room}/${-room}/0` : `https://q1.qlogo.cn/g?b=qq&nk=${room}&s=0`;
 }
 function getImageUrlByMd5(md52) {
@@ -80759,14 +80763,21 @@ var httpsAgent = new https2.Agent({
   rejectUnauthorized: false
 });
 async function fetchFile(url2) {
-  const res = await axios_default.get(url2, {
-    responseType: "arraybuffer",
-    httpsAgent
-  });
-  return res.data;
+  if (!url2) return Buffer.alloc(0);
+  try {
+    const res = await axios_default.get(url2, {
+      responseType: "arraybuffer",
+      httpsAgent
+    });
+    return res.data;
+  } catch {
+    return Buffer.alloc(0);
+  }
 }
 function getAvatar(room) {
-  return fetchFile(getAvatarUrl(room));
+  const url2 = getAvatarUrl(room);
+  if (!url2) return Promise.resolve(Buffer.alloc(0));
+  return fetchFile(url2);
 }
 function isContainsUrl(msg) {
   return msg.includes("https://") || msg.includes("http://");
@@ -80872,7 +80883,7 @@ var ConfigService = class {
       allFriends.push(...c.friends);
     }
     const unlinkedFriends = allFriends.filter(
-      (f, idx, self2) => self2.findIndex((x) => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin)
+      (f, idx, self2) => f.uin && !isNaN(f.uin) && self2.findIndex((x) => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin)
     );
     const buttons = friends.map((e) => [
       import_button.Button.inline(`${e.name || "(\u672A\u77E5\u540D\u79F0)"} (${e.friends.length}\u4EBA)`, this.tgBot.registerCallback(
@@ -80922,7 +80933,7 @@ var ConfigService = class {
         ))],
         [import_button.Button.url("\u624B\u52A8\u9009\u62E9\u73B0\u6709\u7FA4\u7EC4", this.getAssociateLink(roomId))]
       ],
-      file: new import_uploads.CustomFile("avatar.png", avatar.length, "", avatar)
+      file: avatar.length > 0 ? new import_uploads.CustomFile("avatar.png", avatar.length, "", avatar) : void 0
     });
   }
   async addExact(gin) {
@@ -80975,7 +80986,7 @@ ${group.gid}`;
         const statusReceiver = chat ? await this.tgBot.getChat(chat.id) : await this.owner;
         status = await statusReceiver.sendMessage({
           message: "\u6B63\u5728\u521B\u5EFA Telegram \u7FA4\u2026",
-          file: new import_uploads.CustomFile("avatar.png", avatar.length, "", avatar)
+          file: avatar.length > 0 ? new import_uploads.CustomFile("avatar.png", avatar.length, "", avatar) : void 0
         });
       } else if (status instanceof import_telegram.Api.Message) {
         await status.edit({ text: "\u6B63\u5728\u521B\u5EFA Telegram \u7FA4\u2026", buttons: import_button.Button.clear() });
@@ -81019,11 +81030,13 @@ ${group.gid}`;
       try {
         status && await status.edit({ text: "\u6B63\u5728\u66F4\u65B0\u5934\u50CF\u2026" });
         const avatar = await getAvatar(room);
-        const avatarHash = md5(avatar);
-        await chatForBot.setProfilePhoto(avatar);
-        await db_default.avatarCache.create({
-          data: { forwardPairId: dbPair.id, hash: avatarHash }
-        });
+        if (avatar && avatar.length > 0) {
+          const avatarHash = md5(avatar);
+          await chatForBot.setProfilePhoto(avatar);
+          await db_default.avatarCache.create({
+            data: { forwardPairId: dbPair.id, hash: avatarHash }
+          });
+        }
       } catch (e) {
         errorMessage += `
 \u66F4\u65B0\u5934\u50CF\u5931\u8D25\uFF1A${e.message}`;
@@ -81054,7 +81067,7 @@ ${group.gid}`;
     const ownerChat = await this.owner;
     const unlinkedItems = items.filter((item) => {
       const roomId = "uin" in item ? item.uin : -item.gid;
-      return !this.instance.forwardPairs.find(roomId);
+      return roomId && !isNaN(roomId) && !this.instance.forwardPairs.find(roomId);
     });
     if (!unlinkedItems.length) {
       await ownerChat.sendMessage(`\u5F53\u524D\u6CA1\u6709\u672A\u5173\u8054\u7684${titlePrefix}\u9879\u3002`);
@@ -81127,7 +81140,7 @@ ${group.gid}`;
       allFriends.push(...c.friends);
     }
     const uniqueFriends = allFriends.filter(
-      (f, idx, self2) => self2.findIndex((x) => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin)
+      (f, idx, self2) => f.uin && !isNaN(f.uin) && self2.findIndex((x) => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin)
     );
     if (!uniqueFriends.length) {
       await (await this.owner).sendMessage("\u6240\u6709 QQ \u597D\u53CB\u5747\u5DF2\u5173\u8054 Telegram \u7FA4\uFF0C\u65E0\u9700\u5BFC\u5165\u3002");
@@ -81360,18 +81373,20 @@ var ConfigController = class {
   createPrivateMessageGroupBlockList = /* @__PURE__ */ new Map();
   log;
   handleMessage = async (message2) => {
-    if (!message2.sender?.id?.eq(this.instance.owner)) {
+    const senderId = message2.senderId || message2.sender?.id;
+    if (!senderId || !senderId.eq(this.instance.owner)) {
       return false;
     }
     const messageSplit = message2.message.split(" ");
+    const command = messageSplit[0].split("@")[0];
     if (message2.isGroup) {
-      if (messageSplit.length === 2 && messageSplit[0] === `/start@${this.tgBot.me.username}` && regExps_default.roomId.test(messageSplit[1])) {
+      if (messageSplit.length === 2 && command === "/start" && regExps_default.roomId.test(messageSplit[1])) {
         await this.configService.createLinkGroup(Number(messageSplit[1]), Number(message2.chat.id));
         return true;
       } else
         return false;
     } else if (message2.isPrivate) {
-      switch (messageSplit[0]) {
+      switch (command) {
         case "/flag":
         case "/flags":
           messageSplit.shift();
@@ -81381,7 +81396,7 @@ var ConfigController = class {
           return true;
       }
       if (this.instance.workMode === "personal") {
-        switch (messageSplit[0]) {
+        switch (command) {
           case "/addfriend":
             await this.configService.addFriend();
             return true;
@@ -81411,7 +81426,7 @@ var ConfigController = class {
             return true;
         }
       } else {
-        switch (messageSplit[0]) {
+        switch (command) {
           case "/add":
             if (messageSplit.length === 3 && regExps_default.qq.test(messageSplit[1]) && !isNaN(Number(messageSplit[2]))) {
               await this.configService.createLinkGroup(-Number(messageSplit[1]), Number(messageSplit[2]));
@@ -81535,7 +81550,11 @@ var CallbackQueryHelper = class {
   onCallbackQuery = async (event) => {
     const id = event.query.data.readUint16LE();
     if (this.queries[id]) {
-      this.queries[id](event);
+      try {
+        await Promise.resolve(this.queries[id](event));
+      } catch (err) {
+        console.error("CallbackQuery handler error:", err);
+      }
     }
     try {
       await event.answer();
@@ -90563,7 +90582,8 @@ var AliveCheckController = class {
     tgBot.addNewMessageEventHandler(this.handleMessage);
   }
   handleMessage = async (message2) => {
-    if (!message2.sender?.id?.eq(this.instance.owner) || !message2.isPrivate) {
+    const senderId = message2.senderId || message2.sender?.id;
+    if (!senderId || !senderId.eq(this.instance.owner) || !message2.isPrivate) {
       return false;
     }
     if (!["\u4F3C\u4E86\u5417", "/alive"].includes(message2.message)) {

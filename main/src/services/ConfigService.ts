@@ -71,7 +71,7 @@ export default class ConfigService {
       allFriends.push(...c.friends);
     }
     const unlinkedFriends = allFriends.filter(
-      (f, idx, self) => self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
+      (f, idx, self) => f.uin && !isNaN(f.uin) && self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
     );
 
     const buttons = friends.map(e => [
@@ -126,7 +126,7 @@ export default class ConfigService {
           }))],
         [Button.url('手动选择现有群组', this.getAssociateLink(roomId))],
       ],
-      file: new CustomFile('avatar.png', avatar.length, '', avatar),
+      file: avatar.length > 0 ? new CustomFile('avatar.png', avatar.length, '', avatar) : undefined,
     });
   }
 
@@ -186,7 +186,7 @@ export default class ConfigService {
         const statusReceiver = chat ? await this.tgBot.getChat(chat.id) : await this.owner;
         status = await statusReceiver.sendMessage({
           message: '正在创建 Telegram 群…',
-          file: new CustomFile('avatar.png', avatar.length, '', avatar),
+          file: avatar.length > 0 ? new CustomFile('avatar.png', avatar.length, '', avatar) : undefined,
         });
       }
       else if (status instanceof Api.Message) {
@@ -245,11 +245,13 @@ export default class ConfigService {
       try {
         status && await status.edit({ text: '正在更新头像…' });
         const avatar = await getAvatar(room);
-        const avatarHash = md5(avatar);
-        await chatForBot.setProfilePhoto(avatar);
-        await db.avatarCache.create({
-          data: { forwardPairId: dbPair.id, hash: avatarHash },
-        });
+        if (avatar && avatar.length > 0) {
+          const avatarHash = md5(avatar);
+          await chatForBot.setProfilePhoto(avatar);
+          await db.avatarCache.create({
+            data: { forwardPairId: dbPair.id, hash: avatarHash },
+          });
+        }
       }
       catch (e) {
         errorMessage += `\n更新头像失败：${e.message}`;
@@ -284,7 +286,7 @@ export default class ConfigService {
     // 过滤掉已关联项
     const unlinkedItems = items.filter(item => {
       const roomId = 'uin' in item ? item.uin : -item.gid;
-      return !this.instance.forwardPairs.find(roomId);
+      return roomId && !isNaN(roomId) && !this.instance.forwardPairs.find(roomId);
     });
 
     if (!unlinkedItems.length) {
@@ -374,7 +376,7 @@ export default class ConfigService {
       allFriends.push(...c.friends);
     }
     const uniqueFriends = allFriends.filter(
-      (f, idx, self) => self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
+      (f, idx, self) => f.uin && !isNaN(f.uin) && self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
     );
     if (!uniqueFriends.length) {
       await (await this.owner).sendMessage('所有 QQ 好友均已关联 Telegram 群，无需导入。');

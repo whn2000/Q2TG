@@ -3,13 +3,14 @@ import { Friend, Group } from '../client/QQClient';
 import * as https from 'node:https';
 
 export function getAvatarUrl(room: number | bigint | Friend | Group): string {
-  if (!room) return '';
+  if (!room || (typeof room === 'number' && isNaN(room))) return '';
   if (typeof room === 'object' && 'uin' in room) {
     room = room.uin;
   }
   if (typeof room === 'object' && 'gid' in room) {
     room = -room.gid;
   }
+  if (typeof room === 'number' && isNaN(room)) return '';
   return room < 0 ?
     `https://p.qlogo.cn/gh/${-room}/${-room}/0` :
     `https://q1.qlogo.cn/g?b=qq&nk=${room}&s=0`;
@@ -28,15 +29,23 @@ const httpsAgent = new https.Agent({
 });
 
 export async function fetchFile(url: string): Promise<Buffer> {
-  const res = await axios.get(url, {
-    responseType: 'arraybuffer',
-    httpsAgent,
-  });
-  return res.data;
+  if (!url) return Buffer.alloc(0);
+  try {
+    const res = await axios.get(url, {
+      responseType: 'arraybuffer',
+      httpsAgent,
+    });
+    return res.data;
+  }
+  catch {
+    return Buffer.alloc(0);
+  }
 }
 
-export function getAvatar(room: number | Friend | Group) {
-  return fetchFile(getAvatarUrl(room));
+export function getAvatar(room: number | Friend | Group): Promise<Buffer> {
+  const url = getAvatarUrl(room);
+  if (!url) return Promise.resolve(Buffer.alloc(0));
+  return fetchFile(url);
 }
 
 export function isContainsUrl(msg: string): boolean {

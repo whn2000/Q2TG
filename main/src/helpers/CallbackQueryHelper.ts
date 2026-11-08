@@ -13,7 +13,12 @@ export default class CallbackQueryHelper {
   public onCallbackQuery = async (event: CallbackQueryEvent) => {
     const id = event.query.data.readUint16LE();
     if (this.queries[id]) {
-      this.queries[id](event);
+      try {
+        await Promise.resolve(this.queries[id](event));
+      }
+      catch (err) {
+        console.error('CallbackQuery handler error:', err);
+      }
     }
     try {
       await event.answer();

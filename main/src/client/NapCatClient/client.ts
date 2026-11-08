@@ -225,29 +225,32 @@ export class NapCatClient extends QQClient {
 
   public async getFriendsWithCluster(): Promise<{ name: string; friends: Friend[]; }[]> {
     const data = await this.callApi('get_friends_with_category');
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return [];
+    }
     if (data[0].buddyList === undefined) {
       const categories = new Map<number, { name: string; friends: Friend[]; }>();
       for (const _entry of data) {
         const it = _entry as any;
         let category = categories.get(it.categoryId);
         if (!category) {
-          category = { name: it.categoryName || it.categroyName, friends: [] };
+          category = { name: it.categoryName || it.categroyName || '默认分组', friends: [] };
           categories.set(it.categoryId, category);
         }
         category.friends.push(NapCatFriend.createExisted(this, {
-          nickname: it.nick || it.nickname,
-          uid: parseInt(it.uin),
-          remark: it.remark,
+          nickname: it.nickname || it.nick || '',
+          uid: Number(it.user_id ?? it.uin),
+          remark: it.remark || '',
         }));
       }
       return Array.from(categories.values());
     }
     return data.map(it => ({
-      name: it.categoryName || (it as any).categroyName, // typo in API
-      friends: it.buddyList.map(friend => NapCatFriend.createExisted(this, {
-        nickname: friend.nick,
-        uid: parseInt(friend.uin),
-        remark: friend.remark,
+      name: it.categoryName || (it as any).categroyName || '默认分组', // typo in API
+      friends: (it.buddyList || []).map(friend => NapCatFriend.createExisted(this, {
+        nickname: friend.nickname || friend.nick || '',
+        uid: Number(friend.user_id ?? friend.uin),
+        remark: friend.remark || '',
       })),
     }));
   }

@@ -13,7 +13,8 @@ export default class AliveCheckController {
   }
 
   private handleMessage = async (message: Api.Message) => {
-    if (!message.sender?.id?.eq(this.instance.owner) || !message.isPrivate) {
+    const senderId = message.senderId || message.sender?.id;
+    if (!senderId || !senderId.eq(this.instance.owner) || !message.isPrivate) {
       return false;
     }
     if (!['似了吗', '/alive'].includes(message.message)) {

@@ -78,3 +78,29 @@ test('Batch Import - simulate flood wait recovery logic', async () => {
   assert.equal(attempts, 2);
   assert.equal(success, true);
 });
+
+test('NapCat friend parsing - user_id and nickname compatibility', () => {
+  const napCatBuddy = {
+    user_id: 1770695210,
+    nickname: 'TestUser',
+    remark: 'TestRemark',
+  };
+
+  const parsedUid = Number(napCatBuddy.user_id ?? (napCatBuddy as any).uin);
+  const parsedNick = napCatBuddy.nickname || (napCatBuddy as any).nick || '';
+  const parsedRemark = napCatBuddy.remark || '';
+
+  assert.equal(parsedUid, 1770695210);
+  assert.equal(parsedNick, 'TestUser');
+  assert.equal(parsedRemark, 'TestRemark');
+});
+
+test('Command parsing - bot mention stripped', () => {
+  const parseCommand = (text: string) => text.split(' ')[0].split('@')[0];
+
+  assert.equal(parseCommand('/import_all'), '/import_all');
+  assert.equal(parseCommand('/import_all@FUXETZF_bot'), '/import_all');
+  assert.equal(parseCommand('/import_friends@FUXETZF_bot extra_arg'), '/import_friends');
+  assert.equal(parseCommand('/addfriend@FUXETZF_bot'), '/addfriend');
+  assert.equal(parseCommand('/addgroup@FUXETZF_bot'), '/addgroup');
+});

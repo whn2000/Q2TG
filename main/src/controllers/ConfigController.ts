@@ -38,12 +38,14 @@ export default class ConfigController {
   }
 
   private handleMessage = async (message: Api.Message) => {
-    if (!message.sender?.id?.eq(this.instance.owner)) {
+    const senderId = message.senderId || message.sender?.id;
+    if (!senderId || !senderId.eq(this.instance.owner)) {
       return false;
     }
     const messageSplit = message.message.split(' ');
+    const command = messageSplit[0].split('@')[0];
     if (message.isGroup) {
-      if (messageSplit.length === 2 && messageSplit[0] === `/start@${this.tgBot.me.username}` && regExps.roomId.test(messageSplit[1])) {
+      if (messageSplit.length === 2 && command === '/start' && regExps.roomId.test(messageSplit[1])) {
         await this.configService.createLinkGroup(Number(messageSplit[1]), Number(message.chat.id));
         return true;
       }
@@ -51,7 +53,7 @@ export default class ConfigController {
         return false;
     }
     else if (message.isPrivate) {
-      switch (messageSplit[0]) {
+      switch (command) {
         case '/flag':
         case '/flags':
           messageSplit.shift();
@@ -61,7 +63,7 @@ export default class ConfigController {
           return true;
       }
       if (this.instance.workMode === 'personal') {
-        switch (messageSplit[0]) {
+        switch (command) {
           case '/addfriend':
             await this.configService.addFriend();
             return true;
@@ -92,7 +94,7 @@ export default class ConfigController {
         }
       }
       else {
-        switch (messageSplit[0]) {
+        switch (command) {
           case '/add':
             // 加的参数永远是正的群号
             if (messageSplit.length === 3 && regExps.qq.test(messageSplit[1]) && !isNaN(Number(messageSplit[2]))) {

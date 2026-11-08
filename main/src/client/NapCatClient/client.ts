@@ -267,6 +267,28 @@ export class NapCatClient extends QQClient {
     }));
   }
 
+  public async getCustomFaceList(count = 1000): Promise<Array<{
+    url: string;
+    md5?: string;
+    desc?: string;
+  }>> {
+    try {
+      const res = await this.callApi('fetch_custom_face_detail' as any, { count });
+      if (Array.isArray(res)) {
+        return res.map((item: any) => ({
+          url: item.url || '',
+          md5: item.md5 || '',
+          desc: item.desc || item.ocrWord || item.modifyWord || '',
+        })).filter(x => !!x.url);
+      }
+      return [];
+    }
+    catch (e) {
+      this.logger.warn('获取 QQ 收藏表情失败', e);
+      return [];
+    }
+  }
+
   public pickGroup(groupId: number): Promise<Group> {
     return NapCatGroup.create(this, groupId);
   }

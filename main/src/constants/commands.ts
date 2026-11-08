@@ -20,6 +20,10 @@ const commonPrivateCommands = [
     command: 'alive',
     description: '状态信息',
   }),
+  new Api.BotCommand({
+    command: 'import_stickers',
+    description: '🎨 一键导入 QQ 收藏表情到 Telegram 表情包',
+  }),
 ]
 
 // 这里的 group 指群组模式，Private 指在与机器人的私聊会话中

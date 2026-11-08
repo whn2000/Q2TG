@@ -328,6 +328,14 @@ export default class OicqClient extends QQClient {
     return await Promise.all(Array.from(this.oicq.gl.values()).map(g => this.pickGroup(g.group_id)));
   }
 
+  async getCustomFaceList(count = 1000): Promise<Array<{
+    url: string;
+    md5?: string;
+    desc?: string;
+  }>> {
+    return [];
+  }
+
   override async createSpoilerImageEndpoint(image: ImageElem, nickname: string, title?: string) {
     const msgList: Forwardable[] = [{
       user_id: this.oicq.uin,

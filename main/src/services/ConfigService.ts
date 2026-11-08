@@ -14,12 +14,14 @@ import { Friend, Group, QQClient } from '../client/QQClient';
 import posthog from '../models/posthog';
 import OicqClient from '../client/OicqClient';
 import { sleep } from 'telegram/Helpers';
+import StickerService from './StickerService';
 
 const DEFAULT_FILTER_ID = 114; // 514
 
 export default class ConfigService {
   private owner: Promise<TelegramChat>;
   private readonly log: Logger;
+  private readonly stickerService = new StickerService();
 
   constructor(private readonly instance: Instance,
               private readonly tgBot: Telegram,
@@ -405,6 +407,74 @@ export default class ConfigService {
       `• 群组成功: ${groupRes?.success ?? 0}，失败: ${groupRes?.failed ?? 0}\n` +
       `• 好友成功: ${friendRes?.success ?? 0}，失败: ${friendRes?.failed ?? 0}`,
     );
+  }
+
+  public async importStickers(targetCount?: number) {
+    const ownerChat = await this.owner;
+    const statusMsg = await ownerChat.sendMessage('🎨 正在从 QQ 读取收藏表情列表...');
+
+    const faces = await this.oicq.getCustomFaceList(targetCount || 1000);
+    if (!faces || faces.length === 0) {
+      await statusMsg.edit({
+        text: '❌ 未获取到 QQ 收藏表情。请确认 QQ 是否已登录，且已在手机/电脑 QQ 中添加了自定义收藏表情。',
+      });
+      return;
+    }
+
+    const botUsername = this.tgBot.me.username || 'bot';
+    const ownerId = this.instance.owner.toString();
+
+    let lastText = '';
+    const onProgress = async (text: string) => {
+      if (text !== lastText) {
+        lastText = text;
+        try {
+          await statusMsg.edit({ text });
+        }
+        catch (_) {}
+      }
+    };
+
+    try {
+      const result = await this.stickerService.importCustomFaces(
+        ownerId,
+        this.oicq.uin,
+        this.instance.id,
+        botUsername,
+        faces,
+        onProgress,
+      );
+
+      if (result.packs.length === 0) {
+        await statusMsg.edit({
+          text: `⚠️ 表情处理完毕，但未能成功创建表情包（共读取 ${result.total} 个，失败 ${result.failed} 个）。`,
+        });
+        return;
+      }
+
+      const packListText = result.packs.map((p, idx) => {
+        return `${idx + 1}. <a href="${p.link}">${p.title}</a> (共 ${p.count} 个表情)`;
+      }).join('\n');
+
+      const finishSummary =
+        `🎉 <b>QQ 收藏表情导入完成！</b>\n\n` +
+        `• 扫描到 QQ 收藏表情: ${result.total} 个\n` +
+        `• 成功导入: ${result.success} 个\n` +
+        (result.failed > 0 ? `• 跳过失败: ${result.failed} 个\n` : '') +
+        `• 生成表情包: ${result.packs.length} 套\n\n` +
+        `<b>点击下方链接一键添加到 Telegram：</b>\n` +
+        `${packListText}\n\n` +
+        `💡 <i>添加后即可在任意 Telegram 会话中使用；在关联群/好友聊天中发送这些表情将自动转发至 QQ！</i>`;
+
+      await statusMsg.edit({ text: finishSummary });
+    }
+    catch (e: any) {
+      this.log.error('importStickers error:', e);
+      posthog.capture('importStickers 出错', { error: e.message });
+      await statusMsg.edit({
+        text: `❌ 导入表情包过程中发生错误: <code>${e.message}</code>`,
+      });
+    }
   }
 
   public async promptNewQqChat(chat: Group | Friend) {

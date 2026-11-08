@@ -69,6 +69,12 @@ export abstract class QQClient {
 
   public abstract getGroupList(): Promise<Group[]>;
 
+  public abstract getCustomFaceList(count?: number): Promise<Array<{
+    url: string;
+    md5?: string;
+    desc?: string;
+  }>>;
+
 
   protected async callHandlers<T>(handlers: Array<(e: T) => Promise<void | boolean>>, e: T) {
     for (const handler of handlers) {

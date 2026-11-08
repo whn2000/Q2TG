@@ -61,6 +61,14 @@ export default class ConfigController {
             message: await editFlags(messageSplit, this.instance),
           });
           return true;
+        case '/import_stickers':
+        case '/import_emojis':
+        case '/import_sticker':
+        case '/import_emoji': {
+          const count = messageSplit[1] ? parseInt(messageSplit[1], 10) : undefined;
+          await this.configService.importStickers(count);
+          return true;
+        }
       }
       if (this.instance.workMode === 'personal') {
         switch (command) {

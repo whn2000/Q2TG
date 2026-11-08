@@ -1,0 +1,65 @@
+volumes:
+  postgresql:
+  q2tg:
+  cache:
+  napcat-data:
+  napcat-config:
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: q2tg
+      POSTGRES_USER: q2tg
+      POSTGRES_PASSWORD: 20050529001
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U q2tg -d q2tg"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  napcat:
+    build:
+      context: .
+      dockerfile: Dockerfile.napcat
+    environment:
+      - ACCOUNT=1685056391
+      - WS_ENABLE=true
+      - NAPCAT_GID=1000
+      - NAPCAT_UID=1000
+    ports:
+      - 6099:6099
+    mac_address: 02:42:12:34:56:78
+    restart: unless-stopped
+    volumes:
+      - napcat-data:/app/.config/QQ
+      - napcat-config:/app/napcat/config
+      - cache:/app/.config/QQ/NapCat/temp
+
+  q2tg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      napcat:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8088:8080"
+    volumes:
+      - q2tg:/app/data
+      - cache:/app/.config/QQ/NapCat/temp
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TG_API_ID=35464719
+      - TG_API_HASH=b561fd2147493a06be02fd44753bfec7
+      - TG_BOT_TOKEN=8391138446:AAEO5qpxIZoEROuacSncfFEhWo-yxTQQwJ0
+      - DATABASE_URL=postgres://q2tg:20050529001@postgres:5432/q2tg
+      - NAPCAT_WS_URL=ws://napcat:3001
+      - TG_CONNECTION=tcp
+      - WEB_ENDPOINT=https://q2tg.fuxe-source.top

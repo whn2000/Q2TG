@@ -640,6 +640,11 @@ web_modules/
 
 # Next.js build output
 .next
+
+!main/build/
+!main/build/**
+!ui/dist/
+!ui/dist/**
 out
 
 # Nuxt.js build / generate output
@@ -735,3 +740,9 @@ build
 !.yarn/versions
 result
 .direnv/
+
+# Track pre-built production bundles for VPS deployment
+!main/build/
+!main/build/**
+!ui/dist/
+!ui/dist/**

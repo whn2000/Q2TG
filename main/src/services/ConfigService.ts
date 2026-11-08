@@ -13,6 +13,7 @@ import random from '../utils/random';
 import { Friend, Group, QQClient } from '../client/QQClient';
 import posthog from '../models/posthog';
 import OicqClient from '../client/OicqClient';
+import { sleep } from 'telegram/Helpers';
 
 const DEFAULT_FILTER_ID = 114; // 514
 
@@ -48,6 +49,16 @@ export default class ConfigService {
           `${e.name} (${e.gid})`,
           this.getAssociateLink(-e.gid),
         )]);
+
+    if (this.instance.workMode === 'personal' && qGroups.length > 0) {
+      buttons.unshift([
+        Button.inline(
+          `⚡ 批量导入所有群组 (${qGroups.length}个)`,
+          this.tgBot.registerCallback(() => this.importAllGroups()),
+        ),
+      ]);
+    }
+
     await (await this.owner).createPaginatedInlineSelector(
       '选择 QQ 群组' + (this.instance.workMode === 'group' ? '\n然后选择在 TG 中的群组' : ''), buttons);
   }
@@ -55,20 +66,50 @@ export default class ConfigService {
   // 只可能是 personal 运行模式
   public async addFriend() {
     const friends = await this.oicq.getFriendsWithCluster();
-    await (await this.owner).createPaginatedInlineSelector('选择分组', friends.map(e => [
-      Button.inline(e.name || '(未知名称)', this.tgBot.registerCallback(
+    const allFriends: Friend[] = [];
+    for (const c of friends) {
+      allFriends.push(...c.friends);
+    }
+    const unlinkedFriends = allFriends.filter(
+      (f, idx, self) => self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
+    );
+
+    const buttons = friends.map(e => [
+      Button.inline(`${e.name || '(未知名称)'} (${e.friends.length}人)`, this.tgBot.registerCallback(
         () => this.openFriendSelection(e.friends, e.name),
       )),
-    ]));
+    ]);
+
+    if (unlinkedFriends.length > 0) {
+      buttons.unshift([
+        Button.inline(
+          `⚡ 批量导入所有好友 (${unlinkedFriends.length}位)`,
+          this.tgBot.registerCallback(() => this.importAllFriends()),
+        ),
+      ]);
+    }
+
+    await (await this.owner).createPaginatedInlineSelector('选择分组', buttons);
   }
 
   private async openFriendSelection(clazz: Friend[], name: string) {
     clazz = clazz.filter(them => !this.instance.forwardPairs.find(them.uin));
-    await (await this.owner).createPaginatedInlineSelector(`选择 QQ 好友\n分组：${name}`, clazz.map(e => [
+    const buttons = clazz.map(e => [
       Button.inline(`${e.remark || e.nickname} (${e.uin})`, this.tgBot.registerCallback(
         () => this.onSelectChatPersonal(e),
       )),
-    ]));
+    ]);
+
+    if (clazz.length > 1) {
+      buttons.unshift([
+        Button.inline(
+          `⚡ 批量导入当前分组「${name}」(${clazz.length}位)`,
+          this.tgBot.registerCallback(() => this.batchImport(clazz, `分组「${name}」的好友`)),
+        ),
+      ]);
+    }
+
+    await (await this.owner).createPaginatedInlineSelector(`选择 QQ 好友\n分组：${name}`, buttons);
   }
 
   private async onSelectChatPersonal(entity: Friend | Group) {
@@ -228,8 +269,140 @@ export default class ConfigService {
     catch (e) {
       this.log.error('创建群组并关联失败', e);
       posthog.capture('创建群组并关联失败', { error: e });
-      await (await this.owner).sendMessage(`创建群组并关联${isFinish ? '成功了但没完全成功' : '失败'}\n<code>${e}</code>`);
+      if (status !== false) {
+        await (await this.owner).sendMessage(`创建群组并关联${isFinish ? '成功了但没完全成功' : '失败'}\n<code>${e}</code>`);
+      }
+      throw e;
     }
+  }
+
+  /**
+   * 批量创建并关联 Telegram 群组
+   */
+  public async batchImport(items: Array<Friend | Group>, titlePrefix = '批量导入') {
+    const ownerChat = await this.owner;
+    // 过滤掉已关联项
+    const unlinkedItems = items.filter(item => {
+      const roomId = 'uin' in item ? item.uin : -item.gid;
+      return !this.instance.forwardPairs.find(roomId);
+    });
+
+    if (!unlinkedItems.length) {
+      await ownerChat.sendMessage(`当前没有未关联的${titlePrefix}项。`);
+      return { success: 0, failed: 0 };
+    }
+
+    const statusMessage = await ownerChat.sendMessage(
+      `🚀 开始${titlePrefix}（共 ${unlinkedItems.length} 项）...\n` +
+      `为避免触发 Telegram 频率限制，每项创建之间会有约 1.5 秒延时，请耐心等待。`,
+    );
+
+    let successCount = 0;
+    let failCount = 0;
+    const failNames: string[] = [];
+
+    for (let i = 0; i < unlinkedItems.length; i++) {
+      const item = unlinkedItems[i];
+      const name = 'uin' in item ? item.remark || item.nickname || String(item.uin) : item.name || String(item.gid);
+      const roomId = 'uin' in item ? item.uin : -item.gid;
+
+      try {
+        await statusMessage.edit({
+          text: `⏳ [${i + 1}/${unlinkedItems.length}] 正在创建: ${name} (${roomId})...\n已成功: ${successCount}，失败: ${failCount}`,
+        });
+      }
+      catch (_) {
+        // 忽略编辑频率过快错误
+      }
+
+      try {
+        await this.createGroupAndLink(item, name, false);
+        successCount++;
+      }
+      catch (e: any) {
+        this.log.error(`[batchImport] 创建 ${name} (${roomId}) 失败:`, e);
+        const waitSec = e?.seconds || (e?.message?.match(/FLOOD_WAIT_(\d+)/)?.[1] ? Number(e.message.match(/FLOOD_WAIT_(\d+)/)[1]) : 0);
+        if (waitSec > 0) {
+          try {
+            await statusMessage.edit({
+              text: `⚠️ 触发 Telegram 频控保护，正在等待 ${waitSec + 1} 秒后自动继续...`,
+            });
+          }
+          catch (_) {}
+          await sleep((waitSec + 1) * 1000);
+          try {
+            await this.createGroupAndLink(item, name, false);
+            successCount++;
+          }
+          catch (err2) {
+            this.log.error(`[batchImport] 重试创建 ${name} 仍失败:`, err2);
+            failCount++;
+            failNames.push(name);
+          }
+        }
+        else {
+          failCount++;
+          failNames.push(name);
+        }
+      }
+
+      // 友好延时，防止触发 TG Flood
+      if (i < unlinkedItems.length - 1) {
+        await sleep(1500);
+      }
+    }
+
+    const summary = `✅ ${titlePrefix}处理完成！\n` +
+      `• 成功创建: ${successCount} 个\n` +
+      `• 失败跳过: ${failCount} 个` +
+      (failNames.length ? `\n• 失败名单: ${failNames.slice(0, 15).join(', ')}${failNames.length > 15 ? ' 等' : ''}` : '');
+
+    try {
+      await statusMessage.edit({ text: summary });
+    }
+    catch (_) {
+      await ownerChat.sendMessage(summary);
+    }
+
+    return { success: successCount, failed: failCount };
+  }
+
+  public async importAllFriends() {
+    const friendsWithCluster = await this.oicq.getFriendsWithCluster();
+    const allFriends: Friend[] = [];
+    for (const c of friendsWithCluster) {
+      allFriends.push(...c.friends);
+    }
+    const uniqueFriends = allFriends.filter(
+      (f, idx, self) => self.findIndex(x => x.uin === f.uin) === idx && !this.instance.forwardPairs.find(f.uin),
+    );
+    if (!uniqueFriends.length) {
+      await (await this.owner).sendMessage('所有 QQ 好友均已关联 Telegram 群，无需导入。');
+      return { success: 0, failed: 0 };
+    }
+    return await this.batchImport(uniqueFriends, '批量导入所有好友');
+  }
+
+  public async importAllGroups() {
+    const qGroups = (await this.oicq.getGroupList())
+      .filter(it => !this.instance.forwardPairs.find(-it.gid));
+    if (!qGroups.length) {
+      await (await this.owner).sendMessage('所有 QQ 群均已关联 Telegram 群，无需导入。');
+      return { success: 0, failed: 0 };
+    }
+    return await this.batchImport(qGroups, '批量导入所有群组');
+  }
+
+  public async importAll() {
+    const ownerChat = await this.owner;
+    await ownerChat.sendMessage('⚡ 开始一键全量导入（先导入群组，再导入好友）...');
+    const groupRes = await this.importAllGroups();
+    const friendRes = await this.importAllFriends();
+    await ownerChat.sendMessage(
+      `🎉 全量批量导入全部结束！\n` +
+      `• 群组成功: ${groupRes?.success ?? 0}，失败: ${groupRes?.failed ?? 0}\n` +
+      `• 好友成功: ${friendRes?.success ?? 0}，失败: ${friendRes?.failed ?? 0}`,
+    );
   }
 
   public async promptNewQqChat(chat: Group | Friend) {

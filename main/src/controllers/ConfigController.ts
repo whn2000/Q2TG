@@ -68,6 +68,16 @@ export default class ConfigController {
           case '/addgroup':
             await this.configService.addGroup();
             return true;
+          case '/import_all':
+          case '/batch_import':
+            await this.configService.importAll();
+            return true;
+          case '/import_friends':
+            await this.configService.importAllFriends();
+            return true;
+          case '/import_groups':
+            await this.configService.importAllGroups();
+            return true;
           case '/migrate':
             await this.configService.migrateAllChats();
             return true;

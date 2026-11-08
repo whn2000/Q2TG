@@ -1,0 +1,7 @@
+FROM mlikiowa/napcat-docker:latest
+
+# Increase sendMsg timeout & auto-inject OneBot11 config
+COPY napcat-entrypoint.sh /napcat-entrypoint.sh
+COPY onebot11.json /napcat-config-default.json
+RUN chmod +x /napcat-entrypoint.sh
+CMD ["/napcat-entrypoint.sh"]

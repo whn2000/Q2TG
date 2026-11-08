@@ -42,6 +42,18 @@ const personalPrivateCommands = [
     description: '添加新的群转发',
   }),
   new Api.BotCommand({
+    command: 'import_all',
+    description: '⚡ 一键批量导入所有未关联的好友与群组',
+  }),
+  new Api.BotCommand({
+    command: 'import_friends',
+    description: '⚡ 一键批量导入所有未关联的好友',
+  }),
+  new Api.BotCommand({
+    command: 'import_groups',
+    description: '⚡ 一键批量导入所有未关联的群组',
+  }),
+  new Api.BotCommand({
     command: 'refresh_all',
     description: '刷新所有头像和简介',
   }),

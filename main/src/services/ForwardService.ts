@@ -51,6 +51,9 @@ import atHelper from '../helpers/atHelper';
 import { GroupRole } from '@icqqjs/icqq/lib/common';
 import path from 'path';
 import { fileTypeFromBuffer, fileTypeFromFile, FileTypeResult } from 'file-type';
+import fs from 'fs';
+import { setForwardCache } from '../api/q2tgServlet';
+import processNestedForward from '../utils/processNestedForward';
 
 const NOT_CHAINABLE_ELEMENTS = ['flash', 'record', 'video', 'location', 'share', 'json', 'xml', 'poke'];
 const IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/apng', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/avif', 'image/heic', 'image/heif'];
@@ -150,7 +153,9 @@ export default class ForwardService {
         buttons: ButtonLike[] = [],
         replyTo = 0,
         forceDocument = false,
-        isContainAtOrChannelFace = false;
+        isContainAtOrChannelFace = false,
+        isVoiceNote = false,
+        voiceDuration = 0;
       let messageHeader = '', messageHeaderWithLink = '', sender = '';
       if (!event.dm) {
         // 产生头部，这和工作模式没有关系
@@ -191,9 +196,18 @@ export default class ForwardService {
           message = helper.generateForwardBrief(messages);
 
         if (env.WEB_ENDPOINT) {
-          const dbEntry = await db.forwardMultiple.create({
-            data: { resId, fileName, fromPairId: pair.dbId },
+          let dbEntry = await db.forwardMultiple.findFirst({
+            where: { resId },
           });
+          if (!dbEntry) {
+            dbEntry = await db.forwardMultiple.create({
+              data: { resId, fileName: fileName || '', fromPairId: pair.dbId },
+            });
+          }
+          if (messages && messages.length) {
+            setForwardCache(dbEntry.id, messages);
+            await processNestedForward(messages, pair.dbId);
+          }
           const hash = dbEntry.id;
           const viewerUrl = env.CRV_VIEWER_APP ? `${env.CRV_VIEWER_APP}?startapp=${hash}` : `${env.WEB_ENDPOINT}/ui/chatRecord?tgWebAppStartParam=${hash}`;
           buttons.push(Button.url('📃查看', viewerUrl));
@@ -460,28 +474,151 @@ export default class ForwardService {
             break;
           }
           case 'record': {
+            let bufAudio: Buffer | undefined;
+            const audioDuration = Number(elem.duration) || 0;
+
+            // 1. 尝试从本地路径/文件获取
+            if (typeof elem.file === 'string' && !elem.file.startsWith('http')) {
+              const localPath = elem.file.replace(/^file:\/\//, '');
+              if (fs.existsSync(localPath)) {
+                try {
+                  bufAudio = await fsP.readFile(localPath);
+                }
+                catch {}
+              }
+            }
+            if (!bufAudio && typeof (elem as any).path === 'string') {
+              const localPath = (elem as any).path.replace(/^file:\/\//, '');
+              if (fs.existsSync(localPath)) {
+                try {
+                  bufAudio = await fsP.readFile(localPath);
+                }
+                catch {}
+              }
+            }
+
+            // 2. 尝试从 URL 下载
             url = elem.url;
+            if (!url && typeof elem.file === 'string' && elem.file.startsWith('http')) {
+              url = elem.file;
+            }
             if (!url && pair.qq instanceof Contactable && elem.md5 === 'ntptt') {
-              url = await (pair.qq as any).getPttUrl(elem);
+              try {
+                url = await (pair.qq as any).getPttUrl(elem);
+              }
+              catch {}
             }
             else if (!url && this.oicq instanceof OicqClient) {
-              const refetchMessage = await this.oicq.oicq.getMsg(event.messageId);
-              url = (refetchMessage.message.find(it => it.type === 'record') as PttElem).url;
+              try {
+                const refetchMessage = await this.oicq.oicq.getMsg(event.messageId);
+                url = (refetchMessage.message.find(it => it.type === 'record') as PttElem)?.url;
+              }
+              catch {}
             }
-            if (url) {
-              let bufSilk: Buffer;
-              if (this.oicq instanceof NapCatClient) {
-                const ret = await this.oicq.callApi('download_file', { url });
-                bufSilk = await fsP.readFile(ret.file);
-                fsP.unlink(ret.file);
+
+            if (!bufAudio && url) {
+              try {
+                if (this.oicq instanceof NapCatClient) {
+                  const ret = await this.oicq.callApi('download_file', { url });
+                  if (ret && ret.file && fs.existsSync(ret.file)) {
+                    bufAudio = await fsP.readFile(ret.file);
+                    fsP.unlink(ret.file).catch(() => {});
+                  }
+                }
+                else {
+                  bufAudio = await fetchFile(url);
+                }
+              }
+              catch (e) {
+                this.log.warn('通过 URL 下载语音失败', e);
+              }
+            }
+
+            // 3. NapCat 特有：通过 get_record 获取/转码语音
+            if (!bufAudio && this.oicq instanceof NapCatClient) {
+              const fileKey = elem.file || (elem as any).file_id || (elem as any).path;
+              if (fileKey) {
+                try {
+                  const ret: any = await this.oicq.callApi('get_record' as any, {
+                    file: fileKey,
+                    file_id: fileKey,
+                    out_format: 'mp3',
+                  });
+                  if (ret) {
+                    if (ret.base64) {
+                      bufAudio = Buffer.from(ret.base64, 'base64');
+                    }
+                    else if (ret.url && ret.url.startsWith('http')) {
+                      bufAudio = await fetchFile(ret.url);
+                    }
+                    else if (ret.file && fs.existsSync(ret.file)) {
+                      bufAudio = await fsP.readFile(ret.file);
+                    }
+                  }
+                }
+                catch (e) {
+                  this.log.warn('NapCat get_record 失败，尝试 get_file', e);
+                  try {
+                    const ret: any = await this.oicq.callApi('get_file' as any, {
+                      file_id: fileKey,
+                    });
+                    if (ret) {
+                      if (ret.base64) {
+                        bufAudio = Buffer.from(ret.base64, 'base64');
+                      }
+                      else if (ret.url && ret.url.startsWith('http')) {
+                        bufAudio = await fetchFile(ret.url);
+                      }
+                      else if (ret.file && fs.existsSync(ret.file)) {
+                        bufAudio = await fsP.readFile(ret.file);
+                      }
+                    }
+                  }
+                  catch (e2) {
+                    this.log.error('NapCat 获取语音文件失败', e2);
+                  }
+                }
+              }
+            }
+
+            if (bufAudio && bufAudio.length > 0) {
+              const tempOgg = await createTempFile({ postfix: '.ogg' });
+              tempFiles.push(tempOgg);
+
+              let decoded = false;
+              if (silk.isSilk(bufAudio)) {
+                try {
+                  await silk.decode(bufAudio, tempOgg.path);
+                  decoded = true;
+                }
+                catch (err) {
+                  this.log.warn('silk 解码失败，尝试通过 ffmpeg 转换', err);
+                }
+              }
+
+              if (!decoded) {
+                // 如果不是 Silk 或者已经是 NapCat 转码的音频，使用 ffmpeg 转换为 Telegram Voice (Ogg Opus)
+                const rawTemp = await createTempFile({ postfix: '.tmp' });
+                tempFiles.push(rawTemp);
+                await fsP.writeFile(rawTemp.path, bufAudio);
+                try {
+                  await silk.convertToVoiceOgg(rawTemp.path, tempOgg.path);
+                  decoded = true;
+                }
+                catch (err) {
+                  this.log.error('音频转码为 Telegram Voice (OGG Opus) 失败', err);
+                }
+              }
+
+              if (decoded) {
+                files.push(tempOgg.path);
+                isVoiceNote = true;
+                voiceDuration = audioDuration;
+                forceDocument = false;
               }
               else {
-                bufSilk = await fetchFile(url);
+                message += '<i>[语音(解码失败)]</i>';
               }
-              const temp = await createTempFile({ postfix: '.ogg' });
-              tempFiles.push(temp);
-              await silk.decode(bufSilk, temp.path);
-              files.push(temp.path);
             }
             else {
               message += '<i>[语音]</i>';
@@ -611,6 +748,13 @@ export default class ForwardService {
       messageToSend.linkPreview = false;
       if (files.length === 1) {
         messageToSend.file = files[0];
+        if (isVoiceNote) {
+          messageToSend.attributes = [new Api.DocumentAttributeAudio({
+            voice: true,
+            duration: voiceDuration || 0,
+          })];
+          messageToSend.forceDocument = false as any;
+        }
       }
       else if (files.length) {
         messageToSend.file = files;
@@ -837,14 +981,29 @@ export default class ForwardService {
         brief += '[贴纸]';
       }
       else if (message.voice) {
-        const temp = await createTempFile();
+        const temp = await createTempFile({ postfix: '.ogg' });
         tempFiles.push(temp);
         await message.downloadMedia({ outputFile: temp.path });
-        if (this.oicq instanceof OicqClient) {
-          const bufSilk = await silk.encode(temp.path);
-          chain.push(segment.record(bufSilk));
+        let bufSilk: Buffer | undefined;
+        try {
+          bufSilk = await silk.encode(temp.path);
         }
-        else if (this.oicq instanceof NapCatClient) {
+        catch (e) {
+          this.log.warn('silk 编码失败，将尝试直接/转码发送音频', e);
+        }
+
+        if (bufSilk) {
+          if (this.oicq instanceof NapCatClient) {
+            const silkFile = await createTempFile({ postfix: '.silk' });
+            tempFiles.push(silkFile);
+            await fsP.writeFile(silkFile.path, bufSilk);
+            chain.push(segment.record(silkFile.path));
+          }
+          else {
+            chain.push(segment.record(bufSilk));
+          }
+        }
+        else {
           chain.push(segment.record(temp.path));
         }
         brief += '[语音]';

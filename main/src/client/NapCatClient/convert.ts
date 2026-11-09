@@ -45,14 +45,15 @@ export const messageElemToNapCatSendable = async (elem: SendableElem): Promise<{
     case 'record':
     case 'video':
       const tempFiles: FileResult[] = [];
+      const mediaPostfix = elem.type === 'record' ? '.silk' : (elem.type === 'image' ? '.png' : '.tmp');
       if (Buffer.isBuffer(elem.file)) {
-        const file = await createTempFile({ postfix: '.tmp' });
+        const file = await createTempFile({ postfix: mediaPostfix });
         tempFiles.push(file);
         await fsP.writeFile(file.path, elem.file);
         elem.file = file.path;
       }
       else if (typeof elem.file === 'object' && 'pipe' in elem.file) {
-        const file = await createTempFile({ postfix: '.tmp' });
+        const file = await createTempFile({ postfix: mediaPostfix });
         tempFiles.push(file);
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(file.path);
@@ -184,8 +185,10 @@ export const napCatReceiveToMessageElem = (data: Receive[keyof Receive]): Messag
     case 'forward':
       return {
         type: 'forward',
-        id: data.data.id as any,
-        content: 'content' in data.data ? napCatForwardMultiple(data.data.content as any) : undefined,
+        id: (data.data as any).id || (data.data as any).res_id || (data.data as any).resid || '',
+        content: 'content' in data.data && Array.isArray((data.data as any).content)
+          ? napCatForwardMultiple((data.data as any).content)
+          : undefined,
       };
     case 'reply':
       return {
@@ -197,12 +200,12 @@ export const napCatReceiveToMessageElem = (data: Receive[keyof Receive]): Messag
   }
 };
 
-export const napCatForwardMultiple = (messages: WSSendReturn['get_forward_msg']['messages']): ForwardMessage[] => messages.map(it => ({
+export const napCatForwardMultiple = (messages: WSSendReturn['get_forward_msg']['messages']): ForwardMessage[] => (messages || []).map(it => ({
   group_id: it.message_type === 'group' ? it.group_id : undefined,
-  nickname: it.sender.card || it.sender.nickname,
-  time: it.time,
-  user_id: it.sender.user_id,
-  seq: it.message_id,
-  raw_message: it.raw_message,
-  message: ((it as any).content || (it as any).message).map(napCatReceiveToMessageElem),
+  nickname: it.sender?.card || it.sender?.nickname || 'QQ用户',
+  time: it.time || 0,
+  user_id: it.sender?.user_id || 0,
+  seq: it.message_id || 0,
+  raw_message: it.raw_message || '',
+  message: ((it as any).content || (it as any).message || []).map(napCatReceiveToMessageElem),
 }));

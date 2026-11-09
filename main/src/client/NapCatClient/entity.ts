@@ -38,9 +38,19 @@ export abstract class NapCatEntity implements QQEntity {
   abstract dm: boolean;
 
   async getForwardMsg(resid: string, fileName?: string) {
-    // @ts-ignore
-    const data = await this.client.callApi('get_forward_msg', { message_id: resid });
-    return napCatForwardMultiple(data.messages);
+    try {
+      // OneBot 11 与 NapCat 兼容参数: id, message_id, messager_id
+      const data = await this.client.callApi('get_forward_msg', {
+        message_id: resid,
+        id: resid,
+        messager_id: resid,
+      } as any);
+      return napCatForwardMultiple(data?.messages || []);
+    }
+    catch (e) {
+      this.logger.error('NapCat get_forward_msg 失败', e);
+      return [];
+    }
   }
 
   async getVideoUrl(fid: string, md5?: string | Buffer): Promise<string> {

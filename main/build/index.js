@@ -2225,54 +2225,54 @@ var require_polyfills = __commonJS({
     }
     var chdir;
     module2.exports = patch;
-    function patch(fs7) {
+    function patch(fs8) {
       if (constants.hasOwnProperty("O_SYMLINK") && process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
-        patchLchmod(fs7);
+        patchLchmod(fs8);
       }
-      if (!fs7.lutimes) {
-        patchLutimes(fs7);
+      if (!fs8.lutimes) {
+        patchLutimes(fs8);
       }
-      fs7.chown = chownFix(fs7.chown);
-      fs7.fchown = chownFix(fs7.fchown);
-      fs7.lchown = chownFix(fs7.lchown);
-      fs7.chmod = chmodFix(fs7.chmod);
-      fs7.fchmod = chmodFix(fs7.fchmod);
-      fs7.lchmod = chmodFix(fs7.lchmod);
-      fs7.chownSync = chownFixSync(fs7.chownSync);
-      fs7.fchownSync = chownFixSync(fs7.fchownSync);
-      fs7.lchownSync = chownFixSync(fs7.lchownSync);
-      fs7.chmodSync = chmodFixSync(fs7.chmodSync);
-      fs7.fchmodSync = chmodFixSync(fs7.fchmodSync);
-      fs7.lchmodSync = chmodFixSync(fs7.lchmodSync);
-      fs7.stat = statFix(fs7.stat);
-      fs7.fstat = statFix(fs7.fstat);
-      fs7.lstat = statFix(fs7.lstat);
-      fs7.statSync = statFixSync(fs7.statSync);
-      fs7.fstatSync = statFixSync(fs7.fstatSync);
-      fs7.lstatSync = statFixSync(fs7.lstatSync);
-      if (fs7.chmod && !fs7.lchmod) {
-        fs7.lchmod = function(path8, mode, cb) {
+      fs8.chown = chownFix(fs8.chown);
+      fs8.fchown = chownFix(fs8.fchown);
+      fs8.lchown = chownFix(fs8.lchown);
+      fs8.chmod = chmodFix(fs8.chmod);
+      fs8.fchmod = chmodFix(fs8.fchmod);
+      fs8.lchmod = chmodFix(fs8.lchmod);
+      fs8.chownSync = chownFixSync(fs8.chownSync);
+      fs8.fchownSync = chownFixSync(fs8.fchownSync);
+      fs8.lchownSync = chownFixSync(fs8.lchownSync);
+      fs8.chmodSync = chmodFixSync(fs8.chmodSync);
+      fs8.fchmodSync = chmodFixSync(fs8.fchmodSync);
+      fs8.lchmodSync = chmodFixSync(fs8.lchmodSync);
+      fs8.stat = statFix(fs8.stat);
+      fs8.fstat = statFix(fs8.fstat);
+      fs8.lstat = statFix(fs8.lstat);
+      fs8.statSync = statFixSync(fs8.statSync);
+      fs8.fstatSync = statFixSync(fs8.fstatSync);
+      fs8.lstatSync = statFixSync(fs8.lstatSync);
+      if (fs8.chmod && !fs8.lchmod) {
+        fs8.lchmod = function(path8, mode, cb) {
           if (cb) process.nextTick(cb);
         };
-        fs7.lchmodSync = function() {
+        fs8.lchmodSync = function() {
         };
       }
-      if (fs7.chown && !fs7.lchown) {
-        fs7.lchown = function(path8, uid, gid, cb) {
+      if (fs8.chown && !fs8.lchown) {
+        fs8.lchown = function(path8, uid, gid, cb) {
           if (cb) process.nextTick(cb);
         };
-        fs7.lchownSync = function() {
+        fs8.lchownSync = function() {
         };
       }
       if (platform === "win32") {
-        fs7.rename = typeof fs7.rename !== "function" ? fs7.rename : function(fs$rename) {
+        fs8.rename = typeof fs8.rename !== "function" ? fs8.rename : function(fs$rename) {
           function rename(from, to, cb) {
             var start = Date.now();
             var backoff = 0;
             fs$rename(from, to, function CB(er) {
               if (er && (er.code === "EACCES" || er.code === "EPERM" || er.code === "EBUSY") && Date.now() - start < 6e4) {
                 setTimeout(function() {
-                  fs7.stat(to, function(stater, st) {
+                  fs8.stat(to, function(stater, st) {
                     if (stater && stater.code === "ENOENT")
                       fs$rename(from, to, CB);
                     else
@@ -2288,9 +2288,9 @@ var require_polyfills = __commonJS({
           }
           if (Object.setPrototypeOf) Object.setPrototypeOf(rename, fs$rename);
           return rename;
-        }(fs7.rename);
+        }(fs8.rename);
       }
-      fs7.read = typeof fs7.read !== "function" ? fs7.read : function(fs$read) {
+      fs8.read = typeof fs8.read !== "function" ? fs8.read : function(fs$read) {
         function read2(fd, buffer, offset, length, position, callback_) {
           var callback;
           if (callback_ && typeof callback_ === "function") {
@@ -2298,22 +2298,22 @@ var require_polyfills = __commonJS({
             callback = function(er, _2, __) {
               if (er && er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
-                return fs$read.call(fs7, fd, buffer, offset, length, position, callback);
+                return fs$read.call(fs8, fd, buffer, offset, length, position, callback);
               }
               callback_.apply(this, arguments);
             };
           }
-          return fs$read.call(fs7, fd, buffer, offset, length, position, callback);
+          return fs$read.call(fs8, fd, buffer, offset, length, position, callback);
         }
         if (Object.setPrototypeOf) Object.setPrototypeOf(read2, fs$read);
         return read2;
-      }(fs7.read);
-      fs7.readSync = typeof fs7.readSync !== "function" ? fs7.readSync : /* @__PURE__ */ function(fs$readSync) {
+      }(fs8.read);
+      fs8.readSync = typeof fs8.readSync !== "function" ? fs8.readSync : /* @__PURE__ */ function(fs$readSync) {
         return function(fd, buffer, offset, length, position) {
           var eagCounter = 0;
           while (true) {
             try {
-              return fs$readSync.call(fs7, fd, buffer, offset, length, position);
+              return fs$readSync.call(fs8, fd, buffer, offset, length, position);
             } catch (er) {
               if (er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
@@ -2323,10 +2323,10 @@ var require_polyfills = __commonJS({
             }
           }
         };
-      }(fs7.readSync);
-      function patchLchmod(fs8) {
-        fs8.lchmod = function(path8, mode, callback) {
-          fs8.open(
+      }(fs8.readSync);
+      function patchLchmod(fs9) {
+        fs9.lchmod = function(path8, mode, callback) {
+          fs9.open(
             path8,
             constants.O_WRONLY | constants.O_SYMLINK,
             mode,
@@ -2335,80 +2335,80 @@ var require_polyfills = __commonJS({
                 if (callback) callback(err);
                 return;
               }
-              fs8.fchmod(fd, mode, function(err2) {
-                fs8.close(fd, function(err22) {
+              fs9.fchmod(fd, mode, function(err2) {
+                fs9.close(fd, function(err22) {
                   if (callback) callback(err2 || err22);
                 });
               });
             }
           );
         };
-        fs8.lchmodSync = function(path8, mode) {
-          var fd = fs8.openSync(path8, constants.O_WRONLY | constants.O_SYMLINK, mode);
+        fs9.lchmodSync = function(path8, mode) {
+          var fd = fs9.openSync(path8, constants.O_WRONLY | constants.O_SYMLINK, mode);
           var threw = true;
           var ret;
           try {
-            ret = fs8.fchmodSync(fd, mode);
+            ret = fs9.fchmodSync(fd, mode);
             threw = false;
           } finally {
             if (threw) {
               try {
-                fs8.closeSync(fd);
+                fs9.closeSync(fd);
               } catch (er) {
               }
             } else {
-              fs8.closeSync(fd);
+              fs9.closeSync(fd);
             }
           }
           return ret;
         };
       }
-      function patchLutimes(fs8) {
-        if (constants.hasOwnProperty("O_SYMLINK") && fs8.futimes) {
-          fs8.lutimes = function(path8, at, mt, cb) {
-            fs8.open(path8, constants.O_SYMLINK, function(er, fd) {
+      function patchLutimes(fs9) {
+        if (constants.hasOwnProperty("O_SYMLINK") && fs9.futimes) {
+          fs9.lutimes = function(path8, at, mt, cb) {
+            fs9.open(path8, constants.O_SYMLINK, function(er, fd) {
               if (er) {
                 if (cb) cb(er);
                 return;
               }
-              fs8.futimes(fd, at, mt, function(er2) {
-                fs8.close(fd, function(er22) {
+              fs9.futimes(fd, at, mt, function(er2) {
+                fs9.close(fd, function(er22) {
                   if (cb) cb(er2 || er22);
                 });
               });
             });
           };
-          fs8.lutimesSync = function(path8, at, mt) {
-            var fd = fs8.openSync(path8, constants.O_SYMLINK);
+          fs9.lutimesSync = function(path8, at, mt) {
+            var fd = fs9.openSync(path8, constants.O_SYMLINK);
             var ret;
             var threw = true;
             try {
-              ret = fs8.futimesSync(fd, at, mt);
+              ret = fs9.futimesSync(fd, at, mt);
               threw = false;
             } finally {
               if (threw) {
                 try {
-                  fs8.closeSync(fd);
+                  fs9.closeSync(fd);
                 } catch (er) {
                 }
               } else {
-                fs8.closeSync(fd);
+                fs9.closeSync(fd);
               }
             }
             return ret;
           };
-        } else if (fs8.futimes) {
-          fs8.lutimes = function(_a, _b, _c, cb) {
+        } else if (fs9.futimes) {
+          fs9.lutimes = function(_a, _b, _c, cb) {
             if (cb) process.nextTick(cb);
           };
-          fs8.lutimesSync = function() {
+          fs9.lutimesSync = function() {
           };
         }
       }
       function chmodFix(orig) {
         if (!orig) return orig;
         return function(target, mode, cb) {
-          return orig.call(fs7, target, mode, function(er) {
+          return orig.call(fs8, target, mode, function(er) {
             if (chownErOk(er)) er = null;
             if (cb) cb.apply(this, arguments);
           });
@@ -2418,7 +2418,7 @@ var require_polyfills = __commonJS({
         if (!orig) return orig;
         return function(target, mode) {
           try {
-            return orig.call(fs7, target, mode);
+            return orig.call(fs8, target, mode);
           } catch (er) {
             if (!chownErOk(er)) throw er;
           }
@@ -2427,7 +2427,7 @@ var require_polyfills = __commonJS({
       function chownFix(orig) {
         if (!orig) return orig;
         return function(target, uid, gid, cb) {
-          return orig.call(fs7, target, uid, gid, function(er) {
+          return orig.call(fs8, target, uid, gid, function(er) {
             if (chownErOk(er)) er = null;
             if (cb) cb.apply(this, arguments);
           });
@@ -2437,7 +2437,7 @@ var require_polyfills = __commonJS({
         if (!orig) return orig;
         return function(target, uid, gid) {
           try {
-            return orig.call(fs7, target, uid, gid);
+            return orig.call(fs8, target, uid, gid);
           } catch (er) {
             if (!chownErOk(er)) throw er;
           }
@@ -2457,13 +2457,13 @@ var require_polyfills = __commonJS({
             }
             if (cb) cb.apply(this, arguments);
           }
-          return options ? orig.call(fs7, target, options, callback) : orig.call(fs7, target, callback);
+          return options ? orig.call(fs8, target, options, callback) : orig.call(fs8, target, callback);
         };
       }
       function statFixSync(orig) {
         if (!orig) return orig;
         return function(target, options) {
-          var stats = options ? orig.call(fs7, target, options) : orig.call(fs7, target);
+          var stats = options ? orig.call(fs8, target, options) : orig.call(fs8, target);
           if (stats) {
             if (stats.uid < 0) stats.uid += 4294967296;
             if (stats.gid < 0) stats.gid += 4294967296;
@@ -2492,7 +2492,7 @@ var require_legacy_streams = __commonJS({
   "../node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/legacy-streams.js"(exports2, module2) {
     var Stream = require("stream").Stream;
     module2.exports = legacy;
-    function legacy(fs7) {
+    function legacy(fs8) {
       return {
         ReadStream,
         WriteStream
@@ -2535,7 +2535,7 @@ var require_legacy_streams = __commonJS({
           });
           return;
         }
-        fs7.open(this.path, this.flags, this.mode, function(err, fd) {
+        fs8.open(this.path, this.flags, this.mode, function(err, fd) {
           if (err) {
             self2.emit("error", err);
             self2.readable = false;
@@ -2574,7 +2574,7 @@ var require_legacy_streams = __commonJS({
         this.busy = false;
         this._queue = [];
         if (this.fd === null) {
-          this._open = fs7.open;
+          this._open = fs8.open;
           this._queue.push([this._open, this.path, this.flags, this.mode, void 0]);
           this.flush();
         }
@@ -2609,7 +2609,7 @@ var require_clone = __commonJS({
 // ../node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/graceful-fs.js
 var require_graceful_fs = __commonJS({
   "../node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/graceful-fs.js"(exports2, module2) {
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var polyfills = require_polyfills();
     var legacy = require_legacy_streams();
     var clone = require_clone();
@@ -2641,12 +2641,12 @@ var require_graceful_fs = __commonJS({
         m = "GFS4: " + m.split(/\n/).join("\nGFS4: ");
         console.error(m);
       };
-    if (!fs7[gracefulQueue]) {
+    if (!fs8[gracefulQueue]) {
       queue = global[gracefulQueue] || [];
-      publishQueue(fs7, queue);
-      fs7.close = function(fs$close) {
+      publishQueue(fs8, queue);
+      fs8.close = function(fs$close) {
         function close(fd, cb) {
-          return fs$close.call(fs7, fd, function(err) {
+          return fs$close.call(fs8, fd, function(err) {
             if (!err) {
               resetQueue();
             }
@@ -2658,40 +2658,40 @@ var require_graceful_fs = __commonJS({
           value: fs$close
         });
         return close;
-      }(fs7.close);
-      fs7.closeSync = function(fs$closeSync) {
+      }(fs8.close);
+      fs8.closeSync = function(fs$closeSync) {
         function closeSync(fd) {
-          fs$closeSync.apply(fs7, arguments);
+          fs$closeSync.apply(fs8, arguments);
           resetQueue();
         }
         Object.defineProperty(closeSync, previousSymbol, {
           value: fs$closeSync
         });
         return closeSync;
-      }(fs7.closeSync);
+      }(fs8.closeSync);
       if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
         process.on("exit", function() {
-          debug(fs7[gracefulQueue]);
-          require("assert").equal(fs7[gracefulQueue].length, 0);
+          debug(fs8[gracefulQueue]);
+          require("assert").equal(fs8[gracefulQueue].length, 0);
         });
       }
     }
     var queue;
     if (!global[gracefulQueue]) {
-      publishQueue(global, fs7[gracefulQueue]);
+      publishQueue(global, fs8[gracefulQueue]);
     }
-    module2.exports = patch(clone(fs7));
-    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs7.__patched) {
-      module2.exports = patch(fs7);
-      fs7.__patched = true;
+    module2.exports = patch(clone(fs8));
+    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs8.__patched) {
+      module2.exports = patch(fs8);
+      fs8.__patched = true;
     }
-    function patch(fs8) {
-      polyfills(fs8);
-      fs8.gracefulify = patch;
-      fs8.createReadStream = createReadStream;
-      fs8.createWriteStream = createWriteStream;
-      var fs$readFile = fs8.readFile;
-      fs8.readFile = readFile;
+    function patch(fs9) {
+      polyfills(fs9);
+      fs9.gracefulify = patch;
+      fs9.createReadStream = createReadStream;
+      fs9.createWriteStream = createWriteStream;
+      var fs$readFile = fs9.readFile;
+      fs9.readFile = readFile;
       function readFile(path8, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -2707,8 +2707,8 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$writeFile = fs8.writeFile;
-      fs8.writeFile = writeFile;
+      var fs$writeFile = fs9.writeFile;
+      fs9.writeFile = writeFile;
       function writeFile(path8, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -2724,9 +2724,9 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$appendFile = fs8.appendFile;
+      var fs$appendFile = fs9.appendFile;
       if (fs$appendFile)
-        fs8.appendFile = appendFile;
+        fs9.appendFile = appendFile;
       function appendFile(path8, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -2742,9 +2742,9 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$copyFile = fs8.copyFile;
+      var fs$copyFile = fs9.copyFile;
       if (fs$copyFile)
-        fs8.copyFile = copyFile;
+        fs9.copyFile = copyFile;
       function copyFile(src, dest, flags2, cb) {
         if (typeof flags2 === "function") {
           cb = flags2;
@@ -2762,8 +2762,8 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$readdir = fs8.readdir;
-      fs8.readdir = readdir;
+      var fs$readdir = fs9.readdir;
+      fs9.readdir = readdir;
       var noReaddirOptionVersions = /^v[0-5]\./;
       function readdir(path8, options, cb) {
         if (typeof options === "function")
@@ -2804,21 +2804,21 @@ var require_graceful_fs = __commonJS({
         }
       }
       if (process.version.substr(0, 4) === "v0.8") {
-        var legStreams = legacy(fs8);
+        var legStreams = legacy(fs9);
         ReadStream = legStreams.ReadStream;
         WriteStream = legStreams.WriteStream;
       }
-      var fs$ReadStream = fs8.ReadStream;
+      var fs$ReadStream = fs9.ReadStream;
       if (fs$ReadStream) {
         ReadStream.prototype = Object.create(fs$ReadStream.prototype);
         ReadStream.prototype.open = ReadStream$open;
       }
-      var fs$WriteStream = fs8.WriteStream;
+      var fs$WriteStream = fs9.WriteStream;
       if (fs$WriteStream) {
         WriteStream.prototype = Object.create(fs$WriteStream.prototype);
         WriteStream.prototype.open = WriteStream$open;
       }
-      Object.defineProperty(fs8, "ReadStream", {
+      Object.defineProperty(fs9, "ReadStream", {
         get: function() {
           return ReadStream;
         },
@@ -2828,7 +2828,7 @@ var require_graceful_fs = __commonJS({
         enumerable: true,
         configurable: true
       });
-      Object.defineProperty(fs8, "WriteStream", {
+      Object.defineProperty(fs9, "WriteStream", {
         get: function() {
           return WriteStream;
         },
@@ -2839,7 +2839,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileReadStream = ReadStream;
-      Object.defineProperty(fs8, "FileReadStream", {
+      Object.defineProperty(fs9, "FileReadStream", {
         get: function() {
           return FileReadStream;
         },
@@ -2850,7 +2850,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileWriteStream = WriteStream;
-      Object.defineProperty(fs8, "FileWriteStream", {
+      Object.defineProperty(fs9, "FileWriteStream", {
         get: function() {
           return FileWriteStream;
         },
@@ -2899,13 +2899,13 @@ var require_graceful_fs = __commonJS({
         });
       }
       function createReadStream(path8, options) {
-        return new fs8.ReadStream(path8, options);
+        return new fs9.ReadStream(path8, options);
       }
       function createWriteStream(path8, options) {
-        return new fs8.WriteStream(path8, options);
+        return new fs9.WriteStream(path8, options);
       }
-      var fs$open = fs8.open;
-      fs8.open = open;
+      var fs$open = fs9.open;
+      fs9.open = open;
       function open(path8, flags2, mode, cb) {
         if (typeof mode === "function")
           cb = mode, mode = null;
@@ -2921,20 +2921,20 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      return fs8;
+      return fs9;
     }
     function enqueue(elem) {
       debug("ENQUEUE", elem[0].name, elem[1]);
-      fs7[gracefulQueue].push(elem);
+      fs8[gracefulQueue].push(elem);
       retry();
     }
     var retryTimer;
     function resetQueue() {
       var now = Date.now();
-      for (var i = 0; i < fs7[gracefulQueue].length; ++i) {
-        if (fs7[gracefulQueue][i].length > 2) {
-          fs7[gracefulQueue][i][3] = now;
-          fs7[gracefulQueue][i][4] = now;
+      for (var i = 0; i < fs8[gracefulQueue].length; ++i) {
+        if (fs8[gracefulQueue][i].length > 2) {
+          fs8[gracefulQueue][i][3] = now;
+          fs8[gracefulQueue][i][4] = now;
         }
       }
       retry();
@@ -2942,9 +2942,9 @@ var require_graceful_fs = __commonJS({
     function retry() {
       clearTimeout(retryTimer);
       retryTimer = void 0;
-      if (fs7[gracefulQueue].length === 0)
+      if (fs8[gracefulQueue].length === 0)
         return;
-      var elem = fs7[gracefulQueue].shift();
+      var elem = fs8[gracefulQueue].shift();
       var fn = elem[0];
       var args = elem[1];
       var err = elem[2];
@@ -2966,7 +2966,7 @@ var require_graceful_fs = __commonJS({
           debug("RETRY", fn.name, args);
           fn.apply(null, args.concat([startTime]));
         } else {
-          fs7[gracefulQueue].push(elem);
+          fs8[gracefulQueue].push(elem);
         }
       }
       if (retryTimer === void 0) {
@@ -2981,7 +2981,7 @@ var require_fs = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/fs/index.js"(exports2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var api = [
       "access",
       "appendFile",
@@ -3016,31 +3016,31 @@ var require_fs = __commonJS({
       "utimes",
       "writeFile"
     ].filter((key) => {
-      return typeof fs7[key] === "function";
+      return typeof fs8[key] === "function";
     });
-    Object.keys(fs7).forEach((key) => {
+    Object.keys(fs8).forEach((key) => {
       if (key === "promises") {
         return;
       }
-      exports2[key] = fs7[key];
+      exports2[key] = fs8[key];
     });
     api.forEach((method) => {
-      exports2[method] = u(fs7[method]);
+      exports2[method] = u(fs8[method]);
     });
     exports2.exists = function(filename, callback) {
       if (typeof callback === "function") {
-        return fs7.exists(filename, callback);
+        return fs8.exists(filename, callback);
       }
       return new Promise((resolve) => {
-        return fs7.exists(filename, resolve);
+        return fs8.exists(filename, resolve);
       });
     };
     exports2.read = function(fd, buffer, offset, length, position, callback) {
       if (typeof callback === "function") {
-        return fs7.read(fd, buffer, offset, length, position, callback);
+        return fs8.read(fd, buffer, offset, length, position, callback);
       }
       return new Promise((resolve, reject) => {
-        fs7.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
+        fs8.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
           if (err) return reject(err);
           resolve({ bytesRead, buffer: buffer2 });
         });
@@ -3048,17 +3048,17 @@ var require_fs = __commonJS({
     };
     exports2.write = function(fd, buffer, ...args) {
       if (typeof args[args.length - 1] === "function") {
-        return fs7.write(fd, buffer, ...args);
+        return fs8.write(fd, buffer, ...args);
       }
       return new Promise((resolve, reject) => {
-        fs7.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
+        fs8.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
           if (err) return reject(err);
           resolve({ bytesWritten, buffer: buffer2 });
         });
       });
     };
-    if (typeof fs7.realpath.native === "function") {
-      exports2.realpath.native = u(fs7.realpath.native);
+    if (typeof fs8.realpath.native === "function") {
+      exports2.realpath.native = u(fs8.realpath.native);
     }
   }
 });
@@ -3090,7 +3090,7 @@ var require_win32 = __commonJS({
 var require_mkdirs = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/mkdirs/mkdirs.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var invalidWin32Path = require_win32().invalidWin32Path;
     var o777 = parseInt("0777", 8);
@@ -3107,7 +3107,7 @@ var require_mkdirs = __commonJS({
         return callback(errInval);
       }
       let mode = opts.mode;
-      const xfs = opts.fs || fs7;
+      const xfs = opts.fs || fs8;
       if (mode === void 0) {
         mode = o777 & ~process.umask();
       }
@@ -3148,7 +3148,7 @@ var require_mkdirs = __commonJS({
 var require_mkdirs_sync = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/mkdirs/mkdirs-sync.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var invalidWin32Path = require_win32().invalidWin32Path;
     var o777 = parseInt("0777", 8);
@@ -3157,7 +3157,7 @@ var require_mkdirs_sync = __commonJS({
         opts = { mode: opts };
       }
       let mode = opts.mode;
-      const xfs = opts.fs || fs7;
+      const xfs = opts.fs || fs8;
       if (process.platform === "win32" && invalidWin32Path(p)) {
         const errInval = new Error(p + " contains invalid WIN32 path characters.");
         errInval.code = "EINVAL";
@@ -3215,32 +3215,32 @@ var require_mkdirs2 = __commonJS({
 var require_utimes = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/util/utimes.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var os4 = require("os");
     var path8 = require("path");
     function hasMillisResSync() {
       let tmpfile = path8.join("millis-test-sync" + Date.now().toString() + Math.random().toString().slice(2));
       tmpfile = path8.join(os4.tmpdir(), tmpfile);
       const d = /* @__PURE__ */ new Date(1435410243862);
-      fs7.writeFileSync(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141");
-      const fd = fs7.openSync(tmpfile, "r+");
-      fs7.futimesSync(fd, d, d);
-      fs7.closeSync(fd);
-      return fs7.statSync(tmpfile).mtime > 1435410243e3;
+      fs8.writeFileSync(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141");
+      const fd = fs8.openSync(tmpfile, "r+");
+      fs8.futimesSync(fd, d, d);
+      fs8.closeSync(fd);
+      return fs8.statSync(tmpfile).mtime > 1435410243e3;
     }
     function hasMillisRes(callback) {
       let tmpfile = path8.join("millis-test" + Date.now().toString() + Math.random().toString().slice(2));
       tmpfile = path8.join(os4.tmpdir(), tmpfile);
       const d = /* @__PURE__ */ new Date(1435410243862);
-      fs7.writeFile(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141", (err) => {
+      fs8.writeFile(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141", (err) => {
         if (err) return callback(err);
-        fs7.open(tmpfile, "r+", (err2, fd) => {
+        fs8.open(tmpfile, "r+", (err2, fd) => {
           if (err2) return callback(err2);
-          fs7.futimes(fd, d, d, (err3) => {
+          fs8.futimes(fd, d, d, (err3) => {
             if (err3) return callback(err3);
-            fs7.close(fd, (err4) => {
+            fs8.close(fd, (err4) => {
               if (err4) return callback(err4);
-              fs7.stat(tmpfile, (err5, stats) => {
+              fs8.stat(tmpfile, (err5, stats) => {
                 if (err5) return callback(err5);
                 callback(null, stats.mtime > 1435410243e3);
               });
@@ -3259,19 +3259,19 @@ var require_utimes = __commonJS({
       }
     }
     function utimesMillis(path9, atime, mtime, callback) {
-      fs7.open(path9, "r+", (err, fd) => {
+      fs8.open(path9, "r+", (err, fd) => {
         if (err) return callback(err);
-        fs7.futimes(fd, atime, mtime, (futimesErr) => {
-          fs7.close(fd, (closeErr) => {
+        fs8.futimes(fd, atime, mtime, (futimesErr) => {
+          fs8.close(fd, (closeErr) => {
             if (callback) callback(futimesErr || closeErr);
           });
         });
       });
     }
     function utimesMillisSync(path9, atime, mtime) {
-      const fd = fs7.openSync(path9, "r+");
-      fs7.futimesSync(fd, atime, mtime);
-      return fs7.closeSync(fd);
+      const fd = fs8.openSync(path9, "r+");
+      fs8.futimesSync(fd, atime, mtime);
+      return fs8.closeSync(fd);
     }
     module2.exports = {
       hasMillisRes,
@@ -3287,7 +3287,7 @@ var require_utimes = __commonJS({
 var require_stat = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/util/stat.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var NODE_VERSION_MAJOR_WITH_BIGINT = 10;
     var NODE_VERSION_MINOR_WITH_BIGINT = 5;
@@ -3312,9 +3312,9 @@ var require_stat = __commonJS({
     }
     function getStats(src, dest, cb) {
       if (nodeSupportsBigInt()) {
-        fs7.stat(src, { bigint: true }, (err, srcStat) => {
+        fs8.stat(src, { bigint: true }, (err, srcStat) => {
           if (err) return cb(err);
-          fs7.stat(dest, { bigint: true }, (err2, destStat) => {
+          fs8.stat(dest, { bigint: true }, (err2, destStat) => {
             if (err2) {
               if (err2.code === "ENOENT") return cb(null, { srcStat, destStat: null });
               return cb(err2);
@@ -3323,9 +3323,9 @@ var require_stat = __commonJS({
           });
         });
       } else {
-        fs7.stat(src, (err, srcStat) => {
+        fs8.stat(src, (err, srcStat) => {
           if (err) return cb(err);
-          fs7.stat(dest, (err2, destStat) => {
+          fs8.stat(dest, (err2, destStat) => {
             if (err2) {
               if (err2.code === "ENOENT") return cb(null, { srcStat, destStat: null });
               return cb(err2);
@@ -3338,15 +3338,15 @@ var require_stat = __commonJS({
     function getStatsSync(src, dest) {
       let srcStat, destStat;
       if (nodeSupportsBigInt()) {
-        srcStat = fs7.statSync(src, { bigint: true });
+        srcStat = fs8.statSync(src, { bigint: true });
       } else {
-        srcStat = fs7.statSync(src);
+        srcStat = fs8.statSync(src);
       }
       try {
         if (nodeSupportsBigInt()) {
-          destStat = fs7.statSync(dest, { bigint: true });
+          destStat = fs8.statSync(dest, { bigint: true });
         } else {
-          destStat = fs7.statSync(dest);
+          destStat = fs8.statSync(dest);
         }
       } catch (err) {
         if (err.code === "ENOENT") return { srcStat, destStat: null };
@@ -3382,7 +3382,7 @@ var require_stat = __commonJS({
       const destParent = path8.resolve(path8.dirname(dest));
       if (destParent === srcParent || destParent === path8.parse(destParent).root) return cb();
       if (nodeSupportsBigInt()) {
-        fs7.stat(destParent, { bigint: true }, (err, destStat) => {
+        fs8.stat(destParent, { bigint: true }, (err, destStat) => {
           if (err) {
             if (err.code === "ENOENT") return cb();
             return cb(err);
@@ -3393,7 +3393,7 @@ var require_stat = __commonJS({
           return checkParentPaths(src, srcStat, destParent, funcName, cb);
         });
       } else {
-        fs7.stat(destParent, (err, destStat) => {
+        fs8.stat(destParent, (err, destStat) => {
           if (err) {
             if (err.code === "ENOENT") return cb();
             return cb(err);
@@ -3412,9 +3412,9 @@ var require_stat = __commonJS({
       let destStat;
       try {
         if (nodeSupportsBigInt()) {
-          destStat = fs7.statSync(destParent, { bigint: true });
+          destStat = fs8.statSync(destParent, { bigint: true });
         } else {
-          destStat = fs7.statSync(destParent);
+          destStat = fs8.statSync(destParent);
         }
       } catch (err) {
         if (err.code === "ENOENT") return;
@@ -3464,7 +3464,7 @@ var require_buffer = __commonJS({
 var require_copy_sync = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/copy-sync/copy-sync.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var mkdirpSync = require_mkdirs2().mkdirsSync;
     var utimesSync = require_utimes().utimesMillisSync;
@@ -3488,7 +3488,7 @@ var require_copy_sync = __commonJS({
     function handleFilterAndCopy(destStat, src, dest, opts) {
       if (opts.filter && !opts.filter(src, dest)) return;
       const destParent = path8.dirname(dest);
-      if (!fs7.existsSync(destParent)) mkdirpSync(destParent);
+      if (!fs8.existsSync(destParent)) mkdirpSync(destParent);
       return startCopy(destStat, src, dest, opts);
     }
     function startCopy(destStat, src, dest, opts) {
@@ -3496,7 +3496,7 @@ var require_copy_sync = __commonJS({
       return getStats(destStat, src, dest, opts);
     }
     function getStats(destStat, src, dest, opts) {
-      const statSync = opts.dereference ? fs7.statSync : fs7.lstatSync;
+      const statSync = opts.dereference ? fs8.statSync : fs8.lstatSync;
       const srcStat = statSync(src);
       if (srcStat.isDirectory()) return onDir(srcStat, destStat, src, dest, opts);
       else if (srcStat.isFile() || srcStat.isCharacterDevice() || srcStat.isBlockDevice()) return onFile(srcStat, destStat, src, dest, opts);
@@ -3508,16 +3508,16 @@ var require_copy_sync = __commonJS({
     }
     function mayCopyFile(srcStat, src, dest, opts) {
       if (opts.overwrite) {
-        fs7.unlinkSync(dest);
+        fs8.unlinkSync(dest);
         return copyFile(srcStat, src, dest, opts);
       } else if (opts.errorOnExist) {
         throw new Error(`'${dest}' already exists`);
       }
     }
     function copyFile(srcStat, src, dest, opts) {
-      if (typeof fs7.copyFileSync === "function") {
-        fs7.copyFileSync(src, dest);
-        fs7.chmodSync(dest, srcStat.mode);
+      if (typeof fs8.copyFileSync === "function") {
+        fs8.copyFileSync(src, dest);
+        fs8.chmodSync(dest, srcStat.mode);
         if (opts.preserveTimestamps) {
           return utimesSync(dest, srcStat.atime, srcStat.mtime);
         }
@@ -3528,17 +3528,17 @@ var require_copy_sync = __commonJS({
     function copyFileFallback(srcStat, src, dest, opts) {
       const BUF_LENGTH = 64 * 1024;
       const _buff = require_buffer()(BUF_LENGTH);
-      const fdr = fs7.openSync(src, "r");
-      const fdw = fs7.openSync(dest, "w", srcStat.mode);
+      const fdr = fs8.openSync(src, "r");
+      const fdw = fs8.openSync(dest, "w", srcStat.mode);
       let pos = 0;
       while (pos < srcStat.size) {
-        const bytesRead = fs7.readSync(fdr, _buff, 0, BUF_LENGTH, pos);
-        fs7.writeSync(fdw, _buff, 0, bytesRead);
+        const bytesRead = fs8.readSync(fdr, _buff, 0, BUF_LENGTH, pos);
+        fs8.writeSync(fdw, _buff, 0, bytesRead);
         pos += bytesRead;
       }
-      if (opts.preserveTimestamps) fs7.futimesSync(fdw, srcStat.atime, srcStat.mtime);
-      fs7.closeSync(fdr);
-      fs7.closeSync(fdw);
+      if (opts.preserveTimestamps) fs8.futimesSync(fdw, srcStat.atime, srcStat.mtime);
+      fs8.closeSync(fdr);
+      fs8.closeSync(fdw);
     }
     function onDir(srcStat, destStat, src, dest, opts) {
       if (!destStat) return mkDirAndCopy(srcStat, src, dest, opts);
@@ -3548,12 +3548,12 @@ var require_copy_sync = __commonJS({
       return copyDir(src, dest, opts);
     }
     function mkDirAndCopy(srcStat, src, dest, opts) {
-      fs7.mkdirSync(dest);
+      fs8.mkdirSync(dest);
       copyDir(src, dest, opts);
-      return fs7.chmodSync(dest, srcStat.mode);
+      return fs8.chmodSync(dest, srcStat.mode);
     }
     function copyDir(src, dest, opts) {
-      fs7.readdirSync(src).forEach((item) => copyDirItem(item, src, dest, opts));
+      fs8.readdirSync(src).forEach((item) => copyDirItem(item, src, dest, opts));
     }
     function copyDirItem(item, src, dest, opts) {
       const srcItem = path8.join(src, item);
@@ -3562,18 +3562,18 @@ var require_copy_sync = __commonJS({
       return startCopy(destStat, srcItem, destItem, opts);
     }
     function onLink(destStat, src, dest, opts) {
-      let resolvedSrc = fs7.readlinkSync(src);
+      let resolvedSrc = fs8.readlinkSync(src);
       if (opts.dereference) {
         resolvedSrc = path8.resolve(process.cwd(), resolvedSrc);
       }
       if (!destStat) {
-        return fs7.symlinkSync(resolvedSrc, dest);
+        return fs8.symlinkSync(resolvedSrc, dest);
       } else {
         let resolvedDest;
         try {
-          resolvedDest = fs7.readlinkSync(dest);
+          resolvedDest = fs8.readlinkSync(dest);
         } catch (err) {
-          if (err.code === "EINVAL" || err.code === "UNKNOWN") return fs7.symlinkSync(resolvedSrc, dest);
+          if (err.code === "EINVAL" || err.code === "UNKNOWN") return fs8.symlinkSync(resolvedSrc, dest);
           throw err;
         }
         if (opts.dereference) {
@@ -3582,15 +3582,15 @@ var require_copy_sync = __commonJS({
         if (stat.isSrcSubdir(resolvedSrc, resolvedDest)) {
           throw new Error(`Cannot copy '${resolvedSrc}' to a subdirectory of itself, '${resolvedDest}'.`);
         }
-        if (fs7.statSync(dest).isDirectory() && stat.isSrcSubdir(resolvedDest, resolvedSrc)) {
+        if (fs8.statSync(dest).isDirectory() && stat.isSrcSubdir(resolvedDest, resolvedSrc)) {
           throw new Error(`Cannot overwrite '${resolvedDest}' with '${resolvedSrc}'.`);
         }
         return copyLink(resolvedSrc, dest);
       }
     }
     function copyLink(resolvedSrc, dest) {
-      fs7.unlinkSync(dest);
-      return fs7.symlinkSync(resolvedSrc, dest);
+      fs8.unlinkSync(dest);
+      return fs8.symlinkSync(resolvedSrc, dest);
     }
     module2.exports = copySync;
   }
@@ -3611,13 +3611,13 @@ var require_path_exists = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/path-exists/index.js"(exports2, module2) {
     "use strict";
     var u = require_universalify().fromPromise;
-    var fs7 = require_fs();
+    var fs8 = require_fs();
     function pathExists(path8) {
-      return fs7.access(path8).then(() => true).catch(() => false);
+      return fs8.access(path8).then(() => true).catch(() => false);
     }
     module2.exports = {
       pathExists: u(pathExists),
-      pathExistsSync: fs7.existsSync
+      pathExistsSync: fs8.existsSync
     };
   }
 });
@@ -3626,7 +3626,7 @@ var require_path_exists = __commonJS({
 var require_copy = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/copy/copy.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var mkdirp = require_mkdirs2().mkdirs;
     var pathExists = require_path_exists().pathExists;
@@ -3681,7 +3681,7 @@ var require_copy = __commonJS({
       return getStats(destStat, src, dest, opts, cb);
     }
     function getStats(destStat, src, dest, opts, cb) {
-      const stat2 = opts.dereference ? fs7.stat : fs7.lstat;
+      const stat2 = opts.dereference ? fs8.stat : fs8.lstat;
       stat2(src, (err, srcStat) => {
         if (err) return cb(err);
         if (srcStat.isDirectory()) return onDir(srcStat, destStat, src, dest, opts, cb);
@@ -3695,7 +3695,7 @@ var require_copy = __commonJS({
     }
     function mayCopyFile(srcStat, src, dest, opts, cb) {
       if (opts.overwrite) {
-        fs7.unlink(dest, (err) => {
+        fs8.unlink(dest, (err) => {
           if (err) return cb(err);
           return copyFile(srcStat, src, dest, opts, cb);
         });
@@ -3704,8 +3704,8 @@ var require_copy = __commonJS({
       } else return cb();
     }
     function copyFile(srcStat, src, dest, opts, cb) {
-      if (typeof fs7.copyFile === "function") {
-        return fs7.copyFile(src, dest, (err) => {
+      if (typeof fs8.copyFile === "function") {
+        return fs8.copyFile(src, dest, (err) => {
           if (err) return cb(err);
           return setDestModeAndTimestamps(srcStat, dest, opts, cb);
         });
@@ -3713,14 +3713,14 @@ var require_copy = __commonJS({
       return copyFileFallback(srcStat, src, dest, opts, cb);
     }
     function copyFileFallback(srcStat, src, dest, opts, cb) {
-      const rs = fs7.createReadStream(src);
+      const rs = fs8.createReadStream(src);
       rs.on("error", (err) => cb(err)).once("open", () => {
-        const ws = fs7.createWriteStream(dest, { mode: srcStat.mode });
+        const ws = fs8.createWriteStream(dest, { mode: srcStat.mode });
         ws.on("error", (err) => cb(err)).on("open", () => rs.pipe(ws)).once("close", () => setDestModeAndTimestamps(srcStat, dest, opts, cb));
       });
     }
     function setDestModeAndTimestamps(srcStat, dest, opts, cb) {
-      fs7.chmod(dest, srcStat.mode, (err) => {
+      fs8.chmod(dest, srcStat.mode, (err) => {
         if (err) return cb(err);
         if (opts.preserveTimestamps) {
           return utimes(dest, srcStat.atime, srcStat.mtime, cb);
@@ -3736,16 +3736,16 @@ var require_copy = __commonJS({
       return copyDir(src, dest, opts, cb);
     }
     function mkDirAndCopy(srcStat, src, dest, opts, cb) {
-      fs7.mkdir(dest, (err) => {
+      fs8.mkdir(dest, (err) => {
         if (err) return cb(err);
         copyDir(src, dest, opts, (err2) => {
           if (err2) return cb(err2);
-          return fs7.chmod(dest, srcStat.mode, cb);
+          return fs8.chmod(dest, srcStat.mode, cb);
         });
       });
     }
     function copyDir(src, dest, opts, cb) {
-      fs7.readdir(src, (err, items) => {
+      fs8.readdir(src, (err, items) => {
         if (err) return cb(err);
         return copyDirItems(items, src, dest, opts, cb);
       });
@@ -3768,17 +3768,17 @@ var require_copy = __commonJS({
       });
     }
     function onLink(destStat, src, dest, opts, cb) {
-      fs7.readlink(src, (err, resolvedSrc) => {
+      fs8.readlink(src, (err, resolvedSrc) => {
         if (err) return cb(err);
         if (opts.dereference) {
           resolvedSrc = path8.resolve(process.cwd(), resolvedSrc);
         }
         if (!destStat) {
-          return fs7.symlink(resolvedSrc, dest, cb);
+          return fs8.symlink(resolvedSrc, dest, cb);
         } else {
-          fs7.readlink(dest, (err2, resolvedDest) => {
+          fs8.readlink(dest, (err2, resolvedDest) => {
             if (err2) {
-              if (err2.code === "EINVAL" || err2.code === "UNKNOWN") return fs7.symlink(resolvedSrc, dest, cb);
+              if (err2.code === "EINVAL" || err2.code === "UNKNOWN") return fs8.symlink(resolvedSrc, dest, cb);
               return cb(err2);
             }
             if (opts.dereference) {
@@ -3796,9 +3796,9 @@ var require_copy = __commonJS({
       });
     }
     function copyLink(resolvedSrc, dest, cb) {
-      fs7.unlink(dest, (err) => {
+      fs8.unlink(dest, (err) => {
         if (err) return cb(err);
-        return fs7.symlink(resolvedSrc, dest, cb);
+        return fs8.symlink(resolvedSrc, dest, cb);
       });
     }
     module2.exports = copy;
@@ -3820,7 +3820,7 @@ var require_copy2 = __commonJS({
 var require_rimraf = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/remove/rimraf.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var assert = require("assert");
     var isWindows = process.platform === "win32";
@@ -3834,9 +3834,9 @@ var require_rimraf = __commonJS({
         "readdir"
       ];
       methods.forEach((m) => {
-        options[m] = options[m] || fs7[m];
+        options[m] = options[m] || fs8[m];
         m = m + "Sync";
-        options[m] = options[m] || fs7[m];
+        options[m] = options[m] || fs8[m];
       });
       options.maxBusyTries = options.maxBusyTries || 3;
     }
@@ -4081,14 +4081,14 @@ var require_empty = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/empty/index.js"(exports2, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var mkdir = require_mkdirs2();
     var remove = require_remove();
     var emptyDir = u(function emptyDir2(dir, callback) {
       callback = callback || function() {
       };
-      fs7.readdir(dir, (err, items) => {
+      fs8.readdir(dir, (err, items) => {
         if (err) return mkdir.mkdirs(dir, callback);
         items = items.map((item) => path8.join(dir, item));
         deleteItem();
@@ -4105,7 +4105,7 @@ var require_empty = __commonJS({
     function emptyDirSync(dir) {
       let items;
       try {
-        items = fs7.readdirSync(dir);
+        items = fs8.readdirSync(dir);
       } catch (err) {
         return mkdir.mkdirsSync(dir);
       }
@@ -4129,17 +4129,17 @@ var require_file = __commonJS({
     "use strict";
     var u = require_universalify().fromCallback;
     var path8 = require("path");
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var mkdir = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     function createFile(file2, callback) {
       function makeFile() {
-        fs7.writeFile(file2, "", (err) => {
+        fs8.writeFile(file2, "", (err) => {
           if (err) return callback(err);
           callback();
         });
       }
-      fs7.stat(file2, (err, stats) => {
+      fs8.stat(file2, (err, stats) => {
         if (!err && stats.isFile()) return callback();
         const dir = path8.dirname(file2);
         pathExists(dir, (err2, dirExists) => {
@@ -4155,15 +4155,15 @@ var require_file = __commonJS({
     function createFileSync(file2) {
       let stats;
       try {
-        stats = fs7.statSync(file2);
+        stats = fs8.statSync(file2);
       } catch (e) {
       }
       if (stats && stats.isFile()) return;
       const dir = path8.dirname(file2);
-      if (!fs7.existsSync(dir)) {
+      if (!fs8.existsSync(dir)) {
         mkdir.mkdirsSync(dir);
       }
-      fs7.writeFileSync(file2, "");
+      fs8.writeFileSync(file2, "");
     }
     module2.exports = {
       createFile: u(createFile),
@@ -4178,12 +4178,12 @@ var require_link = __commonJS({
     "use strict";
     var u = require_universalify().fromCallback;
     var path8 = require("path");
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var mkdir = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     function createLink(srcpath, dstpath, callback) {
       function makeLink(srcpath2, dstpath2) {
-        fs7.link(srcpath2, dstpath2, (err) => {
+        fs8.link(srcpath2, dstpath2, (err) => {
           if (err) return callback(err);
           callback(null);
         });
@@ -4191,7 +4191,7 @@ var require_link = __commonJS({
       pathExists(dstpath, (err, destinationExists) => {
         if (err) return callback(err);
         if (destinationExists) return callback(null);
-        fs7.lstat(srcpath, (err2) => {
+        fs8.lstat(srcpath, (err2) => {
           if (err2) {
             err2.message = err2.message.replace("lstat", "ensureLink");
             return callback(err2);
@@ -4209,19 +4209,19 @@ var require_link = __commonJS({
       });
     }
     function createLinkSync(srcpath, dstpath) {
-      const destinationExists = fs7.existsSync(dstpath);
+      const destinationExists = fs8.existsSync(dstpath);
       if (destinationExists) return void 0;
       try {
-        fs7.lstatSync(srcpath);
+        fs8.lstatSync(srcpath);
       } catch (err) {
         err.message = err.message.replace("lstat", "ensureLink");
         throw err;
       }
       const dir = path8.dirname(dstpath);
-      const dirExists = fs7.existsSync(dir);
-      if (dirExists) return fs7.linkSync(srcpath, dstpath);
+      const dirExists = fs8.existsSync(dir);
+      if (dirExists) return fs8.linkSync(srcpath, dstpath);
       mkdir.mkdirsSync(dir);
-      return fs7.linkSync(srcpath, dstpath);
+      return fs8.linkSync(srcpath, dstpath);
     }
     module2.exports = {
       createLink: u(createLink),
@@ -4235,11 +4235,11 @@ var require_symlink_paths = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/ensure/symlink-paths.js"(exports2, module2) {
     "use strict";
     var path8 = require("path");
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var pathExists = require_path_exists().pathExists;
     function symlinkPaths(srcpath, dstpath, callback) {
       if (path8.isAbsolute(srcpath)) {
-        return fs7.lstat(srcpath, (err) => {
+        return fs8.lstat(srcpath, (err) => {
           if (err) {
             err.message = err.message.replace("lstat", "ensureSymlink");
             return callback(err);
@@ -4260,7 +4260,7 @@ var require_symlink_paths = __commonJS({
               "toDst": srcpath
             });
           } else {
-            return fs7.lstat(srcpath, (err2) => {
+            return fs8.lstat(srcpath, (err2) => {
               if (err2) {
                 err2.message = err2.message.replace("lstat", "ensureSymlink");
                 return callback(err2);
@@ -4277,7 +4277,7 @@ var require_symlink_paths = __commonJS({
     function symlinkPathsSync(srcpath, dstpath) {
       let exists;
       if (path8.isAbsolute(srcpath)) {
-        exists = fs7.existsSync(srcpath);
+        exists = fs8.existsSync(srcpath);
         if (!exists) throw new Error("absolute srcpath does not exist");
         return {
           "toCwd": srcpath,
@@ -4286,14 +4286,14 @@ var require_symlink_paths = __commonJS({
       } else {
         const dstdir = path8.dirname(dstpath);
         const relativeToDst = path8.join(dstdir, srcpath);
-        exists = fs7.existsSync(relativeToDst);
+        exists = fs8.existsSync(relativeToDst);
         if (exists) {
           return {
             "toCwd": relativeToDst,
             "toDst": srcpath
           };
         } else {
-          exists = fs7.existsSync(srcpath);
+          exists = fs8.existsSync(srcpath);
           if (!exists) throw new Error("relative srcpath does not exist");
           return {
             "toCwd": srcpath,
@@ -4313,12 +4313,12 @@ var require_symlink_paths = __commonJS({
 var require_symlink_type = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/ensure/symlink-type.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     function symlinkType(srcpath, type, callback) {
       callback = typeof type === "function" ? type : callback;
       type = typeof type === "function" ? false : type;
       if (type) return callback(null, type);
-      fs7.lstat(srcpath, (err, stats) => {
+      fs8.lstat(srcpath, (err, stats) => {
         if (err) return callback(null, "file");
         type = stats && stats.isDirectory() ? "dir" : "file";
         callback(null, type);
@@ -4328,7 +4328,7 @@ var require_symlink_type = __commonJS({
       let stats;
       if (type) return type;
       try {
-        stats = fs7.lstatSync(srcpath);
+        stats = fs8.lstatSync(srcpath);
       } catch (e) {
         return "file";
       }
@@ -4347,7 +4347,7 @@ var require_symlink = __commonJS({
     "use strict";
     var u = require_universalify().fromCallback;
     var path8 = require("path");
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var _mkdirs = require_mkdirs2();
     var mkdirs = _mkdirs.mkdirs;
     var mkdirsSync = _mkdirs.mkdirsSync;
@@ -4372,10 +4372,10 @@ var require_symlink = __commonJS({
             const dir = path8.dirname(dstpath);
             pathExists(dir, (err4, dirExists) => {
               if (err4) return callback(err4);
-              if (dirExists) return fs7.symlink(srcpath, dstpath, type2, callback);
+              if (dirExists) return fs8.symlink(srcpath, dstpath, type2, callback);
               mkdirs(dir, (err5) => {
                 if (err5) return callback(err5);
-                fs7.symlink(srcpath, dstpath, type2, callback);
+                fs8.symlink(srcpath, dstpath, type2, callback);
               });
             });
           });
@@ -4383,16 +4383,16 @@ var require_symlink = __commonJS({
       });
     }
     function createSymlinkSync(srcpath, dstpath, type) {
-      const destinationExists = fs7.existsSync(dstpath);
+      const destinationExists = fs8.existsSync(dstpath);
       if (destinationExists) return void 0;
       const relative = symlinkPathsSync(srcpath, dstpath);
       srcpath = relative.toDst;
       type = symlinkTypeSync(relative.toCwd, type);
       const dir = path8.dirname(dstpath);
-      const exists = fs7.existsSync(dir);
-      if (exists) return fs7.symlinkSync(srcpath, dstpath, type);
+      const exists = fs8.existsSync(dir);
+      if (exists) return fs8.symlinkSync(srcpath, dstpath, type);
       mkdirsSync(dir);
-      return fs7.symlinkSync(srcpath, dstpath, type);
+      return fs8.symlinkSync(srcpath, dstpath, type);
     }
     module2.exports = {
       createSymlink: u(createSymlink),
@@ -4446,12 +4446,12 @@ var require_jsonfile = __commonJS({
         options = { encoding: options };
       }
       options = options || {};
-      var fs7 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var shouldThrow = true;
       if ("throws" in options) {
         shouldThrow = options.throws;
       }
-      fs7.readFile(file2, options, function(err, data) {
+      fs8.readFile(file2, options, function(err, data) {
         if (err) return callback(err);
         data = stripBom(data);
         var obj;
@@ -4473,13 +4473,13 @@ var require_jsonfile = __commonJS({
       if (typeof options === "string") {
         options = { encoding: options };
       }
-      var fs7 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var shouldThrow = true;
       if ("throws" in options) {
         shouldThrow = options.throws;
       }
       try {
-        var content = fs7.readFileSync(file2, options);
+        var content = fs8.readFileSync(file2, options);
         content = stripBom(content);
         return JSON.parse(content, options.reviver);
       } catch (err) {
@@ -4511,7 +4511,7 @@ var require_jsonfile = __commonJS({
         options = {};
       }
       options = options || {};
-      var fs7 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var str = "";
       try {
         str = stringify(obj, options);
@@ -4519,13 +4519,13 @@ var require_jsonfile = __commonJS({
         if (callback) callback(err, null);
         return;
       }
-      fs7.writeFile(file2, str, options, callback);
+      fs8.writeFile(file2, str, options, callback);
     }
     function writeFileSync(file2, obj, options) {
       options = options || {};
-      var fs7 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var str = stringify(obj, options);
-      return fs7.writeFileSync(file2, str, options);
+      return fs8.writeFileSync(file2, str, options);
     }
     function stripBom(content) {
       if (Buffer.isBuffer(content)) content = content.toString("utf8");
@@ -4589,13 +4589,13 @@ var require_output_json = __commonJS({
 var require_output_json_sync = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/json/output-json-sync.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var mkdir = require_mkdirs2();
     var jsonFile = require_jsonfile2();
     function outputJsonSync(file2, data, options) {
       const dir = path8.dirname(file2);
-      if (!fs7.existsSync(dir)) {
+      if (!fs8.existsSync(dir)) {
         mkdir.mkdirsSync(dir);
       }
       jsonFile.writeJsonSync(file2, data, options);
@@ -4626,7 +4626,7 @@ var require_json = __commonJS({
 var require_move_sync = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/move-sync/move-sync.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var copySync = require_copy_sync2().copySync;
     var removeSync = require_remove().removeSync;
@@ -4645,12 +4645,12 @@ var require_move_sync = __commonJS({
         removeSync(dest);
         return rename(src, dest, overwrite);
       }
-      if (fs7.existsSync(dest)) throw new Error("dest already exists.");
+      if (fs8.existsSync(dest)) throw new Error("dest already exists.");
       return rename(src, dest, overwrite);
     }
     function rename(src, dest, overwrite) {
       try {
-        fs7.renameSync(src, dest);
+        fs8.renameSync(src, dest);
       } catch (err) {
         if (err.code !== "EXDEV") throw err;
         return moveAcrossDevice(src, dest, overwrite);
@@ -4682,7 +4682,7 @@ var require_move_sync2 = __commonJS({
 var require_move = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/move/move.js"(exports2, module2) {
     "use strict";
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var copy = require_copy2().copy;
     var remove = require_remove().remove;
@@ -4721,7 +4721,7 @@ var require_move = __commonJS({
       });
     }
     function rename(src, dest, overwrite, cb) {
-      fs7.rename(src, dest, (err) => {
+      fs8.rename(src, dest, (err) => {
         if (!err) return cb();
         if (err.code !== "EXDEV") return cb(err);
         return moveAcrossDevice(src, dest, overwrite, cb);
@@ -4757,7 +4757,7 @@ var require_output = __commonJS({
   "../node_modules/.pnpm/fs-extra@8.1.0/node_modules/fs-extra/lib/output/index.js"(exports2, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var path8 = require("path");
     var mkdir = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
@@ -4769,20 +4769,20 @@ var require_output = __commonJS({
       const dir = path8.dirname(file2);
       pathExists(dir, (err, itDoes) => {
         if (err) return callback(err);
-        if (itDoes) return fs7.writeFile(file2, data, encoding, callback);
+        if (itDoes) return fs8.writeFile(file2, data, encoding, callback);
         mkdir.mkdirs(dir, (err2) => {
           if (err2) return callback(err2);
-          fs7.writeFile(file2, data, encoding, callback);
+          fs8.writeFile(file2, data, encoding, callback);
         });
       });
     }
     function outputFileSync(file2, ...args) {
       const dir = path8.dirname(file2);
-      if (fs7.existsSync(dir)) {
-        return fs7.writeFileSync(file2, ...args);
+      if (fs8.existsSync(dir)) {
+        return fs8.writeFileSync(file2, ...args);
       }
       mkdir.mkdirsSync(dir);
-      fs7.writeFileSync(file2, ...args);
+      fs8.writeFileSync(file2, ...args);
     }
     module2.exports = {
       outputFile: u(outputFile),
@@ -4812,11 +4812,11 @@ var require_lib2 = __commonJS({
       require_path_exists(),
       require_remove()
     );
-    var fs7 = require("fs");
-    if (Object.getOwnPropertyDescriptor(fs7, "promises")) {
+    var fs8 = require("fs");
+    if (Object.getOwnPropertyDescriptor(fs8, "promises")) {
       Object.defineProperty(module2.exports, "promises", {
         get() {
-          return fs7.promises;
+          return fs8.promises;
         }
       });
     }
@@ -4953,7 +4953,7 @@ var require_fileNameParser = __commonJS({
 var require_moveAndMaybeCompressFile = __commonJS({
   "../node_modules/.pnpm/streamroller@3.1.5/node_modules/streamroller/lib/moveAndMaybeCompressFile.js"(exports2, module2) {
     var debug = require_src()("streamroller:moveAndMaybeCompressFile");
-    var fs7 = require_lib2();
+    var fs8 = require_lib2();
     var zlib2 = require("zlib");
     var _parseOption = function(rawOptions) {
       const defaultOptions2 = {
@@ -4970,16 +4970,16 @@ var require_moveAndMaybeCompressFile = __commonJS({
         debug(`moveAndMaybeCompressFile: source and target are the same, not doing anything`);
         return;
       }
-      if (await fs7.pathExists(sourceFilePath)) {
+      if (await fs8.pathExists(sourceFilePath)) {
         debug(
           `moveAndMaybeCompressFile: moving file from ${sourceFilePath} to ${targetFilePath} ${options.compress ? "with" : "without"} compress`
         );
         if (options.compress) {
           await new Promise((resolve, reject) => {
             let isCreated = false;
-            const writeStream = fs7.createWriteStream(targetFilePath, { mode: options.mode, flags: "wx" }).on("open", () => {
+            const writeStream = fs8.createWriteStream(targetFilePath, { mode: options.mode, flags: "wx" }).on("open", () => {
               isCreated = true;
-              const readStream2 = fs7.createReadStream(sourceFilePath).on("open", () => {
+              const readStream2 = fs8.createReadStream(sourceFilePath).on("open", () => {
                 readStream2.pipe(zlib2.createGzip()).pipe(writeStream);
               }).on("error", (e) => {
                 debug(`moveAndMaybeCompressFile: error reading ${sourceFilePath}`, e);
@@ -4987,9 +4987,9 @@ var require_moveAndMaybeCompressFile = __commonJS({
               });
             }).on("finish", () => {
               debug(`moveAndMaybeCompressFile: finished compressing ${targetFilePath}, deleting ${sourceFilePath}`);
-              fs7.unlink(sourceFilePath).then(resolve).catch((e) => {
+              fs8.unlink(sourceFilePath).then(resolve).catch((e) => {
                 debug(`moveAndMaybeCompressFile: error deleting ${sourceFilePath}, truncating instead`, e);
-                fs7.truncate(sourceFilePath).then(resolve).catch((e2) => {
+                fs8.truncate(sourceFilePath).then(resolve).catch((e2) => {
                   debug(`moveAndMaybeCompressFile: error truncating ${sourceFilePath}`, e2);
                   reject(e2);
                 });
@@ -5000,7 +5000,7 @@ var require_moveAndMaybeCompressFile = __commonJS({
                 reject(e);
               } else {
                 debug(`moveAndMaybeCompressFile: error writing ${targetFilePath}, deleting`, e);
-                fs7.unlink(targetFilePath).then(() => {
+                fs8.unlink(targetFilePath).then(() => {
                   reject(e);
                 }).catch((e2) => {
                   debug(`moveAndMaybeCompressFile: error deleting ${targetFilePath}`, e2);
@@ -5013,14 +5013,14 @@ var require_moveAndMaybeCompressFile = __commonJS({
         } else {
           debug(`moveAndMaybeCompressFile: renaming ${sourceFilePath} to ${targetFilePath}`);
           try {
-            await fs7.move(sourceFilePath, targetFilePath, { overwrite: true });
+            await fs8.move(sourceFilePath, targetFilePath, { overwrite: true });
           } catch (e) {
             debug(`moveAndMaybeCompressFile: error renaming ${sourceFilePath} to ${targetFilePath}`, e);
             if (e.code !== "ENOENT") {
               debug(`moveAndMaybeCompressFile: trying copy+truncate instead`);
               try {
-                await fs7.copy(sourceFilePath, targetFilePath, { overwrite: true });
-                await fs7.truncate(sourceFilePath);
+                await fs8.copy(sourceFilePath, targetFilePath, { overwrite: true });
+                await fs8.truncate(sourceFilePath);
               } catch (e2) {
                 debug(`moveAndMaybeCompressFile: error copy+truncate`, e2);
               }
@@ -5037,7 +5037,7 @@ var require_moveAndMaybeCompressFile = __commonJS({
 var require_RollingFileWriteStream = __commonJS({
   "../node_modules/.pnpm/streamroller@3.1.5/node_modules/streamroller/lib/RollingFileWriteStream.js"(exports2, module2) {
     var debug = require_src()("streamroller:RollingFileWriteStream");
-    var fs7 = require_lib2();
+    var fs8 = require_lib2();
     var path8 = require("path");
     var os4 = require("os");
     var newNow = require_now();
@@ -5048,7 +5048,7 @@ var require_RollingFileWriteStream = __commonJS({
     var moveAndMaybeCompressFile = require_moveAndMaybeCompressFile();
     var deleteFiles = (fileNames) => {
       debug(`deleteFiles: files to delete: ${fileNames}`);
-      return Promise.all(fileNames.map((f) => fs7.unlink(f).catch((e) => {
+      return Promise.all(fileNames.map((f) => fs8.unlink(f).catch((e) => {
         debug(`deleteFiles: error when unlinking ${f}, ignoring. Error was ${e}`);
       })));
     };
@@ -5120,7 +5120,7 @@ var require_RollingFileWriteStream = __commonJS({
       }
       _setExistingSizeAndDate() {
         try {
-          const stats = fs7.statSync(this.filename);
+          const stats = fs8.statSync(this.filename);
           this.state.currentSize = stats.size;
           if (this.options.pattern) {
             this.state.currentDate = format2(this.options.pattern, stats.mtime);
@@ -5237,7 +5237,7 @@ var require_RollingFileWriteStream = __commonJS({
       }
       // Sorted from the oldest to the latest
       async _getExistingFiles() {
-        const files = await fs7.readdir(this.fileObject.dir).catch(
+        const files = await fs8.readdir(this.fileObject.dir).catch(
           /* istanbul ignore next: will not happen on windows */
           () => []
         );
@@ -5254,7 +5254,7 @@ var require_RollingFileWriteStream = __commonJS({
         });
         const mkdir = (dir) => {
           try {
-            return fs7.mkdirSync(dir, { recursive: true });
+            return fs8.mkdirSync(dir, { recursive: true });
           } catch (e) {
             if (e.code === "ENOENT") {
               mkdir(path8.dirname(dir));
@@ -5264,7 +5264,7 @@ var require_RollingFileWriteStream = __commonJS({
               throw e;
             } else {
               try {
-                if (fs7.statSync(dir).isDirectory()) {
+                if (fs8.statSync(dir).isDirectory()) {
                   return dir;
                 }
                 throw e;
@@ -5285,8 +5285,8 @@ var require_RollingFileWriteStream = __commonJS({
           delete obj[oldKey];
           return obj;
         };
-        fs7.appendFileSync(filePath, "", renameKey({ ...ops }, "flags", "flag"));
-        this.currentFileStream = fs7.createWriteStream(filePath, ops);
+        fs8.appendFileSync(filePath, "", renameKey({ ...ops }, "flags", "flag"));
+        this.currentFileStream = fs8.createWriteStream(filePath, ops);
         this.currentFileStream.on("error", (e) => {
           this.emit("error", e);
         });
@@ -5571,13 +5571,13 @@ var require_fileSync = __commonJS({
   "../node_modules/.pnpm/log4js@6.9.1/node_modules/log4js/lib/appenders/fileSync.js"(exports2, module2) {
     var debug = require_src()("log4js:fileSync");
     var path8 = require("path");
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var os4 = require("os");
     var eol = os4.EOL;
     function touchFile(file2, options) {
       const mkdir = (dir) => {
         try {
-          return fs7.mkdirSync(dir, { recursive: true });
+          return fs8.mkdirSync(dir, { recursive: true });
         } catch (e) {
           if (e.code === "ENOENT") {
             mkdir(path8.dirname(dir));
@@ -5587,7 +5587,7 @@ var require_fileSync = __commonJS({
             throw e;
           } else {
             try {
-              if (fs7.statSync(dir).isDirectory()) {
+              if (fs8.statSync(dir).isDirectory()) {
                 return dir;
               }
               throw e;
@@ -5598,7 +5598,7 @@ var require_fileSync = __commonJS({
         }
       };
       mkdir(path8.dirname(file2));
-      fs7.appendFileSync(file2, "", { mode: options.mode, flag: options.flags });
+      fs8.appendFileSync(file2, "", { mode: options.mode, flag: options.flags });
     }
     var RollingFileSync = class {
       constructor(filename, maxLogSize, backups, options) {
@@ -5614,7 +5614,7 @@ var require_fileSync = __commonJS({
         function currentFileSize(file2) {
           let fileSize = 0;
           try {
-            fileSize = fs7.statSync(file2).size;
+            fileSize = fs8.statSync(file2).size;
           } catch (e) {
             touchFile(file2, options);
           }
@@ -5646,14 +5646,14 @@ var require_fileSync = __commonJS({
           const idx = index(fileToRename);
           debug(`Index of ${fileToRename} is ${idx}`);
           if (that.backups === 0) {
-            fs7.truncateSync(filename, 0);
+            fs8.truncateSync(filename, 0);
           } else if (idx < that.backups) {
             try {
-              fs7.unlinkSync(`${filename}.${idx + 1}`);
+              fs8.unlinkSync(`${filename}.${idx + 1}`);
             } catch (e) {
             }
             debug(`Renaming ${fileToRename} -> ${filename}.${idx + 1}`);
-            fs7.renameSync(
+            fs8.renameSync(
               path8.join(path8.dirname(filename), fileToRename),
               `${filename}.${idx + 1}`
             );
@@ -5661,7 +5661,7 @@ var require_fileSync = __commonJS({
         }
         function renameTheFiles() {
           debug("Renaming the old files");
-          const files = fs7.readdirSync(path8.dirname(filename));
+          const files = fs8.readdirSync(path8.dirname(filename));
           files.filter(justTheseFiles).sort(byIndex).reverse().forEach(increaseFileIndex);
         }
         debug("Rolling, rolling, rolling");
@@ -5673,7 +5673,7 @@ var require_fileSync = __commonJS({
         function writeTheChunk() {
           debug("writing the chunk to the file");
           that.currentSize += chunk.length;
-          fs7.appendFileSync(that.filename, chunk);
+          fs8.appendFileSync(that.filename, chunk);
         }
         debug("in write");
         if (this.shouldRoll()) {
@@ -5715,7 +5715,7 @@ var require_fileSync = __commonJS({
             touchFile(f, options);
             return {
               write(data) {
-                fs7.appendFileSync(f, data);
+                fs8.appendFileSync(f, data);
               }
             };
           })(filePath);
@@ -6206,7 +6206,7 @@ var require_logger = __commonJS({
       }
       return null;
     }
-    var Logger22 = class {
+    var Logger23 = class {
       constructor(name) {
         if (!name) {
           throw new Error("No category provided.");
@@ -6323,10 +6323,10 @@ var require_logger = __commonJS({
         (g) => g[1].toUpperCase()
       );
       const isLevelMethod = levelMethod[0].toUpperCase() + levelMethod.slice(1);
-      Logger22.prototype[`is${isLevelMethod}Enabled`] = function() {
+      Logger23.prototype[`is${isLevelMethod}Enabled`] = function() {
         return this.isLevelEnabled(level);
       };
-      Logger22.prototype[levelMethod] = function(...args) {
+      Logger23.prototype[levelMethod] = function(...args) {
         this.log(level, ...args);
       };
     }
@@ -6334,7 +6334,7 @@ var require_logger = __commonJS({
     configuration.addListener(() => {
       levels.levels.forEach(addLevelMethods);
     });
-    module2.exports = Logger22;
+    module2.exports = Logger23;
   }
 });
 
@@ -6446,7 +6446,7 @@ var require_connect_logger = __commonJS({
       }
       return level;
     }
-    module2.exports = function getLogger30(logger4js, options) {
+    module2.exports = function getLogger31(logger4js, options) {
       if (typeof options === "string" || typeof options === "function") {
         options = { format: options };
       } else {
@@ -6545,14 +6545,14 @@ var require_recording = __commonJS({
 var require_log4js = __commonJS({
   "../node_modules/.pnpm/log4js@6.9.1/node_modules/log4js/lib/log4js.js"(exports2, module2) {
     var debug = require_src()("log4js:main");
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var deepClone = require_rfdc()({ proto: true });
     var configuration = require_configuration();
     var layouts = require_layouts();
     var levels = require_levels();
     var appenders = require_appenders();
     var categories = require_categories();
-    var Logger22 = require_logger();
+    var Logger23 = require_logger();
     var clustering = require_clustering();
     var connectLogger = require_connect_logger();
     var recordingModule = require_recording();
@@ -6570,7 +6570,7 @@ var require_log4js = __commonJS({
     function loadConfigurationFile(filename) {
       debug(`Loading configuration from ${filename}`);
       try {
-        return JSON.parse(fs7.readFileSync(filename, "utf8"));
+        return JSON.parse(fs8.readFileSync(filename, "utf8"));
       } catch (e) {
         throw new Error(
           `Problem reading config from file "${filename}". Error was ${e.message}`,
@@ -6630,7 +6630,7 @@ var require_log4js = __commonJS({
       }
       appendersToCheck.filter((a) => a.shutdown).forEach((a) => a.shutdown(complete));
     }
-    function getLogger30(category) {
+    function getLogger31(category) {
       if (!enabled) {
         configure2(
           process.env.LOG4JS_CONFIG || {
@@ -6639,10 +6639,10 @@ var require_log4js = __commonJS({
           }
         );
       }
-      return new Logger22(category || "default");
+      return new Logger23(category || "default");
     }
     var log4js = {
-      getLogger: getLogger30,
+      getLogger: getLogger31,
       configure: configure2,
       isConfigured,
       shutdown,
@@ -16249,7 +16249,7 @@ var require_Logger = __commonJS({
       LogLevel3["INFO"] = "info";
       LogLevel3["DEBUG"] = "debug";
     })(LogLevel2 = exports2.LogLevel || (exports2.LogLevel = {}));
-    var Logger22 = class {
+    var Logger23 = class {
       constructor(level) {
         this.levels = ["error", "warn", "info", "debug"];
         this._logLevel = level || LogLevel2.INFO;
@@ -16351,7 +16351,7 @@ var require_Logger = __commonJS({
         return new Date(Date.now() - this.tzOffset).toISOString().slice(0, -1);
       }
     };
-    exports2.Logger = Logger22;
+    exports2.Logger = Logger23;
   }
 });
 
@@ -23738,8 +23738,8 @@ var require_node3 = __commonJS({
           }
           break;
         case "FILE":
-          var fs7 = require("fs");
-          stream5 = new fs7.SyncWriteStream(fd2, { autoClose: false });
+          var fs8 = require("fs");
+          stream5 = new fs8.SyncWriteStream(fd2, { autoClose: false });
           stream5._type = "fs";
           break;
         case "PIPE":
@@ -23853,7 +23853,7 @@ var require_utils = __commonJS({
 // ../node_modules/.pnpm/node-gyp-build@4.8.4/node_modules/node-gyp-build/node-gyp-build.js
 var require_node_gyp_build = __commonJS({
   "../node_modules/.pnpm/node-gyp-build@4.8.4/node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var path8 = require("path");
     var os4 = require("os");
     var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
@@ -23914,7 +23914,7 @@ var require_node_gyp_build = __commonJS({
     };
     function readdirSync(dir) {
       try {
-        return fs7.readdirSync(dir);
+        return fs8.readdirSync(dir);
       } catch (err) {
         return [];
       }
@@ -24008,7 +24008,7 @@ var require_node_gyp_build = __commonJS({
       return typeof window !== "undefined" && window.process && window.process.type === "renderer";
     }
     function isAlpine(platform2) {
-      return platform2 === "linux" && fs7.existsSync("/etc/alpine-release");
+      return platform2 === "linux" && fs8.existsSync("/etc/alpine-release");
     }
     load.parseTags = parseTags;
     load.matchTags = matchTags;
@@ -35101,7 +35101,7 @@ var require_write_file_atomic = __commonJS({
     module2.exports = writeFile;
     module2.exports.sync = writeFileSync;
     module2.exports._getTmpname = getTmpname;
-    var fs7 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var chain = require_slide().chain;
     var MurmurHash3 = require_imurmurhash();
     var extend2 = Object.assign || require("util")._extend;
@@ -35115,7 +35115,7 @@ var require_write_file_atomic = __commonJS({
         options = null;
       }
       if (!options) options = {};
-      fs7.realpath(filename, function(_2, realname) {
+      fs8.realpath(filename, function(_2, realname) {
         _writeFile(realname || filename, data, options, callback);
       });
     }
@@ -35124,7 +35124,7 @@ var require_write_file_atomic = __commonJS({
       if (options.mode && options.chown) {
         return thenWriteFile();
       } else {
-        return fs7.stat(filename, function(err, stats) {
+        return fs8.stat(filename, function(err, stats) {
           if (err || !stats) return thenWriteFile();
           options = extend2({}, options);
           if (!options.mode) {
@@ -35139,30 +35139,30 @@ var require_write_file_atomic = __commonJS({
       function thenWriteFile() {
         chain([
           [writeFileAsync, tmpfile, data, options.mode, options.encoding || "utf8"],
-          options.chown && [fs7, fs7.chown, tmpfile, options.chown.uid, options.chown.gid],
-          options.mode && [fs7, fs7.chmod, tmpfile, options.mode],
-          [fs7, fs7.rename, tmpfile, filename]
+          options.chown && [fs8, fs8.chown, tmpfile, options.chown.uid, options.chown.gid],
+          options.mode && [fs8, fs8.chmod, tmpfile, options.mode],
+          [fs8, fs8.rename, tmpfile, filename]
         ], function(err) {
-          err ? fs7.unlink(tmpfile, function() {
+          err ? fs8.unlink(tmpfile, function() {
             callback(err);
           }) : callback();
         });
       }
       function writeFileAsync(file2, data2, mode, encoding, cb) {
-        fs7.open(file2, "w", options.mode, function(err, fd) {
+        fs8.open(file2, "w", options.mode, function(err, fd) {
           if (err) return cb(err);
           if (Buffer.isBuffer(data2)) {
-            return fs7.write(fd, data2, 0, data2.length, 0, syncAndClose);
+            return fs8.write(fd, data2, 0, data2.length, 0, syncAndClose);
           } else if (data2 != null) {
-            return fs7.write(fd, String(data2), 0, String(encoding), syncAndClose);
+            return fs8.write(fd, String(data2), 0, String(encoding), syncAndClose);
           } else {
             return syncAndClose();
           }
           function syncAndClose(err2) {
             if (err2) return cb(err2);
-            fs7.fsync(fd, function(err3) {
+            fs8.fsync(fd, function(err3) {
               if (err3) return cb(err3);
-              fs7.close(fd, cb);
+              fs8.close(fd, cb);
             });
           }
         });
@@ -35171,14 +35171,14 @@ var require_write_file_atomic = __commonJS({
     function writeFileSync(filename, data, options) {
       if (!options) options = {};
       try {
-        filename = fs7.realpathSync(filename);
+        filename = fs8.realpathSync(filename);
       } catch (ex) {
       }
       var tmpfile = getTmpname(filename);
       try {
         if (!options.mode || !options.chown) {
           try {
-            var stats = fs7.statSync(filename);
+            var stats = fs8.statSync(filename);
             options = extend2({}, options);
             if (!options.mode) {
               options.mode = stats.mode;
@@ -35189,20 +35189,20 @@ var require_write_file_atomic = __commonJS({
           } catch (ex) {
           }
         }
-        var fd = fs7.openSync(tmpfile, "w", options.mode);
+        var fd = fs8.openSync(tmpfile, "w", options.mode);
         if (Buffer.isBuffer(data)) {
-          fs7.writeSync(fd, data, 0, data.length, 0);
+          fs8.writeSync(fd, data, 0, data.length, 0);
         } else if (data != null) {
-          fs7.writeSync(fd, String(data), 0, String(options.encoding || "utf8"));
+          fs8.writeSync(fd, String(data), 0, String(options.encoding || "utf8"));
         }
-        fs7.fsyncSync(fd);
-        fs7.closeSync(fd);
-        if (options.chown) fs7.chownSync(tmpfile, options.chown.uid, options.chown.gid);
-        if (options.mode) fs7.chmodSync(tmpfile, options.mode);
-        fs7.renameSync(tmpfile, filename);
+        fs8.fsyncSync(fd);
+        fs8.closeSync(fd);
+        if (options.chown) fs8.chownSync(tmpfile, options.chown.uid, options.chown.gid);
+        if (options.mode) fs8.chmodSync(tmpfile, options.mode);
+        fs8.renameSync(tmpfile, filename);
       } catch (err) {
         try {
-          fs7.unlinkSync(tmpfile);
+          fs8.unlinkSync(tmpfile);
         } catch (e) {
         }
         throw err;
@@ -35215,7 +35215,7 @@ var require_write_file_atomic = __commonJS({
 var require_LocalStorage = __commonJS({
   "../node_modules/.pnpm/node-localstorage@2.2.1/node_modules/node-localstorage/LocalStorage.js"(exports2) {
     (function() {
-      var JSONStorage, KEY_FOR_EMPTY_STRING, LocalStorage, MetaKey, QUOTA_EXCEEDED_ERR, StorageEvent, _emptyDirectory, _escapeKey, _rm, createMap, events, fs7, path8, writeSync, extend2 = function(child, parent) {
+      var JSONStorage, KEY_FOR_EMPTY_STRING, LocalStorage, MetaKey, QUOTA_EXCEEDED_ERR, StorageEvent, _emptyDirectory, _escapeKey, _rm, createMap, events, fs8, path8, writeSync, extend2 = function(child, parent) {
         for (var key in parent) {
           if (hasProp.call(parent, key)) child[key] = parent[key];
         }
@@ -35228,13 +35228,13 @@ var require_LocalStorage = __commonJS({
         return child;
       }, hasProp = {}.hasOwnProperty;
       path8 = require("path");
-      fs7 = require("fs");
+      fs8 = require("fs");
       events = require("events");
       writeSync = require_write_file_atomic().sync;
       KEY_FOR_EMPTY_STRING = "---.EMPTY_STRING.---";
       _emptyDirectory = function(target) {
         var i, len, p, ref, results;
-        ref = fs7.readdirSync(target);
+        ref = fs8.readdirSync(target);
         results = [];
         for (i = 0, len = ref.length; i < len; i++) {
           p = ref[i];
@@ -35243,11 +35243,11 @@ var require_LocalStorage = __commonJS({
         return results;
       };
       _rm = function(target) {
-        if (fs7.statSync(target).isDirectory()) {
+        if (fs8.statSync(target).isDirectory()) {
           _emptyDirectory(target);
-          return fs7.rmdirSync(target);
+          return fs8.rmdirSync(target);
         } else {
-          return fs7.unlinkSync(target);
+          return fs8.unlinkSync(target);
         }
       };
       _escapeKey = function(key) {
@@ -35354,13 +35354,13 @@ var require_LocalStorage = __commonJS({
         LocalStorage2.prototype._init = function() {
           var _MetaKey, _decodedKey, _keys, e, i, index, k, len, stat;
           try {
-            stat = fs7.statSync(this._location);
+            stat = fs8.statSync(this._location);
             if (stat != null && !stat.isDirectory()) {
               throw new Error("A file exists at the location '" + this._location + "' when trying to create/open localStorage");
             }
             this._bytesInUse = 0;
             this.length = 0;
-            _keys = fs7.readdirSync(this._location);
+            _keys = fs8.readdirSync(this._location);
             for (index = i = 0, len = _keys.length; i < len; index = ++i) {
               k = _keys[index];
               _decodedKey = decodeURIComponent(k);
@@ -35380,7 +35380,7 @@ var require_LocalStorage = __commonJS({
               throw e;
             }
             try {
-              fs7.mkdirSync(this._location, {
+              fs8.mkdirSync(this._location, {
                 recursive: true
               });
             } catch (error3) {
@@ -35434,7 +35434,7 @@ var require_LocalStorage = __commonJS({
           metaKey = this._metaKeyMap[key];
           if (!!metaKey) {
             filename = path8.join(this._location, metaKey.key);
-            return fs7.readFileSync(filename, "utf8");
+            return fs8.readFileSync(filename, "utf8");
           } else {
             return null;
           }
@@ -35444,7 +35444,7 @@ var require_LocalStorage = __commonJS({
           key = _escapeKey(key);
           filename = path8.join(this._location, encodeURIComponent(key));
           try {
-            return fs7.statSync(filename);
+            return fs8.statSync(filename);
           } catch (error2) {
             return null;
           }
@@ -38555,7 +38555,7 @@ var require_downloads = __commonJS({
     var errors_1 = require_errors();
     var fs_1 = require_fs2();
     var extensions_1 = require_extensions();
-    var fs7 = __importStar2(require_fs2());
+    var fs8 = __importStar2(require_fs2());
     var path_1 = __importDefault2(require_path());
     var big_integer_1 = __importDefault2(require_BigInteger());
     var MIN_CHUNK_SIZE = 4096;
@@ -38723,7 +38723,7 @@ var require_downloads = __commonJS({
       if (writer instanceof extensions_1.BinaryWriter) {
         return writer.getValue();
       }
-      if (writer instanceof fs7.WriteStream) {
+      if (writer instanceof fs8.WriteStream) {
         if (typeof writer.path == "string") {
           return path_1.default.resolve(writer.path);
         } else {
@@ -38910,7 +38910,7 @@ var require_downloads = __commonJS({
       if (!file2 || typeof file2 != "string") {
         return file2;
       }
-      if (fs7.existsSync(file2) && fs7.lstatSync(file2).isDirectory()) {
+      if (fs8.existsSync(file2) && fs8.lstatSync(file2).isDirectory()) {
         let fullName = fileType + date2 + extension;
         return path_1.default.join(file2, fullName);
       }
@@ -51883,7 +51883,7 @@ var require_form_data = __commonJS({
     var http2 = require("http");
     var https3 = require("https");
     var parseUrl = require("url").parse;
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var Stream = require("stream").Stream;
     var mime2 = require_mime_types();
     var asynckit = require_asynckit();
@@ -51948,7 +51948,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs7.stat(value.path, function(err, stat) {
+          fs8.stat(value.path, function(err, stat) {
             var fileSize;
             if (err) {
               callback(err);
@@ -63495,7 +63495,7 @@ var init_OicqClient = __esm({
       async getGroupList() {
         return await Promise.all(Array.from(this.oicq.gl.values()).map((g) => this.pickGroup(g.group_id)));
       }
-      async getCustomFaceList(count = 1000) {
+      async getCustomFaceList(count = 1e3) {
         return [];
       }
       async createSpoilerImageEndpoint(image, nickname, title) {
@@ -63747,11 +63747,11 @@ var init_QQClient = __esm({
 // ../node_modules/.pnpm/tmp@0.2.3/node_modules/tmp/lib/tmp.js
 var require_tmp = __commonJS({
   "../node_modules/.pnpm/tmp@0.2.3/node_modules/tmp/lib/tmp.js"(exports2, module2) {
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var os4 = require("os");
     var path8 = require("path");
     var crypto4 = require("crypto");
-    var _c = { fs: fs7.constants, os: os4.constants };
+    var _c = { fs: fs8.constants, os: os4.constants };
     var RANDOM_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     var TEMPLATE_PATTERN = /XXXXXX/;
     var DEFAULT_TRIES = 3;
@@ -63763,13 +63763,13 @@ var require_tmp = __commonJS({
     var FILE_MODE = 384;
     var EXIT = "exit";
     var _removeObjects = [];
-    var FN_RMDIR_SYNC = fs7.rmdirSync.bind(fs7);
+    var FN_RMDIR_SYNC = fs8.rmdirSync.bind(fs8);
     var _gracefulCleanup = false;
     function rimraf(dirPath, callback) {
-      return fs7.rm(dirPath, { recursive: true }, callback);
+      return fs8.rm(dirPath, { recursive: true }, callback);
     }
     function FN_RIMRAF_SYNC(dirPath) {
-      return fs7.rmSync(dirPath, { recursive: true });
+      return fs8.rmSync(dirPath, { recursive: true });
     }
     function tmpName(options, callback) {
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
@@ -63782,7 +63782,7 @@ var require_tmp = __commonJS({
       (function _getUniqueName() {
         try {
           const name = _generateTmpName(opts);
-          fs7.stat(name, function(err) {
+          fs8.stat(name, function(err) {
             if (!err) {
               if (tries-- > 0) return _getUniqueName();
               return cb(new Error("Could not get a unique tmp filename, max tries reached " + name));
@@ -63801,7 +63801,7 @@ var require_tmp = __commonJS({
       do {
         const name = _generateTmpName(opts);
         try {
-          fs7.statSync(name);
+          fs8.statSync(name);
         } catch (e) {
           return name;
         }
@@ -63812,10 +63812,10 @@ var require_tmp = __commonJS({
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
       tmpName(opts, function _tmpNameCreated(err, name) {
         if (err) return cb(err);
-        fs7.open(name, CREATE_FLAGS, opts.mode || FILE_MODE, function _fileCreated(err2, fd) {
+        fs8.open(name, CREATE_FLAGS, opts.mode || FILE_MODE, function _fileCreated(err2, fd) {
           if (err2) return cb(err2);
           if (opts.discardDescriptor) {
-            return fs7.close(fd, function _discardCallback(possibleErr) {
+            return fs8.close(fd, function _discardCallback(possibleErr) {
               return cb(possibleErr, name, void 0, _prepareTmpFileRemoveCallback(name, -1, opts, false));
             });
           } else {
@@ -63829,9 +63829,9 @@ var require_tmp = __commonJS({
       const args = _parseArguments(options), opts = args[0];
       const discardOrDetachDescriptor = opts.discardDescriptor || opts.detachDescriptor;
       const name = tmpNameSync(opts);
-      var fd = fs7.openSync(name, CREATE_FLAGS, opts.mode || FILE_MODE);
+      var fd = fs8.openSync(name, CREATE_FLAGS, opts.mode || FILE_MODE);
       if (opts.discardDescriptor) {
-        fs7.closeSync(fd);
+        fs8.closeSync(fd);
         fd = void 0;
       }
       return {
@@ -63844,7 +63844,7 @@ var require_tmp = __commonJS({
       const args = _parseArguments(options, callback), opts = args[0], cb = args[1];
       tmpName(opts, function _tmpNameCreated(err, name) {
         if (err) return cb(err);
-        fs7.mkdir(name, opts.mode || DIR_MODE, function _dirCreated(err2) {
+        fs8.mkdir(name, opts.mode || DIR_MODE, function _dirCreated(err2) {
           if (err2) return cb(err2);
           cb(null, name, _prepareTmpDirRemoveCallback(name, opts, false));
         });
@@ -63853,7 +63853,7 @@ var require_tmp = __commonJS({
     function dirSync(options) {
       const args = _parseArguments(options), opts = args[0];
       const name = tmpNameSync(opts);
-      fs7.mkdirSync(name, opts.mode || DIR_MODE);
+      fs8.mkdirSync(name, opts.mode || DIR_MODE);
       return {
         name,
         removeCallback: _prepareTmpDirRemoveCallback(name, opts, true)
@@ -63867,20 +63867,20 @@ var require_tmp = __commonJS({
         next();
       };
       if (0 <= fdPath[0])
-        fs7.close(fdPath[0], function() {
-          fs7.unlink(fdPath[1], _handler);
+        fs8.close(fdPath[0], function() {
+          fs8.unlink(fdPath[1], _handler);
         });
-      else fs7.unlink(fdPath[1], _handler);
+      else fs8.unlink(fdPath[1], _handler);
     }
     function _removeFileSync(fdPath) {
       let rethrownException = null;
       try {
-        if (0 <= fdPath[0]) fs7.closeSync(fdPath[0]);
+        if (0 <= fdPath[0]) fs8.closeSync(fdPath[0]);
       } catch (e) {
         if (!_isEBADF(e) && !_isENOENT(e)) throw e;
       } finally {
         try {
-          fs7.unlinkSync(fdPath[1]);
+          fs8.unlinkSync(fdPath[1]);
         } catch (e) {
           if (!_isENOENT(e)) rethrownException = e;
         }
@@ -63896,7 +63896,7 @@ var require_tmp = __commonJS({
       return sync ? removeCallbackSync : removeCallback;
     }
     function _prepareTmpDirRemoveCallback(name, opts, sync) {
-      const removeFunction = opts.unsafeCleanup ? rimraf : fs7.rmdir.bind(fs7);
+      const removeFunction = opts.unsafeCleanup ? rimraf : fs8.rmdir.bind(fs8);
       const removeFunctionSync = opts.unsafeCleanup ? FN_RIMRAF_SYNC : FN_RMDIR_SYNC;
       const removeCallbackSync = _prepareRemoveCallback(removeFunctionSync, name, sync);
       const removeCallback = _prepareRemoveCallback(removeFunction, name, sync, removeCallbackSync);
@@ -64147,13 +64147,14 @@ var init_convert = __esm({
         case "record":
         case "video":
           const tempFiles = [];
+          const mediaPostfix = elem.type === "record" ? ".silk" : elem.type === "image" ? ".png" : ".tmp";
           if (Buffer.isBuffer(elem.file)) {
-            const file2 = await createTempFile({ postfix: ".tmp" });
+            const file2 = await createTempFile({ postfix: mediaPostfix });
             tempFiles.push(file2);
             await import_promises2.default.writeFile(file2.path, elem.file);
             elem.file = file2.path;
           } else if (typeof elem.file === "object" && "pipe" in elem.file) {
-            const file2 = await createTempFile({ postfix: ".tmp" });
+            const file2 = await createTempFile({ postfix: mediaPostfix });
             tempFiles.push(file2);
             await new Promise((resolve, reject) => {
               const writeStream = import_fs2.default.createWriteStream(file2.path);
@@ -64267,8 +64268,8 @@ var init_convert = __esm({
         case "forward":
           return {
             type: "forward",
-            id: data.data.id,
-            content: "content" in data.data ? napCatForwardMultiple(data.data.content) : void 0
+            id: data.data.id || data.data.res_id || data.data.resid || "",
+            content: "content" in data.data && Array.isArray(data.data.content) ? napCatForwardMultiple(data.data.content) : void 0
           };
         case "reply":
           return {
@@ -64279,14 +64280,14 @@ var init_convert = __esm({
           throw new Error("\u4E0D\u652F\u6301\u6B64\u5143\u7D20");
       }
     };
-    napCatForwardMultiple = (messages) => messages.map((it) => ({
+    napCatForwardMultiple = (messages) => (messages || []).map((it) => ({
       group_id: it.message_type === "group" ? it.group_id : void 0,
-      nickname: it.sender.card || it.sender.nickname,
-      time: it.time,
-      user_id: it.sender.user_id,
-      seq: it.message_id,
-      raw_message: it.raw_message,
-      message: (it.content || it.message).map(napCatReceiveToMessageElem)
+      nickname: it.sender?.card || it.sender?.nickname || "QQ\u7528\u6237",
+      time: it.time || 0,
+      user_id: it.sender?.user_id || 0,
+      seq: it.message_id || 0,
+      raw_message: it.raw_message || "",
+      message: (it.content || it.message || []).map(napCatReceiveToMessageElem)
     }));
   }
 });
@@ -64325,8 +64326,17 @@ var init_entity2 = __esm({
       }
       logger;
       async getForwardMsg(resid, fileName) {
-        const data = await this.client.callApi("get_forward_msg", { message_id: resid });
-        return napCatForwardMultiple(data.messages);
+        try {
+          const data = await this.client.callApi("get_forward_msg", {
+            message_id: resid,
+            id: resid,
+            messager_id: resid
+          });
+          return napCatForwardMultiple(data?.messages || []);
+        } catch (e) {
+          this.logger.error("NapCat get_forward_msg \u5931\u8D25", e);
+          return [];
+        }
       }
       async getVideoUrl(fid, md52) {
         return fid;
@@ -65432,7 +65442,7 @@ var init_client = __esm({
             const it = _entry;
             let category = categories.get(it.categoryId);
             if (!category) {
-              category = { name: it.categoryName || it.categroyName || "默认分组", friends: [] };
+              category = { name: it.categoryName || it.categroyName || "\u9ED8\u8BA4\u5206\u7EC4", friends: [] };
               categories.set(it.categoryId, category);
             }
             category.friends.push(NapCatFriend.createExisted(this, {
@@ -65444,7 +65454,7 @@ var init_client = __esm({
           return Array.from(categories.values());
         }
         return data.map((it) => ({
-          name: it.categoryName || it.categroyName || "默认分组",
+          name: it.categoryName || it.categroyName || "\u9ED8\u8BA4\u5206\u7EC4",
           // typo in API
           friends: (it.buddyList || []).map((friend) => NapCatFriend.createExisted(this, {
             nickname: friend.nickname || friend.nick || "",
@@ -65463,7 +65473,7 @@ var init_client = __esm({
           name: it.group_name
         }));
       }
-      async getCustomFaceList(count = 1000) {
+      async getCustomFaceList(count = 1e3) {
         try {
           const res = await this.callApi("fetch_custom_face_detail", { count });
           if (Array.isArray(res)) {
@@ -65475,7 +65485,7 @@ var init_client = __esm({
           }
           return [];
         } catch (e) {
-          this.logger.warn("获取 QQ 收藏表情失败", e);
+          this.logger.warn("\u83B7\u53D6 QQ \u6536\u85CF\u8868\u60C5\u5931\u8D25", e);
           return [];
         }
       }
@@ -66937,19 +66947,19 @@ var require_tiff = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.TIFF = void 0;
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var utils_1 = require_utils3();
     function readIFD(input, filepath, isBigEndian) {
       const ifdOffset = (0, utils_1.readUInt)(input, 32, 4, isBigEndian);
       let bufferSize = 1024;
-      const fileSize = fs7.statSync(filepath).size;
+      const fileSize = fs8.statSync(filepath).size;
       if (ifdOffset + bufferSize > fileSize) {
         bufferSize = fileSize - ifdOffset - 10;
       }
       const endBuffer = new Uint8Array(bufferSize);
-      const descriptor = fs7.openSync(filepath, "r");
-      fs7.readSync(descriptor, endBuffer, 0, bufferSize, ifdOffset);
-      fs7.closeSync(descriptor);
+      const descriptor = fs8.openSync(filepath, "r");
+      fs8.readSync(descriptor, endBuffer, 0, bufferSize, ifdOffset);
+      fs8.closeSync(descriptor);
       return endBuffer.slice(2);
     }
     function readValue(input, isBigEndian) {
@@ -67166,7 +67176,7 @@ var require_dist = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.types = exports2.setConcurrency = exports2.disableTypes = exports2.disableFS = exports2.imageSize = void 0;
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var path8 = require("path");
     var queue_1 = require_queue();
     var index_1 = require_types();
@@ -67194,7 +67204,7 @@ var require_dist = __commonJS({
       throw new TypeError("unsupported file type: " + type + " (file: " + filepath + ")");
     }
     async function readFileAsync(filepath) {
-      const handle = await fs7.promises.open(filepath, "r");
+      const handle = await fs8.promises.open(filepath, "r");
       try {
         const { size } = await handle.stat();
         if (size <= 0) {
@@ -67209,18 +67219,18 @@ var require_dist = __commonJS({
       }
     }
     function readFileSync(filepath) {
-      const descriptor = fs7.openSync(filepath, "r");
+      const descriptor = fs8.openSync(filepath, "r");
       try {
-        const { size } = fs7.fstatSync(descriptor);
+        const { size } = fs8.fstatSync(descriptor);
         if (size <= 0) {
           throw new Error("Empty file");
         }
         const inputSize = Math.min(size, MaxInputSize);
         const input = new Uint8Array(inputSize);
-        fs7.readSync(descriptor, input, 0, inputSize, 0);
+        fs8.readSync(descriptor, input, 0, inputSize, 0);
         return input;
       } finally {
-        fs7.closeSync(descriptor);
+        fs8.closeSync(descriptor);
       }
     }
     module2.exports = exports2 = imageSize2;
@@ -67482,7 +67492,7 @@ var require_windows = __commonJS({
   "../node_modules/.pnpm/isexe@2.0.0/node_modules/isexe/windows.js"(exports2, module2) {
     module2.exports = isexe;
     isexe.sync = sync;
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     function checkPathExt(path8, options) {
       var pathext = options.pathExt !== void 0 ? options.pathExt : process.env.PATHEXT;
       if (!pathext) {
@@ -67507,12 +67517,12 @@ var require_windows = __commonJS({
       return checkPathExt(path8, options);
     }
     function isexe(path8, options, cb) {
-      fs7.stat(path8, function(er, stat) {
+      fs8.stat(path8, function(er, stat) {
         cb(er, er ? false : checkStat(stat, path8, options));
       });
     }
     function sync(path8, options) {
-      return checkStat(fs7.statSync(path8), path8, options);
+      return checkStat(fs8.statSync(path8), path8, options);
     }
   }
 });
@@ -67522,14 +67532,14 @@ var require_mode = __commonJS({
   "../node_modules/.pnpm/isexe@2.0.0/node_modules/isexe/mode.js"(exports2, module2) {
     module2.exports = isexe;
     isexe.sync = sync;
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     function isexe(path8, options, cb) {
-      fs7.stat(path8, function(er, stat) {
+      fs8.stat(path8, function(er, stat) {
         cb(er, er ? false : checkStat(stat, options));
       });
     }
     function sync(path8, options) {
-      return checkStat(fs7.statSync(path8), options);
+      return checkStat(fs8.statSync(path8), options);
     }
     function checkStat(stat, options) {
       return stat.isFile() && checkMode(stat, options);
@@ -67553,7 +67563,7 @@ var require_mode = __commonJS({
 // ../node_modules/.pnpm/isexe@2.0.0/node_modules/isexe/index.js
 var require_isexe = __commonJS({
   "../node_modules/.pnpm/isexe@2.0.0/node_modules/isexe/index.js"(exports2, module2) {
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var core;
     if (process.platform === "win32" || global.TESTING_WINDOWS) {
       core = require_windows();
@@ -69441,7 +69451,7 @@ var require_processor = __commonJS({
     "use strict";
     var spawn2 = require("child_process").spawn;
     var path8 = require("path");
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var async = require_async2();
     var utils4 = require_utils4();
     function runFfprobe(command) {
@@ -69837,7 +69847,7 @@ var require_processor = __commonJS({
 var require_capabilities = __commonJS({
   "../node_modules/.pnpm/fluent-ffmpeg@2.1.3/node_modules/fluent-ffmpeg/lib/capabilities.js"(exports2, module2) {
     "use strict";
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var path8 = require("path");
     var async = require_async2();
     var utils4 = require_utils4();
@@ -69876,7 +69886,7 @@ var require_capabilities = __commonJS({
           // Try FFMPEG_PATH
           function(cb) {
             if (process.env.FFMPEG_PATH) {
-              fs7.exists(process.env.FFMPEG_PATH, function(exists) {
+              fs8.exists(process.env.FFMPEG_PATH, function(exists) {
                 if (exists) {
                   cb(null, process.env.FFMPEG_PATH);
                 } else {
@@ -69913,7 +69923,7 @@ var require_capabilities = __commonJS({
           // Try FFPROBE_PATH
           function(cb) {
             if (process.env.FFPROBE_PATH) {
-              fs7.exists(process.env.FFPROBE_PATH, function(exists) {
+              fs8.exists(process.env.FFPROBE_PATH, function(exists) {
                 cb(null, exists ? process.env.FFPROBE_PATH : "");
               });
             } else {
@@ -69940,7 +69950,7 @@ var require_capabilities = __commonJS({
               } else if (ffmpeg3.length) {
                 var name = utils4.isWindows ? "ffprobe.exe" : "ffprobe";
                 var ffprobe2 = path8.join(path8.dirname(ffmpeg3), name);
-                fs7.exists(ffprobe2, function(exists) {
+                fs8.exists(ffprobe2, function(exists) {
                   cb(null, exists ? ffprobe2 : "");
                 });
               } else {
@@ -69964,7 +69974,7 @@ var require_capabilities = __commonJS({
           // Try FLVMETA_PATH
           function(cb) {
             if (process.env.FLVMETA_PATH) {
-              fs7.exists(process.env.FLVMETA_PATH, function(exists) {
+              fs8.exists(process.env.FLVMETA_PATH, function(exists) {
                 cb(null, exists ? process.env.FLVMETA_PATH : "");
               });
             } else {
@@ -69977,7 +69987,7 @@ var require_capabilities = __commonJS({
               return cb(null, flvtool);
             }
             if (process.env.FLVTOOL2_PATH) {
-              fs7.exists(process.env.FLVTOOL2_PATH, function(exists) {
+              fs8.exists(process.env.FLVTOOL2_PATH, function(exists) {
                 cb(null, exists ? process.env.FLVTOOL2_PATH : "");
               });
             } else {
@@ -70437,7 +70447,7 @@ var require_ffprobe = __commonJS({
 var require_recipes = __commonJS({
   "../node_modules/.pnpm/fluent-ffmpeg@2.1.3/node_modules/fluent-ffmpeg/lib/recipes.js"(exports2, module2) {
     "use strict";
-    var fs7 = require("fs");
+    var fs8 = require("fs");
     var path8 = require("path");
     var PassThrough = require("stream").PassThrough;
     var async = require_async2();
@@ -70637,9 +70647,9 @@ var require_recipes = __commonJS({
           },
           // Create output directory
           function createDirectory(filenames, next) {
-            fs7.exists(config.folder, function(exists) {
+            fs8.exists(config.folder, function(exists) {
               if (!exists) {
-                fs7.mkdir(config.folder, function(err) {
+                fs8.mkdir(config.folder, function(err) {
                   if (err) {
                     next(err);
                   } else {
@@ -77459,7 +77469,7 @@ var require_suspense = __commonJS({
 });
 
 // src/index.ts
-var import_log4js29 = __toESM(require_log4js());
+var import_log4js30 = __toESM(require_log4js());
 
 // src/models/db.ts
 var import_client = require("@prisma/client");
@@ -77471,7 +77481,7 @@ var import_telegram2 = __toESM(require_telegram());
 
 // src/services/ConfigService.ts
 var import_button = __toESM(require_button());
-var import_log4js5 = __toESM(require_log4js());
+var import_log4js6 = __toESM(require_log4js());
 
 // ../node_modules/.pnpm/axios@1.7.9/node_modules/axios/lib/helpers/bind.js
 function bind(fn, thisArg) {
@@ -80762,7 +80772,7 @@ var {
 // src/utils/urls.ts
 var https2 = __toESM(require("node:https"));
 function getAvatarUrl(room) {
-  if (!room || (typeof room === "number" && isNaN(room))) return "";
+  if (!room || typeof room === "number" && isNaN(room)) return "";
   if (typeof room === "object" && "uin" in room) {
     room = room.uin;
   }
@@ -80850,23 +80860,63 @@ async function getAboutText(entity, html2) {
   return text;
 }
 
+// src/services/ConfigService.ts
+init_random();
+init_posthog();
+init_OicqClient();
+var import_Helpers = __toESM(require_Helpers());
+
+// src/services/StickerService.ts
+var import_sharp = __toESM(require("sharp"));
+init_env();
+var import_log4js5 = __toESM(require_log4js());
+
+// src/utils/sleep.ts
+var sleep_default = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // src/services/StickerService.ts
 var DEFAULT_EMOJIS = [
-  "\uD83D\uDC4D", "\uD83D\uDE00", "\uD83D\uDE02", "\uD83D\uDE0D", "\uD83E\uDD14", "\uD83D\uDE0E", "\uD83C\uDF89", "\uD83D\uDD25", "\u2728", "\uD83D\uDC31",
-  "\uD83E\uDD7A", "\uD83E\uDD23", "\uD83D\uDC4C", "\uD83D\uDC4F", "\uD83E\uDD73", "\uD83D\uDE2D", "\uD83E\uDD24", "\uD83E\uDEE0", "\uD83E\uDEE1", "\uD83D\uDE44",
-  "\uD83D\uDC96", "\uD83D\uDCAf", "\uD83D\uDE4F", "\uD83D\uDC40", "\uD83E\uDD10", "\uD83D\uDE34", "\uD83D\uDE43", "\uD83D\uDE07", "\uD83D\uDC7B", "\uD83C\uDF1F"
+  "\u{1F44D}",
+  "\u{1F600}",
+  "\u{1F602}",
+  "\u{1F60D}",
+  "\u{1F914}",
+  "\u{1F60E}",
+  "\u{1F389}",
+  "\u{1F525}",
+  "\u2728",
+  "\u{1F431}",
+  "\u{1F97A}",
+  "\u{1F923}",
+  "\u{1F44C}",
+  "\u{1F44F}",
+  "\u{1F973}",
+  "\u{1F62D}",
+  "\u{1F924}",
+  "\u{1FAE0}",
+  "\u{1FAE1}",
+  "\u{1F644}",
+  "\u{1F496}",
+  "\u{1F4AF}",
+  "\u{1F64F}",
+  "\u{1F440}",
+  "\u{1F910}",
+  "\u{1F634}",
+  "\u{1F643}",
+  "\u{1F607}",
+  "\u{1F47B}",
+  "\u{1F31F}"
 ];
 var EMOJI_REGEX = /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u;
 var StickerService = class {
   log = (0, import_log4js5.getLogger)("StickerService");
   botToken = env_default.TG_BOT_TOKEN;
-
   async callBotApi(method, body, isMultipart = false) {
-    const url = `https://api.telegram.org/bot${this.botToken}/${method}`;
+    const url2 = `https://api.telegram.org/bot${this.botToken}/${method}`;
     let retries = 3;
     while (retries > 0) {
       try {
-        const res = await fetch(url, {
+        const res = await fetch(url2, {
           method: "POST",
           headers: isMultipart ? void 0 : { "Content-Type": "application/json" },
           body: isMultipart ? body : JSON.stringify(body)
@@ -80878,7 +80928,7 @@ var StickerService = class {
         if (data.error_code === 429) {
           const waitSec = data.parameters?.retry_after || 5;
           this.log.warn(`[callBotApi] 429 Rate limited on ${method}, waiting ${waitSec + 1}s...`);
-          await new Promise((r) => setTimeout(r, (waitSec + 1) * 1e3));
+          await sleep_default((waitSec + 1) * 1e3);
           retries--;
           continue;
         }
@@ -80888,39 +80938,36 @@ var StickerService = class {
         retries--;
         this.log.warn(`[callBotApi] Request error on ${method}:`, e.message);
         if (retries > 0) {
-          await new Promise((r) => setTimeout(r, 2e3));
+          await sleep_default(2e3);
         } else {
           throw e;
         }
       }
     }
   }
-
   pickEmoji(desc, index) {
     if (desc) {
-      const match = desc.match(EMOJI_REGEX);
-      if (match && match[0]) {
-        return match[0];
+      const match2 = desc.match(EMOJI_REGEX);
+      if (match2 && match2[0]) {
+        return match2[0];
       }
     }
     return DEFAULT_EMOJIS[index % DEFAULT_EMOJIS.length];
   }
-
   async convertImageToWebp(imageUrl) {
-    const sharpMod = require("sharp");
-    const sharp = sharpMod.default || sharpMod;
-    const res = await fetch(imageUrl, {
+    const res = await axios_default.get(imageUrl, {
+      responseType: "arraybuffer",
+      timeout: 15e3,
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       }
     });
-    const origBuf = Buffer.from(await res.arrayBuffer());
-    return await sharp(origBuf)
-      .resize(512, 512, { fit: "inside", withoutEnlargement: false })
-      .webp({ quality: 90 })
-      .toBuffer();
+    const inputBuffer = Buffer.from(res.data);
+    return await (0, import_sharp.default)(inputBuffer).resize(512, 512, {
+      fit: "inside",
+      withoutEnlargement: false
+    }).webp({ quality: 90 }).toBuffer();
   }
-
   async uploadStickerFile(userId, webpBuffer) {
     const formData = new FormData();
     formData.append("user_id", userId.toString());
@@ -80928,11 +80975,10 @@ var StickerService = class {
     formData.append("sticker", new Blob([webpBuffer], { type: "image/webp" }), "sticker.webp");
     const res = await this.callBotApi("uploadStickerFile", formData, true);
     if (!res.ok || !res.result?.file_id) {
-      throw new Error(res.description || "uploadStickerFile failed");
+      throw new Error(res.description || "uploadStickerFile \u5931\u8D25");
     }
     return res.result.file_id;
   }
-
   async importCustomFaces(userId, uin, instanceId, botUsername, faces, onProgress) {
     const total = faces.length;
     if (total === 0) {
@@ -80942,19 +80988,17 @@ var StickerService = class {
     let failCount = 0;
     let completedCount = 0;
     let lastProgressTime = 0;
-
     const reportProgress = async (text, force = false) => {
       const now = Date.now();
       if (force || now - lastProgressTime > 2500) {
         lastProgressTime = now;
         try {
           await onProgress?.(text);
-        } catch (_) {}
+        } catch (_2) {
+        }
       }
     };
-
-    await reportProgress(`🎨 准备处理 ${total} 个 QQ 收藏表情，正在转换并上传到 Telegram...`, true);
-
+    await reportProgress(`\u{1F3A8} \u51C6\u5907\u5904\u7406 ${total} \u4E2A QQ \u6536\u85CF\u8868\u60C5\uFF0C\u6B63\u5728\u8F6C\u6362\u5E76\u4E0A\u4F20\u5230 Telegram...`, true);
     const concurrency = 3;
     let nextIndex = 0;
     const worker = async () => {
@@ -80967,29 +81011,24 @@ var StickerService = class {
           const emoji = this.pickEmoji(face.desc, i);
           readyStickers.push({ fileId, emoji });
         } catch (e) {
-          this.log.warn(`[importCustomFaces] 处理第 ${i + 1} 个表情失败 (${face.url}):`, e.message);
+          this.log.warn(`[importCustomFaces] \u5904\u7406\u7B2C ${i + 1} \u4E2A\u8868\u60C5\u5931\u8D25 (${face.url}):`, e.message);
           failCount++;
         } finally {
           completedCount++;
-          const percent = Math.round((completedCount / total) * 100);
-          await reportProgress(`🎨 正在转换上传表情: ${completedCount}/${total} (${percent}%)，已就绪: ${readyStickers.length} 个`);
+          const percent = Math.round(completedCount / total * 100);
+          await reportProgress(`\u{1F3A8} \u6B63\u5728\u8F6C\u6362\u4E0A\u4F20\u8868\u60C5: ${completedCount}/${total} (${percent}%)\uFF0C\u5DF2\u5C31\u7EEA: ${readyStickers.length} \u4E2A`);
         }
       }
     };
-
     const workers = Array.from({ length: concurrency }, () => worker());
     await Promise.all(workers);
-
     if (readyStickers.length === 0) {
       return { total, success: 0, failed: failCount, packs: [] };
     }
-
     const MAX_PER_PACK = 120;
     const packCount = Math.ceil(readyStickers.length / MAX_PER_PACK);
     const createdPacks = [];
-
-    await reportProgress(`📦 表情上传完成（成功 ${readyStickers.length}，跳过 ${failCount}）。正在生成 ${packCount} 个表情包...`, true);
-
+    await reportProgress(`\u{1F4E6} \u8868\u60C5\u4E0A\u4F20\u5B8C\u6210\uFF08\u6210\u529F ${readyStickers.length}\uFF0C\u8DF3\u8FC7 ${failCount}\uFF09\u3002\u6B63\u5728\u751F\u6210 ${packCount} \u4E2A\u8868\u60C5\u5305...`, true);
     for (let p = 0; p < packCount; p++) {
       const packNum = p + 1;
       const chunk = readyStickers.slice(p * MAX_PER_PACK, (p + 1) * MAX_PER_PACK);
@@ -80997,20 +81036,17 @@ var StickerService = class {
       const cleanBotName = botUsername.replace(/[^a-zA-Z0-9_]/g, "");
       const rawPackName = `qq_fav${packSuffix}_${uin}_by_${cleanBotName}`;
       const packName = rawPackName.replace(/[^a-zA-Z0-9_]/g, "_").replace(/_+/g, "_").slice(0, 64);
-      const packTitle = packCount === 1 ? "QQ 收藏表情" : `QQ 收藏表情 (${packNum})`;
-
-      await reportProgress(`📦 正在生成表情包 [${packTitle}] (${chunk.length} 个表情)...`, true);
-
+      const packTitle = packCount === 1 ? "QQ \u6536\u85CF\u8868\u60C5" : `QQ \u6536\u85CF\u8868\u60C5 (${packNum})`;
+      await reportProgress(`\u{1F4E6} \u6B63\u5728\u751F\u6210\u8868\u60C5\u5305 [${packTitle}] (${chunk.length} \u4E2A\u8868\u60C5)...`, true);
       try {
         await this.callBotApi("deleteStickerSet", { name: packName });
-      } catch (_) {}
-
+      } catch (_2) {
+      }
       const initialStickers = chunk.slice(0, 50).map((s) => ({
         sticker: s.fileId,
         format: "static",
         emoji_list: [s.emoji]
       }));
-
       const createRes = await this.callBotApi("createNewStickerSet", {
         user_id: Number(userId),
         name: packName,
@@ -81018,12 +81054,10 @@ var StickerService = class {
         sticker_format: "static",
         stickers: initialStickers
       });
-
       if (!createRes.ok) {
-        this.log.error(`[importCustomFaces] 创建表情包 ${packName} 失败:`, createRes);
+        this.log.error(`[importCustomFaces] \u521B\u5EFA\u8868\u60C5\u5305 ${packName} \u5931\u8D25:`, createRes);
         continue;
       }
-
       for (let j = 50; j < chunk.length; j++) {
         const stk = chunk[j];
         await this.callBotApi("addStickerToSet", {
@@ -81036,11 +81070,10 @@ var StickerService = class {
           }
         });
         if (j % 10 === 0) {
-          await reportProgress(`📦 表情包 [${packTitle}]: 已写入 ${j + 1}/${chunk.length} 个表情...`);
+          await reportProgress(`\u{1F4E6} \u8868\u60C5\u5305 [${packTitle}]: \u5DF2\u5199\u5165 ${j + 1}/${chunk.length} \u4E2A\u8868\u60C5...`);
         }
-        await new Promise((r) => setTimeout(r, 100));
+        await sleep_default(100);
       }
-
       createdPacks.push({
         name: packName,
         title: packTitle,
@@ -81048,7 +81081,6 @@ var StickerService = class {
         count: chunk.length
       });
     }
-
     return {
       total,
       success: readyStickers.length,
@@ -81059,10 +81091,6 @@ var StickerService = class {
 };
 
 // src/services/ConfigService.ts
-init_random();
-init_posthog();
-init_OicqClient();
-var import_Helpers = __toESM(require_Helpers());
 var DEFAULT_FILTER_ID = 114;
 var ConfigService = class {
   constructor(instance, tgBot, tgUser, oicq) {
@@ -81070,12 +81098,12 @@ var ConfigService = class {
     this.tgBot = tgBot;
     this.tgUser = tgUser;
     this.oicq = oicq;
-    this.log = (0, import_log4js5.getLogger)(`ConfigService - ${instance.id}`);
+    this.log = (0, import_log4js6.getLogger)(`ConfigService - ${instance.id}`);
     this.owner = tgBot.getChat(this.instance.owner);
   }
-  stickerService = new StickerService();
   owner;
   log;
+  stickerService = new StickerService();
   getAssociateLink(roomId) {
     return `https://t.me/${this.tgBot.me.username}?startgroup=${roomId}`;
   }
@@ -81398,14 +81426,14 @@ ${group.gid}`;
   async importStickers(targetCount) {
     const ownerChat = await this.owner;
     const statusMsg = await ownerChat.sendMessage("\u{1F3A8} \u6B63\u5728\u4ECE QQ \u8BFB\u53D6\u6536\u85CF\u8868\u60C5\u5217\u8868...");
-    const faces = await this.oicq.getCustomFaceList(targetCount || 1000);
+    const faces = await this.oicq.getCustomFaceList(targetCount || 1e3);
     if (!faces || faces.length === 0) {
       await statusMsg.edit({
         text: "\u274C \u672A\u83B7\u53D6\u5230 QQ \u6536\u85CF\u8868\u60C5\u3002\u8BF7\u786E\u8BA4 QQ \u662F\u5426\u5DF2\u767B\u5F55\uFF0C\u4E14\u5DF2\u5728\u624B\u673A/\u7535\u8111 QQ \u4E2D\u6DFB\u52A0\u4E86\u81EA\u5B9A\u4E49\u6536\u85CF\u8868\u60C5\u3002"
       });
       return;
     }
-    const botUsername = this.tgBot.me?.username || "bot";
+    const botUsername = this.tgBot.me.username || "bot";
     const ownerId = this.instance.owner.toString();
     let lastText = "";
     const onProgress = async (text) => {
@@ -81413,7 +81441,8 @@ ${group.gid}`;
         lastText = text;
         try {
           await statusMsg.edit({ text });
-        } catch (_) {}
+        } catch (_2) {
+        }
       }
     };
     try {
@@ -81434,11 +81463,20 @@ ${group.gid}`;
       const packListText = result.packs.map((p, idx) => {
         return `${idx + 1}. <a href="${p.link}">${p.title}</a> (\u5171 ${p.count} \u4E2A\u8868\u60C5)`;
       }).join("\n");
-      const finishSummary = `\u{1F389} <b>QQ \u6536\u85CF\u8868\u60C5\u5BFC\u5165\u5B8C\u6210\uFF01</b>\n\n\u2022 \u626B\u63CF\u5230 QQ \u6536\u85CF\u8868\u60C5: ${result.total} \u4E2A\n\u2022 \u6210\u529F\u5BFC\u5165: ${result.success} \u4E2A\n` + (result.failed > 0 ? `\u2022 \u8DF3\u8FC7\u5931\u8D25: ${result.failed} \u4E2A\n` : "") + `\u2022 \u751F\u6210\u8868\u60C5\u5305: ${result.packs.length} \u5957\n\n<b>\u70B9\u51FB\u4E0B\u65B9\u94FE\u63A5\u4E00\u952E\u6DFB\u52A0\u5230 Telegram\uFF1A</b>\n${packListText}\n\n\u{1F4A1} <i>\u6DFB\u52A0\u540E\u5373\u53EF\u5728\u4EFB\u610F Telegram \u4F1A\u8BDD\u4E2D\u4F7F\u7528\uFF1B\u5728\u5173\u8054\u7FA4/\u597D\u53CB\u804A\u5929\u4E2D\u53D1\u9001\u8FD9\u4E9B\u8868\u60C5\u5C06\u81EA\u52A8\u8F6C\u53D1\u81F3 QQ\uFF01</i>`;
+      const finishSummary = `\u{1F389} <b>QQ \u6536\u85CF\u8868\u60C5\u5BFC\u5165\u5B8C\u6210\uFF01</b>
+
+\u2022 \u626B\u63CF\u5230 QQ \u6536\u85CF\u8868\u60C5: ${result.total} \u4E2A
+\u2022 \u6210\u529F\u5BFC\u5165: ${result.success} \u4E2A
+` + (result.failed > 0 ? `\u2022 \u8DF3\u8FC7\u5931\u8D25: ${result.failed} \u4E2A
+` : "") + `\u2022 \u751F\u6210\u8868\u60C5\u5305: ${result.packs.length} \u5957
+
+<b>\u70B9\u51FB\u4E0B\u65B9\u94FE\u63A5\u4E00\u952E\u6DFB\u52A0\u5230 Telegram\uFF1A</b>
+${packListText}
+
+\u{1F4A1} <i>\u6DFB\u52A0\u540E\u5373\u53EF\u5728\u4EFB\u610F Telegram \u4F1A\u8BDD\u4E2D\u4F7F\u7528\uFF1B\u5728\u5173\u8054\u7FA4/\u597D\u53CB\u804A\u5929\u4E2D\u53D1\u9001\u8FD9\u4E9B\u8868\u60C5\u5C06\u81EA\u52A8\u8F6C\u53D1\u81F3 QQ\uFF01</i>`;
       await statusMsg.edit({ text: finishSummary });
     } catch (e) {
       this.log.error("importStickers error:", e);
-      init_posthog();
       posthog_default.capture("importStickers \u51FA\u9519", { error: e.message });
       await statusMsg.edit({
         text: `\u274C \u5BFC\u5165\u8868\u60C5\u5305\u8FC7\u7A0B\u4E2D\u53D1\u751F\u9519\u8BEF: <code>${e.message}</code>`
@@ -81560,7 +81598,7 @@ var regExps_default = {
 };
 
 // src/controllers/ConfigController.ts
-var import_log4js6 = __toESM(require_log4js());
+var import_log4js7 = __toESM(require_log4js());
 
 // src/constants/flags.ts
 var flags = /* @__PURE__ */ ((flags2) => {
@@ -81636,7 +81674,7 @@ var ConfigController = class {
     this.tgBot = tgBot;
     this.tgUser = tgUser;
     this.oicq = oicq;
-    this.log = (0, import_log4js6.getLogger)(`ConfigController - ${instance.id}`);
+    this.log = (0, import_log4js7.getLogger)(`ConfigController - ${instance.id}`);
     this.configService = new ConfigService(this.instance, tgBot, tgUser, oicq);
     tgBot.addNewMessageEventHandler(this.handleMessage);
     tgBot.addNewServiceMessageEventHandler(this.handleServiceMessage);
@@ -82215,14 +82253,14 @@ var TelegramChat = class {
 // src/models/TelegramSession.ts
 var import_sessions = __toESM(require_sessions());
 var import_AuthKey = __toESM(require_AuthKey());
-var import_log4js7 = __toESM(require_log4js());
+var import_log4js8 = __toESM(require_log4js());
 init_env();
 var PASS = () => 0;
 var TelegramSession = class extends import_sessions.MemorySession {
   constructor(_dbId) {
     super();
     this._dbId = _dbId;
-    this.log = (0, import_log4js7.getLogger)(`TelegramSession - ${_dbId}`);
+    this.log = (0, import_log4js8.getLogger)(`TelegramSession - ${_dbId}`);
   }
   log;
   get dbId() {
@@ -82245,7 +82283,7 @@ var TelegramSession = class extends import_sessions.MemorySession {
         }
       });
       this._dbId = newDbEntry.id;
-      this.log = (0, import_log4js7.getLogger)(`TelegramSession - ${this._dbId}`);
+      this.log = (0, import_log4js8.getLogger)(`TelegramSession - ${this._dbId}`);
       return;
     }
     const dbEntry = await db_default.session.findFirst({
@@ -82537,14 +82575,14 @@ var Telegram = class {
 };
 
 // src/services/SetupService.ts
-var import_log4js8 = __toESM(require_log4js());
+var import_log4js9 = __toESM(require_log4js());
 var import_button4 = __toESM(require_button());
 init_QQClient();
 var SetupService = class {
   constructor(instance, tgBot) {
     this.instance = instance;
     this.tgBot = tgBot;
-    this.log = (0, import_log4js8.getLogger)(`SetupService - ${instance.id}`);
+    this.log = (0, import_log4js9.getLogger)(`SetupService - ${instance.id}`);
   }
   owner;
   log;
@@ -82636,7 +82674,7 @@ var SetupService = class {
 
 // src/controllers/SetupController.ts
 var import_telegram7 = __toESM(require_telegram());
-var import_log4js9 = __toESM(require_log4js());
+var import_log4js10 = __toESM(require_log4js());
 var import_button5 = __toESM(require_button());
 
 // src/helpers/setupHelper.ts
@@ -82700,7 +82738,7 @@ var commonPrivateCommands = [
   }),
   new import_telegram6.Api.BotCommand({
     command: "import_stickers",
-    description: "🎨 一键导入 QQ 收藏表情到 Telegram 表情包"
+    description: "\u{1F3A8} \u4E00\u952E\u5BFC\u5165 QQ \u6536\u85CF\u8868\u60C5\u5230 Telegram \u8868\u60C5\u5305"
   })
 ];
 var groupPrivateCommands = [
@@ -82825,7 +82863,7 @@ var SetupController = class {
   constructor(instance, tgBot) {
     this.instance = instance;
     this.tgBot = tgBot;
-    this.log = (0, import_log4js9.getLogger)(`SetupController - ${instance.id}`);
+    this.log = (0, import_log4js10.getLogger)(`SetupController - ${instance.id}`);
     this.setupService = new SetupService(this.instance, tgBot);
     tgBot.addNewMessageEventHandler(this.handleMessage);
     tgBot.setCommands(commands_default.preSetupCommands, new import_telegram7.Api.BotCommandScopeUsers());
@@ -83018,12 +83056,12 @@ ${e.message}`);
 // src/services/ForwardService.ts
 var import_icqq4 = require("@icqqjs/icqq");
 var import_internal = require("@icqqjs/icqq/lib/internal");
-var import_log4js12 = __toESM(require_log4js());
+var import_log4js14 = __toESM(require_log4js());
 
 // src/helpers/forwardHelper.ts
 var import_uploads3 = __toESM(require_uploads());
 var import_nodejs_base64 = __toESM(require_src3());
-var import_log4js10 = __toESM(require_log4js());
+var import_log4js11 = __toESM(require_log4js());
 var import_telegram8 = __toESM(require_telegram());
 var import_image_size = __toESM(require_dist());
 init_env();
@@ -86964,7 +87002,7 @@ var makeHeaderImage_default = makeHeaderImage;
 
 // src/helpers/forwardHelper.ts
 var import_promises5 = __toESM(require("fs/promises"));
-var log = (0, import_log4js10.getLogger)("ForwardHelper");
+var log = (0, import_log4js11.getLogger)("ForwardHelper");
 var htmlEscape = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 var bufferOrPathCustomFile = (filename, bufferOrPath) => {
   if (!bufferOrPath) throw new Error("[bufferOrPathCustomFile] bufferOrPath is empty");
@@ -87079,7 +87117,7 @@ var forwardHelper_default = {
       text = xml.match(urlRegex)[1].replace(/\\\//g, "/");
     if (xml.includes('action="viewMultiMsg"')) {
       text = "[Forward multiple messages]";
-      const resIdRegex = /m_resid="([\w+=/]+)"/;
+      const resIdRegex = /m_resid="([^"]+)"/;
       if (resIdRegex.test(xml)) {
         const resId = xml.match(resIdRegex)[1];
         return {
@@ -87087,6 +87125,10 @@ var forwardHelper_default = {
           resId
         };
       }
+      return {
+        type: "text",
+        text
+      };
     } else if (text) {
       text = text.replace(/&amp;/g, "&");
       return {
@@ -87122,14 +87164,17 @@ var forwardHelper_default = {
     return res;
   },
   generateForwardBrief(messages) {
+    if (!Array.isArray(messages)) return "<b>\u8F6C\u53D1\u7684\u6D88\u606F\u8BB0\u5F55</b>";
     const count = messages.length;
-    messages = messages.slice(0, 4);
+    const displayMessages = messages.slice(0, 4);
     let result = "<b>\u8F6C\u53D1\u7684\u6D88\u606F\u8BB0\u5F55</b>";
-    for (const message2 of messages) {
+    for (const message2 of displayMessages) {
+      const nick = message2.nickname || "QQ\u7528\u6237";
+      const raw = message2.raw_message || (Array.isArray(message2.message) ? message2.message.map((m) => m.text || `[${m.type}]`).join("") : "");
       result += `
-<b>${message2.nickname}: </b>${htmlEscape(message2.raw_message.length > 10 ? message2.raw_message.substring(0, 10) + "\u2026" : message2.raw_message)}`;
+<b>${htmlEscape(nick)}: </b>${htmlEscape(raw.length > 10 ? raw.substring(0, 10) + "\u2026" : raw)}`;
     }
-    if (count > messages.length) {
+    if (count > displayMessages.length) {
       result += `
 <b>\u5171 ${count} \u6761\u6D88\u606F\u8BB0\u5F55</b>`;
     }
@@ -87221,6 +87266,13 @@ var import_eviltransform = __toESM(require_transform());
 var import_fluent_ffmpeg = __toESM(require_fluent_ffmpeg2());
 var import_tmp_promise2 = __toESM(require_tmp_promise());
 var import_promises6 = __toESM(require("fs/promises"));
+init_env();
+if (env_default.FFMPEG_PATH) {
+  import_fluent_ffmpeg.default.setFfmpegPath(env_default.FFMPEG_PATH);
+}
+if (env_default.FFPROBE_PATH) {
+  import_fluent_ffmpeg.default.setFfprobePath(env_default.FFPROBE_PATH);
+}
 var silkPkg;
 function getSilk() {
   if (!silkPkg) {
@@ -87233,7 +87285,7 @@ function getSilk() {
   return silkPkg;
 }
 var conventOggToPcm = (oggPath, tmpFilePath) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     (0, import_fluent_ffmpeg.default)(oggPath).outputFormat("s16le").outputOptions([
       "-ar",
       "24000",
@@ -87241,13 +87293,11 @@ var conventOggToPcm = (oggPath, tmpFilePath) => {
       "1",
       "-acodec",
       "pcm_s16le"
-    ]).on("end", async () => {
-      resolve();
-    }).save(tmpFilePath);
+    ]).on("end", () => resolve()).on("error", reject).save(tmpFilePath);
   });
 };
 var conventPcmToOgg = (pcmPath, savePath) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     (0, import_fluent_ffmpeg.default)(pcmPath).inputOption([
       "-f",
       "s16le",
@@ -87255,30 +87305,46 @@ var conventPcmToOgg = (pcmPath, savePath) => {
       "24000",
       "-ac",
       "1"
-    ]).outputFormat("ogg").on("end", async () => {
-      resolve();
-    }).save(savePath);
+    ]).outputFormat("ogg").audioCodec("libopus").audioChannels(1).audioFrequency(48e3).on("end", () => resolve()).on("error", reject).save(savePath);
+  });
+};
+var convertToVoiceOgg = (inputPath, savePath) => {
+  return new Promise((resolve, reject) => {
+    (0, import_fluent_ffmpeg.default)(inputPath).outputFormat("ogg").audioCodec("libopus").audioChannels(1).audioFrequency(48e3).on("end", () => resolve()).on("error", reject).save(savePath);
   });
 };
 var silk_default = {
   async encode(oggPath) {
     const { path: path8, cleanup } = await (0, import_tmp_promise2.file)();
-    await conventOggToPcm(oggPath, path8);
-    const bufSilk = getSilk().encode(path8, {
-      tencent: true
-    });
-    await cleanup();
-    return bufSilk;
+    try {
+      await conventOggToPcm(oggPath, path8);
+      const bufSilk = getSilk().encode(path8, {
+        tencent: true
+      });
+      return bufSilk;
+    } finally {
+      await cleanup().catch(() => {
+      });
+    }
   },
   async decode(bufSilk, outputPath) {
     const bufPcm = getSilk().decode(bufSilk);
     const { path: path8, cleanup } = await (0, import_tmp_promise2.file)();
-    await import_promises6.default.writeFile(path8, bufPcm);
-    await conventPcmToOgg(path8, outputPath);
-    cleanup();
+    try {
+      await import_promises6.default.writeFile(path8, bufPcm);
+      await conventPcmToOgg(path8, outputPath);
+    } finally {
+      await cleanup().catch(() => {
+      });
+    }
+  },
+  convertToVoiceOgg,
+  isSilk(buf) {
+    if (!buf || buf.length < 9) return false;
+    return buf.subarray(0, 9).toString().includes("#!SILK_V3") || buf.length > 10 && buf.subarray(1, 10).toString().includes("#!SILK_V3");
   },
   conventOggToPcm16000: (oggPath, tmpFilePath) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       (0, import_fluent_ffmpeg.default)(oggPath).outputFormat("s16le").outputOptions([
         "-ar",
         "16000",
@@ -87286,9 +87352,7 @@ var silk_default = {
         "1",
         "-acodec",
         "pcm_s16le"
-      ]).on("end", async () => {
-        resolve();
-      }).save(tmpFilePath);
+      ]).on("end", () => resolve()).on("error", reject).save(tmpFilePath);
     });
   }
 };
@@ -87339,15 +87403,15 @@ var emoji_default = {
 // src/helpers/convert.ts
 var import_fs4 = __toESM(require("fs"));
 var import_path5 = __toESM(require("path"));
-var import_sharp = __toESM(require("sharp"));
+var import_sharp2 = __toESM(require("sharp"));
 var import_tmp_promise3 = __toESM(require_tmp_promise());
 var import_promises8 = __toESM(require("fs/promises"));
 
 // src/encoding/convertWithFfmpeg.ts
 var import_fluent_ffmpeg2 = __toESM(require_fluent_ffmpeg2());
-var import_log4js11 = __toESM(require_log4js());
+var import_log4js12 = __toESM(require_log4js());
 var import_promises7 = __toESM(require("fs/promises"));
-var logger = (0, import_log4js11.getLogger)("convertWithFfmpeg");
+var logger = (0, import_log4js12.getLogger)("convertWithFfmpeg");
 function convertWithFfmpeg_default(sourcePath, targetPath, format2, srcFormat) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -87418,7 +87482,7 @@ var convert = {
   }),
   // webp2png，这里 webpData 是方法因为不需要的话就不获取了
   png: (key, webpData) => cachedConvert(key + ".png", async (convertedPath) => {
-    await (0, import_sharp.default)(await webpData()).png().toFile(convertedPath);
+    await (0, import_sharp2.default)(await webpData()).png().toFile(convertedPath);
   }),
   video2gif: (key, webmData, webm = false) => cachedConvert(key + ".gif", async (convertedPath) => {
     const temp = await (0, import_tmp_promise3.file)();
@@ -87433,7 +87497,7 @@ var convert = {
     await import_promises8.default.rm(tempTgsPath);
   }),
   webp: (key, imageData) => cachedConvert(key + ".webp", async (convertedPath) => {
-    await (0, import_sharp.default)(await imageData()).webp().toFile(convertedPath);
+    await (0, import_sharp2.default)(await imageData()).webp().toFile(convertedPath);
   }),
   webm: (key, filePath) => cachedConvert(key + ".webm", async (convertedPath) => {
     await convertWithFfmpeg_default(filePath, convertedPath, "webm");
@@ -87470,11 +87534,11 @@ var convert = {
     if (!useSmallSize) return pathPngOrig || pathGifOrig;
     if (pathPngOrig) {
       return await cachedConvert(key + "@50.png", async (convertedPath) => {
-        await (0, import_sharp.default)(pathPngOrig).resize(50).toFile(convertedPath);
+        await (0, import_sharp2.default)(pathPngOrig).resize(50).toFile(convertedPath);
       });
     } else {
       return await cachedConvert(key + "@50.gif", async (convertedPath) => {
-        await (0, import_sharp.default)(pathGifOrig).resize(50).toFile(convertedPath);
+        await (0, import_sharp2.default)(pathGifOrig).resize(50).toFile(convertedPath);
       });
     }
   }
@@ -88180,3099 +88244,7 @@ var atHelper_default = atHelper;
 
 // src/services/ForwardService.ts
 var import_path6 = __toESM(require("path"));
-var ReplyKeyboardHide = import_telegram9.Api.ReplyKeyboardHide;
-var NOT_CHAINABLE_ELEMENTS = ["flash", "record", "video", "location", "share", "json", "xml", "poke"];
-var IMAGE_MIMES = ["image/jpeg", "image/png", "image/apng", "image/webp", "image/gif", "image/bmp", "image/tiff", "image/x-icon", "image/avif", "image/heic", "image/heif"];
-var createTempFile3 = (options = {}) => (0, import_tmp_promise4.file)({
-  tmpdir: env_default.CACHE_DIR,
-  ...options
-});
-var ForwardService = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    this.log = (0, import_log4js12.getLogger)(`ForwardService - ${instance.id}`);
-    if (oicq instanceof OicqClient && oicq.signDockerId) {
-      const socket = new import_dockerode.default({ socketPath: "/var/run/docker.sock" });
-      const container = socket.getContainer(oicq.signDockerId);
-      this.restartSignCallbackHandle = tgBot.registerCallback(async (event) => {
-        const message2 = await event.edit({
-          message: event.messageId,
-          text: "\u6B63\u5728\u91CD\u542F\u7B7E\u540D\u670D\u52A1...",
-          buttons: new ReplyKeyboardHide({})
-        });
-        await container.restart();
-        await event.answer({
-          message: "\u5DF2\u53D1\u9001\u91CD\u542F\u6307\u4EE4"
-        });
-        await message2.reply({
-          message: "\u5DF2\u53D1\u9001\u91CD\u542F\u6307\u4EE4\n\u4F60\u9700\u8981\u7A0D\u540E\u91CD\u65B0\u53D1\u9001\u4E00\u4E0B\u6D88\u606F"
-        });
-      });
-    }
-    this.initStickerPack().then(() => this.log.info("Sticker Pack \u521D\u59CB\u5316\u5B8C\u6210")).catch((e) => {
-      posthog_default.capture("Sticker Pack \u521D\u59CB\u5316\u5931\u8D25", { error: e });
-      this.log.warn("Sticker Pack \u521D\u59CB\u5316\u5931\u8D25", e);
-    });
-  }
-  log;
-  restartSignCallbackHandle;
-  stickerPackMap = {};
-  async initStickerPack() {
-    for (const handle of Object.keys(lottie_default.packInfo)) {
-      const pack = await this.tgBot.getStickerSet(handle);
-      this.stickerPackMap[handle] = pack.documents;
-    }
-  }
-  getStickerByQQFaceId(id, resultId) {
-    if (!id) return;
-    for (const [pack, ids] of Object.entries(lottie_default.packInfo)) {
-      if (resultId && ids.includes(`${id}_${resultId}`)) {
-        if (this.stickerPackMap[pack])
-          return this.stickerPackMap[pack][ids.indexOf(`${id}_${resultId}`)];
-      }
-      if (ids.includes(id.toString())) {
-        if (this.stickerPackMap[pack])
-          return this.stickerPackMap[pack][ids.indexOf(id.toString())];
-      }
-    }
-  }
-  getFaceByTgFileId(fileId) {
-    for (const [pack, documents] of Object.entries(this.stickerPackMap)) {
-      for (const document2 of documents) {
-        if (document2.id.eq(fileId)) {
-          const id = lottie_default.packInfo[pack][documents.indexOf(document2)];
-          const ids = id.split("_");
-          return {
-            type: "face",
-            id: parseInt(ids[0]),
-            resultId: ids[1],
-            stickerType: 1
-          };
-        }
-      }
-    }
-  }
-  crhPlayerInfo = /* @__PURE__ */ new Map();
-  async forwardFromQq(event, pair) {
-    const tempFiles = [], messageToSend = {};
-    try {
-      let message2 = "", files = [], buttons = [], replyTo = 0, forceDocument = false, isContainAtOrChannelFace = false;
-      let messageHeader = "", messageHeaderWithLink = "", sender = "";
-      if (!event.dm) {
-        sender = event.from.name;
-        if (event.anonymous) {
-          sender = `[${sender}]${event.anonymous.name}`;
-        }
-        if ((pair.flags | this.instance.flags) & flags_default.COLOR_EMOJI_PREFIX) {
-          messageHeader += emoji_default.color(event.from.id);
-          messageHeaderWithLink += emoji_default.color(event.from.id);
-        }
-        messageHeader += `<b>${forwardHelper_default.htmlEscape(sender)}</b>: `;
-        messageHeaderWithLink += `<b><a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader)}">${forwardHelper_default.htmlEscape(sender)}</a></b>: `;
-      }
-      const useSticker = (file2) => {
-        files.push(file2);
-        if (!event.dm) {
-          if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
-            buttons.push(import_button6.Button.url(`${sender}:`, forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader)));
-          } else {
-            buttons.push(import_button6.Button.inline(`${sender}:`));
-          }
-          messageHeader = messageHeaderWithLink = "";
-        }
-      };
-      const useForward = async (resId, fileName, messages) => {
-        if (!messages) {
-          try {
-            messages = await pair.qq.getForwardMsg(resId, fileName);
-          } catch (e) {
-            posthog_default.capture("\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u65E0\u6CD5\u83B7\u53D6\uFF09", { error: e });
-            message2 = "[<i>\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u65E0\u6CD5\u83B7\u53D6\uFF09</i>]";
-          }
-        }
-        if (messages)
-          message2 = forwardHelper_default.generateForwardBrief(messages);
-        if (env_default.WEB_ENDPOINT) {
-          const dbEntry = await db_default.forwardMultiple.create({
-            data: { resId, fileName, fromPairId: pair.dbId }
-          });
-          const hash = dbEntry.id;
-          const viewerUrl = env_default.CRV_VIEWER_APP ? `${env_default.CRV_VIEWER_APP}?startapp=${hash}` : `${env_default.WEB_ENDPOINT}/ui/chatRecord?tgWebAppStartParam=${hash}`;
-          buttons.push(import_button6.Button.url("\u{1F4C3}\u67E5\u770B", viewerUrl));
-        } else if (env_default.CRV_API) {
-          if (!message2) return;
-          const hash = md5Hex(resId);
-          const viewerUrl = env_default.CRV_VIEWER_APP ? `${env_default.CRV_VIEWER_APP}?startapp=${hash}` : `${env_default.CRV_API}/?hash=${hash}`;
-          buttons.push(import_button6.Button.url("\u{1F4C3}\u67E5\u770B", viewerUrl));
-          axios_default.post(`${env_default.CRV_API}/add`, {
-            auth: env_default.CRV_KEY,
-            key: hash,
-            data: messages
-          }).then((data) => this.log.trace("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare", data.data)).catch((e) => {
-            this.log.error("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare \u5931\u8D25", e);
-            posthog_default.capture("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare \u5931\u8D25", { error: e });
-          });
-        } else {
-          message2 = "[<i>\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u672A\u914D\u7F6E\uFF09</i>]";
-        }
-      };
-      const useCrhTrain = async () => {
-        let existed = this.crhPlayerInfo.get(pair);
-        if (!existed) {
-          existed = {
-            users: [],
-            tgMessage: null
-          };
-          this.crhPlayerInfo.set(pair, existed);
-        }
-        if (!existed.users.some((it) => it.id === event.from.id)) {
-          existed.users.push({ id: event.from.id, name: event.from.name });
-        }
-        const message3 = `<i>\u4EE5\u4E0B\u6210\u5458\u63A5\u4E86\u706B\u8F66\uFF1A</i>
-
-` + existed.users.map((it) => `<b><a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, it.id)}">${it.name}</a></b>`).join("\n");
-        if (existed.tgMessage) {
-          try {
-            existed.tgMessage = await existed.tgMessage.edit({
-              text: message3
-            });
-          } catch (e) {
-          }
-        } else {
-          existed.tgMessage = await pair.tg.sendMessage(message3);
-        }
-      };
-      const chain = event.message.filter((elem) => !(elem.type === "at" && elem.qq === this.oicq.uin)).filter((elem) => !(elem.type === "at" && elem.qq === event.replyTo?.fromId)).filter((elem) => !(elem.type === "text" && event.message.some((it) => it.type === "face" && it.text === elem.text)));
-      messageElemLoop: for (let elem of chain) {
-        if (elem.type === "flash" && (pair.flags | this.instance.flags) & flags_default.DISABLE_FLASH_PIC) {
-          message2 += "<i>[\u95EA\u7167]</i>";
-          elem = {
-            ...elem,
-            type: "image"
-          };
-        }
-        let url2;
-        switch (elem.type) {
-          case "markdown":
-          case "text": {
-            let text = elem.type === "text" ? elem.text : elem.content;
-            const WECHAT_ARTICLE_REGEX = /https?:\/\/mp\.weixin\.qq\.com\/[0-9a-zA-Z\-_+=&?#\/]+/;
-            if (WECHAT_ARTICLE_REGEX.test(text)) {
-              const instantViewUrl = new URL("https://t.me/iv");
-              instantViewUrl.searchParams.set("url", WECHAT_ARTICLE_REGEX.exec(text)[0]);
-              instantViewUrl.searchParams.set("rhash", "45756f9b0bb3c6");
-              message2 += `<a href="${instantViewUrl}">\u200E</a>`;
-            }
-            message2 += forwardHelper_default.htmlEscape(text);
-            if (text === "[\u8BE5\u63A5\u9F99\u8868\u60C5\u4E0D\u652F\u6301\u67E5\u770B\uFF0C\u8BF7\u4F7F\u7528QQ\u6700\u65B0\u7248\u672C]") {
-              await useCrhTrain();
-              return { tgMessage: null, richHeaderUsed: false };
-            }
-            break;
-          }
-          case "at": {
-            if (!elem.text) {
-              if (isNaN(elem.qq) || elem.qq === "all") {
-                elem.text = `@\u5168\u4F53\u6210\u5458`;
-              } else {
-                try {
-                  const member = pair.qq.pickMember(elem.qq);
-                  const info = await member.renew();
-                  elem.text = `@${info?.card || info?.nickname || elem.qq}`;
-                } catch {
-                  elem.text = `@${elem.qq}`;
-                }
-              }
-            }
-            if (env_default.WEB_ENDPOINT && typeof elem.qq === "number" && !((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER)) {
-              message2 += `<a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, elem.qq)}">[<i>${forwardHelper_default.htmlEscape(elem.text)}</i>]</a>`;
-              isContainAtOrChannelFace = true;
-            } else {
-              message2 += `<b>${forwardHelper_default.htmlEscape(elem.text)}</b> `;
-            }
-            break;
-          }
-          case "face":
-            const tgs = this.getStickerByQQFaceId(elem.id, elem.resultId);
-            if (tgs && chain.length === 1) {
-              useSticker(tgs);
-            }
-          case "sface": {
-            if (typeof elem.text !== "string") {
-              if (qface_default[elem.id]) {
-                elem.text = qface_default[elem.id];
-              } else {
-                elem.text = "\u8868\u60C5:" + elem.id;
-              }
-            }
-            if (qfaceChannelMap_default[elem.id]) {
-              message2 += `[<i><a href="https://t.me/qq_face/${qfaceChannelMap_default[elem.id]}">${forwardHelper_default.htmlEscape(elem.text)}</a></i>]`;
-              isContainAtOrChannelFace = true;
-            } else {
-              message2 += `[<i>${forwardHelper_default.htmlEscape(elem.text)}</i>]`;
-            }
-            break;
-          }
-          case "bface": {
-            useSticker(await convert_default.webp(elem.file, () => fetchFile(getBigFaceUrl(elem.file))));
-            break;
-          }
-          case "video":
-            if (!elem.url) {
-              url2 = await pair.qq.getVideoUrl(elem.fid, elem.md5);
-            }
-          case "image":
-            if ("url" in elem)
-              url2 = elem.url;
-            if (this.oicq instanceof NapCatClient && !url2.startsWith("http")) {
-              const ret = await this.oicq.callApi("download_file", { url: "file://" + url2 });
-              url2 = ret.file;
-              tempFiles.push({
-                path: url2,
-                fd: 0,
-                cleanup: () => import_promises9.default.unlink(url2)
-              });
-            }
-            try {
-              if (elem.type === "image" && (elem.asface || "emoji_package_id" in elem) && !event.message.some((it) => it.type === "text") && event.message.filter((it) => it.type === "image").length === 1) {
-                const res = await convert_default.webpOrWebm(elem.file, () => fetchFile(elem.url));
-                const stat = await import_promises9.default.stat(res);
-                const upload = await pair.tg.parent.uploadFile({
-                  file: new import_uploads4.CustomFile(import_path6.default.basename(res), stat.size, res),
-                  workers: 2
-                });
-                const fileType = await fileTypeFromFile(res);
-                useSticker(new import_telegram9.Api.InputMediaUploadedDocument({
-                  file: upload,
-                  mimeType: fileType.mime,
-                  attributes: [new import_telegram9.Api.DocumentAttributeSticker({
-                    alt: "\u732B",
-                    stickerset: new import_telegram9.Api.InputStickerSetEmpty()
-                  })]
-                }));
-              } else {
-                const file2 = await forwardHelper_default.downloadToCustomFile(url2, !(message2 || messageHeader));
-                files.push(file2);
-                if (file2 instanceof import_uploads4.CustomFile && elem.type === "image" && file2.size > 10 * 1024 * 1024) {
-                  this.log.info("\u5F3A\u5236\u4F7F\u7528\u6587\u4EF6\u53D1\u9001");
-                  forceDocument = true;
-                }
-                buttons.push(import_button6.Button.url(`${emoji_default.picture()} \u67E5\u770B\u539F\u56FE`, url2));
-              }
-            } catch (e) {
-              this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
-              posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
-              files.push(url2);
-            }
-            break;
-          case "flash": {
-            message2 += `[<i>\u95EA\u7167<i>]
-${this.instance.workMode === "group" ? "\u6BCF\u4EBA" : ""}\u53EA\u80FD\u67E5\u770B\u4E00\u6B21`;
-            const dbEntry = await db_default.flashPhoto.create({
-              data: { photoMd5: elem.file.substring(0, 32) }
-            });
-            buttons.push(import_button6.Button.url("\u{1F4F8}\u67E5\u770B", `https://t.me/${this.tgBot.me.username}?start=flash-${dbEntry.id}`));
-            break;
-          }
-          case "file": {
-            message2 = `\u6587\u4EF6: ${forwardHelper_default.htmlEscape(elem.name)}
-\u5927\u5C0F: ${forwardHelper_default.hSize(elem.size)}`;
-            if (elem.size < 1024 * 1024 * 50) {
-              try {
-                let url3 = await pair.qq.getFileUrl(elem.fid);
-                if (url3.includes("?fname=")) {
-                  url3 = url3.split("?fname=")[0];
-                } else if (url3.startsWith("/")) {
-                  tempFiles.push({
-                    path: url3,
-                    fd: 0,
-                    cleanup: () => import_promises9.default.unlink(url3)
-                  });
-                }
-                this.log.info("\u6B63\u5728\u53D1\u9001\u5A92\u4F53\uFF0C\u957F\u5EA6", forwardHelper_default.hSize(elem.size));
-                try {
-                  const file2 = await forwardHelper_default.downloadToCustomFile(url3, !(message2 || messageHeader), elem.name);
-                  const type = await forwardHelper_default.fileTypeFromCustomFile(file2);
-                  if (file2 instanceof import_uploads4.CustomFile && type.mime.startsWith("image/") && file2.size > 10 * 1024 * 1024) {
-                    this.log.info("\u5F3A\u5236\u4F7F\u7528\u6587\u4EF6\u53D1\u9001");
-                    forceDocument = true;
-                  }
-                  files.push(file2);
-                } catch (e) {
-                  this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
-                  posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
-                  if (/^https?:\/\//.test(url3)) {
-                    files.push(url3);
-                  } else {
-                    message2 += "\n\n<i>\u4E0B\u8F7D\u5931\u8D25</i>";
-                  }
-                }
-              } catch (e) {
-                this.log.error("QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25", e);
-                posthog_default.capture("QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25", { error: e });
-                message2 += "\n\n<i>QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25</i>";
-              }
-            }
-            const dbEntry = await db_default.file.create({
-              data: { fileId: elem.fid, roomId: pair.qqRoomId, info: message2, name: elem.name }
-            });
-            buttons.push(import_button6.Button.url(
-              "\u{1F4CE}\u83B7\u53D6\u4E0B\u8F7D\u5730\u5740",
-              `https://t.me/${this.tgBot.me.username}?start=file-${dbEntry.id}`
-            ));
-            break;
-          }
-          case "record": {
-            url2 = elem.url;
-            if (!url2 && pair.qq instanceof import_internal.Contactable && elem.md5 === "ntptt") {
-              url2 = await pair.qq.getPttUrl(elem);
-            } else if (!url2 && this.oicq instanceof OicqClient) {
-              const refetchMessage = await this.oicq.oicq.getMsg(event.messageId);
-              url2 = refetchMessage.message.find((it) => it.type === "record").url;
-            }
-            if (url2) {
-              let bufSilk;
-              if (this.oicq instanceof NapCatClient) {
-                const ret = await this.oicq.callApi("download_file", { url: url2 });
-                bufSilk = await import_promises9.default.readFile(ret.file);
-                import_promises9.default.unlink(ret.file);
-              } else {
-                bufSilk = await fetchFile(url2);
-              }
-              const temp = await createTempFile3({ postfix: ".ogg" });
-              tempFiles.push(temp);
-              await silk_default.decode(bufSilk, temp.path);
-              files.push(temp.path);
-            } else {
-              message2 += "<i>[\u8BED\u97F3]</i>";
-            }
-            break;
-          }
-          case "share": {
-            message2 = forwardHelper_default.htmlEscape(elem.url);
-            break;
-          }
-          case "json": {
-            const result = forwardHelper_default.processJson(elem.data);
-            switch (result.type) {
-              case "text":
-                message2 = forwardHelper_default.htmlEscape(result.text);
-                break;
-              case "forward":
-                await useForward(result.resId, result.fileName);
-                break;
-              case "location":
-                const convertedLoc = import_eviltransform.default.gcj2wgs(result.lat, result.lng);
-                files.push(new import_telegram9.Api.InputMediaVenue({
-                  address: result.address,
-                  title: messageHeader.replace("<b>", "").replace("</b>", ""),
-                  geoPoint: new import_telegram9.Api.InputGeoPoint({
-                    lat: convertedLoc.lat,
-                    long: convertedLoc.lng
-                  }),
-                  provider: "Q2TG",
-                  venueId: "Q2TG",
-                  venueType: "Q2TG"
-                }));
-                messageHeader = messageHeaderWithLink = "";
-                message2 = `<a href="https://uri.amap.com/marker?position=${result.lng},${result.lat}">\u5728\u9AD8\u5FB7\u5730\u56FE\u4E2D\u67E5\u770B</a>`;
-                break;
-            }
-            break messageElemLoop;
-          }
-          case "xml": {
-            const result = forwardHelper_default.processXml(elem.data);
-            switch (result.type) {
-              case "text":
-                message2 = forwardHelper_default.htmlEscape(result.text);
-                break;
-              case "image":
-                try {
-                  files.push(await forwardHelper_default.downloadToCustomFile(getImageUrlByMd5(result.md5)));
-                } catch (e) {
-                  this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
-                  posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
-                  files.push(getImageUrlByMd5(result.md5));
-                }
-                break;
-              case "forward":
-                await useForward(result.resId);
-                break;
-            }
-            break messageElemLoop;
-          }
-          case "rps":
-          case "dice":
-            message2 = `[<i>${elem.type === "rps" ? "\u731C\u62F3" : "\u9AB0\u5B50"}</i>] ${elem.id}`;
-            break;
-          case "poke":
-            message2 = `[<i>\u6233\u4E00\u6233</i>] ${forwardHelper_default.htmlEscape(elem.text)}`;
-            break;
-          case "forward":
-            await useForward(elem.id, "", elem.content);
-            break;
-        }
-      }
-      this.crhPlayerInfo.delete(pair);
-      message2 = message2.trim();
-      if (!event.message.length) {
-        message2 += "<i>[\u6D88\u606F\u65E0\u6CD5\u89E3\u6790\u51FA\u5185\u5BB9]</i>";
-      }
-      if (event.replyTo) {
-        try {
-          const quote = await db_default.message.findFirst({
-            where: {
-              qqRoomId: pair.qqRoomId,
-              seq: event.replyTo.seq,
-              // rand: event.source.rand,
-              qqSenderId: event.replyTo.fromId,
-              instanceId: this.instance.id
-            }
-          });
-          if (quote) {
-            replyTo = quote.tgMsgId;
-          } else {
-            message2 += "\n\n<i>*\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230</i>";
-            this.log.error("\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230", {
-              qqRoomId: pair.qqRoomId,
-              seq: event.replyTo.seq,
-              rand: event.replyTo.rand,
-              qqSenderId: event.replyTo.fromId,
-              instanceId: this.instance.id
-            });
-          }
-        } catch (e) {
-          this.log.error("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", e);
-          posthog_default.capture("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", { error: e });
-          message2 += "\n\n<i>*\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25</i>";
-        }
-      }
-      if (this.instance.workMode === "personal" && !event.dm && event.atMe && !replyTo) {
-        message2 += `
-<b>@${this.instance.userMe.usernames?.length ? this.instance.userMe.usernames[0].username : this.instance.userMe.username}</b>`;
-      }
-      let richHeaderUsed = false;
-      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER || !env_default.WEB_ENDPOINT) {
-        messageHeaderWithLink = messageHeader;
-      }
-      messageToSend.forceDocument = forceDocument;
-      messageToSend.linkPreview = false;
-      if (files.length === 1) {
-        messageToSend.file = files[0];
-      } else if (files.length) {
-        messageToSend.file = files;
-      } else if (!event.dm && !((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT && (isContainAtOrChannelFace || !isContainsUrl(message2))) {
-        richHeaderUsed = true;
-        messageToSend.file = new import_telegram9.Api.InputMediaWebPage({
-          url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader),
-          forceSmallMedia: true,
-          optional: true
-        });
-        messageToSend.linkPreview = { showAboveText: true };
-      } else if (!isContainAtOrChannelFace && isContainsUrl(message2)) {
-        const urls = message2.match(regExps_default.url);
-        if (urls?.length) {
-          const url2 = urls[0];
-          messageToSend.file = new import_telegram9.Api.InputMediaWebPage({
-            url: url2,
-            forceSmallMedia: true,
-            optional: true
-          });
-          messageToSend.linkPreview = { showAboveText: false };
-        }
-      }
-      if (!richHeaderUsed) {
-        message2 = messageHeaderWithLink + (message2 && messageHeaderWithLink ? "\n" : "") + message2;
-      }
-      message2 && (messageToSend.message = message2);
-      buttons.length && (messageToSend.buttons = import_lodash.default.chunk(buttons, 3));
-      replyTo && (messageToSend.replyTo = replyTo);
-      let tgMessage;
-      try {
-        tgMessage = await pair.tg.sendMessage(messageToSend);
-      } catch (e) {
-        if (richHeaderUsed) {
-          richHeaderUsed = false;
-          this.log.warn("Rich Header \u53D1\u9001\u9519\u8BEF", messageToSend.file, e);
-          posthog_default.capture("Rich Header \u53D1\u9001\u9519\u8BEF", { error: e, attach: messageToSend.file });
-          delete messageToSend.file;
-          delete messageToSend.linkPreview;
-          message2 = messageHeader + (message2 && messageHeader ? "\n" : "") + message2;
-          message2 && (messageToSend.message = message2);
-          tgMessage = await pair.tg.sendMessage(messageToSend);
-        } else if (messageToSend.file instanceof import_telegram9.Api.InputMediaWebPage) {
-          delete messageToSend.file;
-          tgMessage = await pair.tg.sendMessage(messageToSend);
-        } else throw e;
-      }
-      if (richHeaderUsed) {
-        setTimeout(async () => {
-          const userMessage = await pair.tgUser.getMessage({
-            ids: tgMessage.id
-          });
-          if (["WebPage", "WebPageNotModified"].includes(userMessage?.media?.webpage?.className))
-            return;
-          this.log.warn("Rich Header \u56DE\u6D4B\u9519\u8BEF", messageToSend.file);
-          await tgMessage.edit({
-            text: messageHeaderWithLink + (message2 && messageHeaderWithLink ? "\n" : "") + message2
-          });
-        }, 3e3);
-      }
-      if (this.instance.workMode === "personal" && !event.dm && event.atAll) {
-        await tgMessage.pin({ notify: false });
-      }
-      return { tgMessage, richHeaderUsed };
-    } catch (e) {
-      this.log.error("\u4ECE QQ \u5230 TG \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", e);
-      posthog_default.capture("\u4ECE QQ \u5230 TG \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", { error: e });
-      let pbUrl;
-      let error2 = e;
-      if (JSON.stringify(error2) === "{}") {
-        error2 = {
-          message: e.message,
-          stack: e.stack,
-          str: e.toString()
-        };
-      }
-      try {
-        pbUrl = await pastebin_default.upload(JSON.stringify({
-          error: error2,
-          event,
-          messageToSend
-        }));
-        if (pbUrl)
-          pbUrl += ".json";
-        this.log.info("\u9519\u8BEF\u62A5\u544A", pbUrl);
-      } catch (e2) {
-        this.log.error("\u4E0A\u4F20\u5230 Pastebin \u5931\u8D25", e2);
-      }
-      try {
-        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_ERROR_NOTIFY))
-          await pair.tg.sendMessage({
-            message: "<i>\u6709\u4E00\u6761\u6765\u81EA QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25</i>",
-            buttons: pbUrl ? [[import_button6.Button.url("\u67E5\u770B\u8BE6\u60C5", pbUrl)]] : []
-          });
-      } catch {
-      }
-      return {};
-    } finally {
-      tempFiles.forEach((it) => it.cleanup());
-    }
-  }
-  async forwardFromTelegram(message2, pair) {
-    const tempFiles = [];
-    try {
-      let chain = [];
-      const senderId = Number(message2.senderId || message2.sender?.id) || pair.tgId;
-      this.log.debug("senderId", senderId);
-      let brief = "", isSpoilerPhoto = false;
-      let userDisplayName = forwardHelper_default.getUserDisplayName(message2.sender);
-      if (senderId === pair.tgId && !message2.sender) {
-        userDisplayName = forwardHelper_default.getUserDisplayName(message2.chat);
-      }
-      let messageHeader = (userDisplayName.length > 25 ? userDisplayName.substring(0, 25) + "\u2026" : userDisplayName) + (message2.forward ? " \u8F6C\u53D1\u81EA " + // 要是隐私设置了，应该会有这个，然后下面两个都获取不到
-      (message2.fwdFrom?.fromName || forwardHelper_default.getUserDisplayName(await message2.forward.getChat() || await message2.forward.getSender())) : "");
-      messageHeader += ": \n";
-      if ((pair.flags | this.instance.flags) & flags_default.COLOR_EMOJI_PREFIX) {
-        let emoji1 = emoji_default.tgColor(message2.sender?.color?.color || senderId);
-        if (message2.sender instanceof import_telegram9.Api.Channel && message2.sender.broadcast) {
-          emoji1 = "\u{1F4E2}" + emoji1;
-        } else if (message2.sender instanceof import_telegram9.Api.Chat || message2.sender instanceof import_telegram9.Api.Channel || !message2.senderId) {
-          emoji1 = "\u{1F47B}" + emoji1;
-        }
-        messageHeader = emoji1 + messageHeader;
-      }
-      this.crhPlayerInfo.delete(pair);
-      const useImage = (image, asface, brief2) => {
-        chain.push({
-          type: "image",
-          file: image,
-          asface,
-          brief: brief2
-        });
-      };
-      const useText = (text) => {
-        chain.push(text);
-      };
-      if (message2.photo instanceof import_telegram9.Api.Photo || // stickers 和以文件发送的图片都是这个
-      IMAGE_MIMES.includes(message2.document?.mimeType)) {
-        if ("spoiler" in message2.media && message2.media.spoiler) {
-          isSpoilerPhoto = true;
-          chain.push(...await this.oicq.createSpoilerImageEndpoint({
-            type: "image",
-            file: await message2.downloadMedia({}),
-            asface: !!message2.sticker
-          }, messageHeader.substring(0, messageHeader.length - 3), message2.message));
-          brief += "[Spoiler \u56FE\u7247]";
-        } else {
-          useImage(await message2.downloadMedia({}), !!message2.sticker, message2.sticker ? forwardHelper_default.getStickerBrief(message2.sticker) : void 0);
-          brief += "[\u56FE\u7247]";
-        }
-      } else if (message2.video || message2.videoNote || message2.gif) {
-        const file2 = message2.video || message2.videoNote || message2.gif;
-        const face = this.getFaceByTgFileId(file2.id);
-        if (face) {
-          chain.push(face);
-        } else if (file2.size.gt(200 * 1024 * 1024)) {
-          chain.push("[\u89C6\u9891\u5927\u4E8E 200MB]");
-        } else if (file2.mimeType === "video/webm" || message2.gif) {
-          const convertedPath = await convert_default.video2gif(message2.document.id.toString(16), () => message2.downloadMedia({}), file2.mimeType === "video/webm");
-          useImage(convertedPath, true, forwardHelper_default.getStickerBrief(file2));
-        } else {
-          const temp = await createTempFile3();
-          tempFiles.push(temp);
-          await message2.downloadMedia({ outputFile: temp.path });
-          chain.push(import_icqq4.segment.video(temp.path));
-        }
-        brief += "[\u89C6\u9891]";
-      } else if (message2.sticker) {
-        this.log.debug("sticker", message2.sticker);
-        const face = this.getFaceByTgFileId(message2.sticker.id);
-        if (face) {
-          chain.push(face);
-        } else {
-          const gifPath = await convert_default.tgs2gif(message2.sticker.id.toString(16), () => message2.downloadMedia({}));
-          useImage(gifPath, true, forwardHelper_default.getStickerBrief(message2.sticker));
-        }
-        brief += "[\u8D34\u7EB8]";
-      } else if (message2.voice) {
-        const temp = await createTempFile3();
-        tempFiles.push(temp);
-        await message2.downloadMedia({ outputFile: temp.path });
-        if (this.oicq instanceof OicqClient) {
-          const bufSilk = await silk_default.encode(temp.path);
-          chain.push(import_icqq4.segment.record(bufSilk));
-        } else if (this.oicq instanceof NapCatClient) {
-          chain.push(import_icqq4.segment.record(temp.path));
-        }
-        brief += "[\u8BED\u97F3]";
-      } else if (message2.poll) {
-        const poll = message2.poll.poll;
-        useText(`${poll.multipleChoice ? "\u591A" : "\u5355"}\u9009\u6295\u7968\uFF1A
-${poll.question}`);
-        chain.push("\n");
-        useText(poll.answers.map((answer) => ` - ${answer.text}`).join("\n"));
-        brief += "[\u6295\u7968]";
-      } else if (message2.contact) {
-        const contact = message2.contact;
-        useText(`\u540D\u7247\uFF1A
-` + contact.firstName + (contact.lastName ? " " + contact.lastName : "") + (contact.phoneNumber ? `
-\u7535\u8BDD\uFF1A${contact.phoneNumber}` : ""));
-        brief += "[\u540D\u7247]";
-      } else if (message2.venue && message2.venue.geo instanceof import_telegram9.Api.GeoPoint) {
-        const geo = import_eviltransform.default.wgs2gcj(message2.venue.geo.lat, message2.venue.geo.long);
-        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
-          chain.push(import_icqq4.segment.location(geo.lat, geo.lng, `${message2.venue.title} (${message2.venue.address})`));
-        } else {
-          chain.push(`[\u4F4D\u7F6E\uFF1A${message2.venue.title} (${message2.venue.address})]`);
-        }
-        brief += `[\u4F4D\u7F6E\uFF1A${message2.venue.title}]`;
-      } else if (message2.geo instanceof import_telegram9.Api.GeoPoint) {
-        const geo = import_eviltransform.default.wgs2gcj(message2.geo.lat, message2.geo.long);
-        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
-          chain.push(import_icqq4.segment.location(geo.lat, geo.lng, "\u9009\u4E2D\u7684\u4F4D\u7F6E"));
-        } else {
-          chain.push(`[\u4F4D\u7F6E\uFF1A${geo.lat} ${geo.lng}]
-https://uri.amap.com/marker?position=${geo.lng},${geo.lat}`);
-        }
-        brief += "[\u4F4D\u7F6E]";
-      } else if (message2.media instanceof import_telegram9.Api.MessageMediaDocument && message2.media.document instanceof import_telegram9.Api.Document) {
-        const file2 = message2.media.document;
-        const fileNameAttribute = file2.attributes.find((attribute) => attribute instanceof import_telegram9.Api.DocumentAttributeFilename);
-        useText(`\u6587\u4EF6\uFF1A${fileNameAttribute ? fileNameAttribute.fileName : ""}
-\u7C7B\u578B\uFF1A${file2.mimeType}
-\u5927\u5C0F\uFF1A${file2.size}`);
-        if (file2.size.leq(50 * 1024 * 1024) || (pair.flags | this.instance.flags) & flags_default.ALWAYS_FORWARD_TG_FILE) {
-          useText("\n");
-          const file3 = await createTempFile3();
-          tempFiles.push(file3);
-          useText("\u6587\u4EF6\u6B63\u5728\u4E0A\u4F20\u4E2D\u2026");
-          if ("gid" in pair.qq) {
-            await message2.downloadMedia({ outputFile: file3.path });
-            pair.qq.fs.upload(
-              file3.path,
-              "/",
-              fileNameAttribute ? fileNameAttribute.fileName : "file"
-            ).catch((err) => {
-              message2.reply({ message: `\u4E0A\u4F20\u5931\u8D25\uFF1A
-${err.message}` });
-              posthog_default.capture("\u4E0A\u4F20\u7FA4\u6587\u4EF6\u5931\u8D25", { error: err });
-            }).finally(() => file3.cleanup());
-          } else {
-            await message2.downloadMedia({ outputFile: file3.path });
-            pair.qq.sendFile(file3.path, fileNameAttribute ? fileNameAttribute.fileName : "file").catch((err) => {
-              message2.reply({ message: `\u4E0A\u4F20\u5931\u8D25\uFF1A
-${err.message}` });
-              posthog_default.capture("\u4E0A\u4F20\u597D\u53CB\u6587\u4EF6\u5931\u8D25", { error: err });
-            });
-          }
-        }
-        brief += "[\u6587\u4EF6]";
-        if (env_default.DISABLE_FILE_UPLOAD_TIP) {
-          chain = [];
-        }
-      }
-      if (message2.message && !isSpoilerPhoto) {
-        const emojiEntities = (message2.entities || []).filter((it) => it instanceof import_telegram9.Api.MessageEntityCustomEmoji);
-        if (emojiEntities.length) {
-          const isMessageAllEmojis = import_lodash.default.sum(emojiEntities.map((it) => it.length)) === message2.message.length;
-          const newChain = [];
-          let messageLeft = message2.message;
-          for (let i = emojiEntities.length - 1; i >= 0; i--) {
-            newChain.unshift(messageLeft.substring(emojiEntities[i].offset + emojiEntities[i].length));
-            messageLeft = messageLeft.substring(0, emojiEntities[i].offset);
-            newChain.unshift({
-              type: "image",
-              file: await convert_default.customEmoji(
-                emojiEntities[i].documentId.toString(16),
-                () => this.tgBot.getCustomEmoji(emojiEntities[i].documentId),
-                !isMessageAllEmojis
-              ),
-              asface: true
-            });
-          }
-          chain.push(messageLeft, ...newChain);
-          brief += message2.message;
-        } else if (message2.forward?.senderId?.eq?.(this.tgBot.me.id) && /^.*: ?$/.test(message2.message.split("\n")[0])) {
-          const originalMessage = message2.message.includes("\n") ? message2.message.substring(message2.message.indexOf("\n") + 1) : "";
-          useText(originalMessage);
-          brief += originalMessage;
-          messageHeader = forwardHelper_default.getUserDisplayName(message2.sender) + " \u8F6C\u53D1\u81EA " + message2.message.substring(0, message2.message.indexOf(":")) + ": \n";
-        } else {
-          if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_AT_PARSE)) {
-            const candidates = await atHelper_default.getGroupMemberCandidates(pair);
-            const parsedElements = atHelper_default.parseTextWithAtMentions(message2.message, candidates);
-            chain.push(...parsedElements);
-          } else {
-            useText(message2.message);
-          }
-          brief += message2.message;
-        }
-      }
-      let source;
-      if (message2.replyToMsgId || message2.replyTo) {
-        try {
-          const quote = message2.replyToMsgId && await db_default.message.findFirst({
-            where: {
-              tgChatId: Number(pair.tg.id),
-              tgMsgId: message2.replyToMsgId,
-              instanceId: this.instance.id
-            }
-          });
-          if (quote) {
-            source = {
-              message: message2.replyTo?.quoteText || quote.brief || " ",
-              seq: quote.seq,
-              rand: Number(quote.rand),
-              user_id: Number(quote.qqSenderId),
-              time: quote.time
-            };
-            const replyQq = Number(quote.qqSenderId);
-            if (replyQq && replyQq !== this.oicq.uin && !((pair.flags | this.instance.flags) & flags_default.DISABLE_REPLY_AT)) {
-              const alreadyHasAt = chain.some((it) => typeof it === "object" && it.type === "at" && it.qq === replyQq);
-              if (!alreadyHasAt) {
-                chain.unshift(" ");
-                chain.unshift({
-                  type: "at",
-                  qq: replyQq
-                });
-              }
-            }
-          } else {
-            source = {
-              message: message2.replyTo?.quoteText || "\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230",
-              seq: 1,
-              time: Math.floor((/* @__PURE__ */ new Date()).getTime() / 1e3),
-              rand: 1,
-              user_id: this.oicq.uin
-            };
-          }
-        } catch (e) {
-          this.log.error("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", e);
-          posthog_default.capture("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", { error: e });
-          source = {
-            message: "\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25",
-            seq: 1,
-            time: Math.floor((/* @__PURE__ */ new Date()).getTime() / 1e3),
-            rand: 1,
-            user_id: this.oicq.uin
-          };
-        }
-      }
-      if (chain.length === 0) {
-        return [];
-      }
-      const notChainableElements = chain.filter((element) => typeof element === "object" && NOT_CHAINABLE_ELEMENTS.includes(element.type));
-      const chainableElements = chain.filter((element) => typeof element !== "object" || !NOT_CHAINABLE_ELEMENTS.includes(element.type));
-      if (!notChainableElements.length && chainableElements.length && this.instance.workMode && pair.instanceMapForTg[senderId] && !((pair.flags | this.instance.flags) & flags_default.DISABLE_SEAMLESS)) {
-        try {
-          const messageSent = await pair.instanceMapForTg[senderId].sendMsg([
-            ...chainableElements,
-            {
-              type: "mirai",
-              data: JSON.stringify({
-                id: senderId,
-                eqq: { type: "tg", tgUid: senderId, noSplitSender: true, version: 2 },
-                q2tgSkip: true
-              }, void 0, 0)
-              // 能启用无缝模式一定是 icqq 而不是 NapCat
-            }
-          ], source);
-          tempFiles.forEach((it) => it.cleanup());
-          return [{
-            ...messageSent,
-            senderId: pair.instanceMapForTg[senderId] instanceof import_icqq4.Group ? pair.instanceMapForTg[senderId].client.uin : 0,
-            //TODO
-            brief
-          }];
-        } catch (e) {
-          this.log.error("\u4F7F\u7528 MapInstance \u53D1\u9001\u6D88\u606F\u5931\u8D25", e);
-          posthog_default.capture("\u4F7F\u7528 MapInstance \u53D1\u9001\u6D88\u606F\u5931\u8D25", { error: e });
-        }
-      }
-      if (this.instance.workMode === "group" && !isSpoilerPhoto) {
-        let headerImage;
-        if ((pair.flags | this.instance.flags) & flags_default.QQ_HEADER_IMAGE && message2.sender?.photo instanceof import_telegram9.Api.UserProfilePhoto) {
-          try {
-            this.log.debug("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247");
-            const sender = message2.sender;
-            const part = await memberRoleCache_default.getEx(pair, senderId, () => pair.tg.getMember(sender));
-            let role = "member";
-            let title;
-            if ("rank" in part.participant) {
-              title = part.participant.rank;
-            }
-            if (part.participant instanceof import_telegram9.Api.ChannelParticipantCreator) {
-              role = "owner";
-              title = title || "\u7FA4\u4E3B";
-            } else if (part.participant instanceof import_telegram9.Api.ChannelParticipantAdmin) {
-              role = "admin";
-              title = title || "\u7BA1\u7406\u5458";
-            }
-            const avatarHash = sender.photo.photoId.toString(16);
-            this.log.debug("avatarHash", avatarHash);
-            headerImage = forwardHelper_default.headImageForQQ(
-              nameColor_default(sender.color?.color || senderId),
-              avatarHash,
-              () => convert_default.cachedBuffer(`${avatarHash}.jpg`, () => this.tgBot.downloadEntityPhoto(sender)),
-              userDisplayName,
-              title,
-              role
-            );
-            this.log.debug("headerImage", headerImage);
-          } catch (e) {
-            this.log.error("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247\u51FA\u9519", e);
-            posthog_default.capture("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247\u51FA\u9519", { error: e });
-          }
-        }
-        if (headerImage) {
-          chainableElements.unshift({
-            type: "image",
-            file: headerImage,
-            asface: true,
-            brief: messageHeader
-          });
-        } else {
-          chainableElements.unshift(messageHeader);
-        }
-      }
-      const qqMessages = [];
-      if (chainableElements.length) {
-        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
-          chainableElements.push({
-            type: "mirai",
-            data: JSON.stringify({
-              id: senderId,
-              eqq: { type: "tg", tgUid: senderId, noSplitSender: this.instance.workMode === "personal", version: 2 }
-            }, void 0, 0)
-          });
-        }
-        let messageToSend = chainableElements;
-        qqMessages.push({
-          ...await pair.qq.sendMsg(messageToSend, source),
-          brief,
-          senderId: this.oicq.uin
-        });
-      }
-      if (notChainableElements.length) {
-        for (const notChainableElement of notChainableElements) {
-          qqMessages.push({
-            ...await pair.qq.sendMsg(notChainableElement, source),
-            brief,
-            senderId: this.oicq.uin
-          });
-        }
-      }
-      return qqMessages;
-    } catch (e) {
-      this.log.error("\u4ECE TG \u5230 QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", e);
-      posthog_default.capture("\u4ECE TG \u5230 QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", { error: e });
-      try {
-        await message2.reply({
-          message: `<i>\u8F6C\u53D1\u5931\u8D25\uFF1A${e.message}</i>`,
-          buttons: e.message === "\u7B7E\u540Dapi\u5F02\u5E38" && this.restartSignCallbackHandle ? import_button6.Button.inline("\u91CD\u542F\u7B7E\u540D\u670D\u52A1", this.restartSignCallbackHandle) : void 0
-        });
-      } catch {
-      }
-    } finally {
-      tempFiles.forEach((it) => {
-        try {
-          it.cleanup();
-        } catch (err) {
-          this.log.debug("\u6E05\u7406\u4E34\u65F6\u6587\u4EF6\u5931\u8D25", err);
-        }
-      });
-    }
-  }
-};
-
-// src/controllers/ForwardController.ts
-var import_telegram10 = __toESM(require_telegram());
-var import_log4js13 = __toESM(require_log4js());
-init_posthog();
-init_env();
-var ForwardController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    this.log = (0, import_log4js13.getLogger)(`ForwardController - ${instance.id}`);
-    this.forwardService = new ForwardService(this.instance, tgBot, oicq);
-    oicq.addNewMessageEventHandler(this.onQqMessage);
-    oicq.addGroupMemberIncreaseEventHandler(this.onQqGroupMemberIncrease);
-    oicq.addPokeEventHandler(this.onQqPoke);
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-    tgUser.addNewMessageEventHandler(this.onTelegramUserMessage);
-    tgBot.addEditedMessageEventHandler(this.onTelegramMessage);
-    instance.workMode === "group" && tgBot.addChannelParticipantEventHandler(this.onTelegramParticipant);
-  }
-  forwardService;
-  log;
-  onQqMessage = async (event) => {
-    this.log.debug("\u6536\u5230 QQ \u6D88\u606F", event);
-    try {
-      const pair = this.instance.forwardPairs.find(event.chat);
-      if (!pair) return;
-      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_Q2TG) return;
-      let existed = event.dm && await db_default.message.findFirst({
-        where: {
-          qqRoomId: pair.qqRoomId,
-          qqSenderId: event.from.id,
-          seq: event.seq,
-          rand: event.rand,
-          pktnum: event.pktnum,
-          time: event.time,
-          instanceId: this.instance.id
-        }
-      });
-      if (existed) return;
-      let { tgMessage, richHeaderUsed } = await this.forwardService.forwardFromQq(event, pair);
-      if (!tgMessage) return;
-      let tgMessages = tgMessage;
-      if (!Array.isArray(tgMessages)) tgMessages = [tgMessage];
-      for (const tgMessage2 of tgMessages) {
-        await db_default.message.create({
-          data: {
-            qqRoomId: pair.qqRoomId,
-            qqSenderId: event.from.id,
-            time: event.time,
-            brief: event.brief,
-            seq: event.seq,
-            rand: event.rand,
-            pktnum: event.pktnum,
-            tgChatId: pair.tgId,
-            tgMsgId: tgMessage2.id,
-            instanceId: this.instance.id,
-            tgMessageText: tgMessage2.message,
-            tgFileId: forwardHelper_default.getMessageDocumentId(tgMessage2),
-            nick: event.from.name,
-            tgSenderId: BigInt(this.tgBot.me.id.toString()),
-            richHeaderUsed
-          }
-        });
-      }
-    } catch (e) {
-      this.log.error("\u5904\u7406 QQ \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", e);
-      posthog_default.capture("\u5904\u7406 QQ \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", { error: e });
-    }
-  };
-  onTelegramUserMessage = async (message2) => {
-    if (!message2.sender) return;
-    if (!("bot" in message2.sender) || !message2.sender.bot) return;
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return;
-    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_FORWARD_OTHER_BOT) return;
-    await this.onTelegramMessage(message2, pair);
-  };
-  onTelegramMessage = async (message2, pair = this.instance.forwardPairs.find(message2.chat)) => {
-    try {
-      if (message2.senderId?.eq(this.instance.botMe.id)) return true;
-      if (!pair) return false;
-      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_TG2Q) return;
-      this.log.debug("\u6536\u5230 TG \u6D88\u606F", message2);
-      const qqMessagesSent = await this.forwardService.forwardFromTelegram(message2, pair);
-      if (qqMessagesSent) {
-        for (const qqMessageSent of qqMessagesSent) {
-          await db_default.message.create({
-            data: {
-              qqRoomId: pair.qqRoomId,
-              qqSenderId: qqMessageSent.senderId,
-              time: qqMessageSent.time,
-              brief: qqMessageSent.brief,
-              seq: qqMessageSent.seq,
-              rand: qqMessageSent.rand,
-              pktnum: 1,
-              tgChatId: pair.tgId,
-              tgMsgId: message2.id,
-              instanceId: this.instance.id,
-              tgMessageText: message2.message,
-              tgFileId: forwardHelper_default.getMessageDocumentId(message2),
-              nick: forwardHelper_default.getUserDisplayName(message2.sender),
-              tgSenderId: BigInt(Number(message2.senderId || message2.sender?.id) || forwardHelper_default.peerToId(message2.peerId))
-            }
-          });
-        }
-      }
-    } catch (e) {
-      this.log.error("\u5904\u7406 Telegram \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", e);
-      posthog_default.capture("\u5904\u7406 Telegram \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", { error: e });
-    }
-  };
-  onQqGroupMemberIncrease = async (event) => {
-    try {
-      const pair = this.instance.forwardPairs.find(event.chat);
-      if (!pair) return false;
-      if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_JOIN_NOTICE) return false;
-      const hideAllQqNumber = (pair.flags | this.instance.flags) & flags_default.HIDE_ALL_QQ_NUMBER;
-      await pair.tg.sendMessage({
-        file: new import_telegram10.Api.InputMediaWebPage({
-          url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.userId),
-          forceSmallMedia: true,
-          optional: true
-        }),
-        message: `<b>${event.nickname}</b>${hideAllQqNumber ? "" : ` (<code>${event.userId}</code>)`} <i>\u52A0\u5165\u4E86\u672C\u7FA4</i>`,
-        silent: true
-      });
-    } catch (e) {
-      this.log.error("\u5904\u7406 QQ \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", e);
-      posthog_default.capture("\u5904\u7406 QQ \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", { error: e });
-    }
-  };
-  onTelegramParticipant = async (event) => {
-    try {
-      this.log.debug("\u6536\u5230 TG \u7FA4\u6210\u5458\u4E8B\u4EF6", event);
-      const pair = this.instance.forwardPairs.find(event.channelId);
-      memberRoleCache_default.delete(pair, event.userId.toJSNumber());
-      if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_JOIN_NOTICE) return false;
-      if (event.prevParticipant && !(event.prevParticipant instanceof import_telegram10.Api.ChannelParticipantBanned)) return false;
-      if (!(event.newParticipant instanceof import_telegram10.Api.ChannelParticipantAdmin) && !(event.newParticipant instanceof import_telegram10.Api.ChannelParticipantCreator) && !(event.newParticipant instanceof import_telegram10.Api.ChannelParticipant))
-        return false;
-      const member = await this.tgBot.getChat(event.newParticipant.userId);
-      await pair.qq.sendMsg(`${forwardHelper_default.getUserDisplayName(member.entity)} \u52A0\u5165\u4E86\u672C\u7FA4`);
-    } catch (e) {
-      this.log.error("\u5904\u7406 TG \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", e);
-      posthog_default.capture("\u5904\u7406 TG \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", { error: e });
-    }
-  };
-  onQqPoke = async (event) => {
-    const pair = this.instance.forwardPairs.find(event.chat);
-    if (!pair) return;
-    if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_POKE) return;
-    let operatorName, targetName;
-    if (event.dm) {
-      const chat = event.chat;
-      if (event.fromId === event.chatId) {
-        operatorName = chat.remark || chat.nickname;
-      } else {
-        operatorName = "\u4F60";
-      }
-      if (event.fromId === event.targetId) {
-        targetName = "\u81EA\u5DF1";
-      } else if (event.targetId === event.chatId) {
-        targetName = chat.remark || chat.nickname;
-      } else {
-        targetName = "\u4F60";
-      }
-    } else {
-      const chat = event.chat;
-      const operator = chat.pickMember(event.fromId);
-      let operatorInfo = await operator.renew();
-      operatorName = operatorInfo.card || operatorInfo.nickname;
-      if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
-        const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, operatorInfo.user_id, operatorName);
-        operatorName = `<a href="${richHeaderUrl}">${operatorName}</a>`;
-      }
-      if (event.fromId === event.targetId) {
-        targetName = "\u81EA\u5DF1";
-      } else {
-        const targetUser = chat.pickMember(event.targetId);
-        let targetInfo = await targetUser.renew();
-        targetName = targetInfo.card || targetInfo.nickname;
-        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
-          const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, targetInfo.user_id, targetName);
-          targetName = `<a href="${richHeaderUrl}">${targetName}</a>`;
-        }
-      }
-    }
-    await pair.tg.sendMessage({
-      message: `<i><b>${operatorName}</b>${event.action || "\u6233\u4E86\u6233"}<b>${targetName}</b>${event.suffix || ""}</i>`,
-      silent: true,
-      linkPreview: false
-    });
-  };
-};
-
-// src/services/DeleteMessageService.ts
-var import_log4js14 = __toESM(require_log4js());
-var import_telegram11 = __toESM(require_telegram());
-
-// src/utils/highLevelFunces.ts
-function consumer(fn, time = 100) {
-  const tasks = [];
-  let timer;
-  const nextTask = () => {
-    if (tasks.length === 0) return false;
-    tasks.shift().call(null);
-    return true;
-  };
-  return function(...args) {
-    tasks.push(fn.bind(this, ...args));
-    if (timer == null) {
-      nextTask();
-      timer = setInterval(() => {
-        if (!nextTask()) {
-          clearInterval(timer);
-          timer = null;
-        }
-      }, time);
-    }
-  };
-}
-
-// src/services/DeleteMessageService.ts
-init_posthog();
-var DeleteMessageService = class {
-  constructor(instance, tgBot) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.log = (0, import_log4js14.getLogger)(`DeleteMessageService - ${instance.id}`);
-  }
-  log;
-  lockIds = /* @__PURE__ */ new Set();
-  lock(lockId) {
-    if (this.lockIds.has(lockId)) {
-      this.log.debug("\u91CD\u590D\u6267\u884C\u6D88\u606F\u64A4\u56DE", lockId);
-      return true;
-    }
-    this.lockIds.add(lockId);
-    setTimeout(() => this.lockIds.delete(lockId), 5e3);
-  }
-  // 500ms 内只撤回一条消息，防止频繁导致一部分消息没有成功撤回。不过这样的话，会得不到返回的结果
-  recallQqMessage = consumer(async (qq, seq, rand, timeOrPktnum, pair, isOthersMsg, noSendError = false) => {
-    try {
-      const result = await qq.recallMsg(seq, rand, timeOrPktnum);
-      if (!result) throw new Error("\u64A4\u56DE\u5931\u8D25");
-    } catch (e) {
-      this.log.error("\u64A4\u56DE\u5931\u8D25", e);
-      posthog_default.capture("\u64A4\u56DE QQ \u6D88\u606F\u5931\u8D25", { error: e });
-      if (noSendError) return;
-      const tipMsg = await pair.tg.sendMessage({
-        message: "<i>\u64A4\u56DE QQ \u4E2D\u5BF9\u5E94\u7684\u6D88\u606F\u5931\u8D25" + (this.instance.workMode === "group" ? "\uFF0CQQ Bot \u9700\u8981\u662F\u7BA1\u7406\u5458" : "") + (isOthersMsg ? "\uFF0C\u800C\u4E14\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7BA1\u7406\u5458\u7684\u6D88\u606F" : "") + "</i>" + (e.message ? "\n" + e.message : ""),
-        silent: true
-      });
-      this.instance.workMode === "group" && setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
-    }
-  }, 1e3);
-  /**
-   * 删除 QQ 对应的消息
-   * @param messageId
-   * @param pair
-   * @param isOthersMsg
-   */
-  async telegramDeleteMessage(messageId, pair, isOthersMsg = false) {
-    if (this.lock(`tg-${pair.tgId}-${messageId}`)) return;
-    try {
-      const messageInfo = await db_default.message.findFirst({
-        where: {
-          tgChatId: pair.tgId,
-          tgMsgId: messageId,
-          instanceId: this.instance.id
-        }
-      });
-      if (messageInfo) {
-        try {
-          if (this.lock(`qq-${pair.qqRoomId}-${messageInfo.seq}`)) return;
-          if (messageInfo.ignoreDelete) return;
-          const mapQq = pair.instanceMapForTg[messageInfo.tgSenderId.toString()];
-          mapQq && this.recallQqMessage(mapQq, messageInfo.seq, Number(messageInfo.rand), messageInfo.pktnum, pair, false, true);
-          this.recallQqMessage(
-            pair.qq,
-            messageInfo.seq,
-            Number(messageInfo.rand),
-            pair.qq.dm ? messageInfo.time : messageInfo.pktnum,
-            pair,
-            isOthersMsg,
-            !!mapQq
-          );
-        } catch (e) {
-          this.log.error(e);
-          posthog_default.capture("telegramDeleteMessage \u51FA\u9519", { error: e });
-        }
-      }
-    } catch (e) {
-    }
-  }
-  /**
-   * 处理 TG 里面发送的 /rm
-   * @param message
-   * @param pair
-   */
-  async handleTelegramMessageRm(message2, pair) {
-    const replyMessage = await message2.getReplyMessage();
-    if (replyMessage instanceof import_telegram11.Api.Message) {
-      let hasPermission = this.instance.workMode === "personal" || replyMessage.senderId?.eq(message2.senderId);
-      if (!hasPermission && message2.chat instanceof import_telegram11.Api.Channel) {
-        try {
-          const member = (await pair.tg.getMember(message2.sender)).participant;
-          hasPermission = member instanceof import_telegram11.Api.ChannelParticipantCreator || member instanceof import_telegram11.Api.ChannelParticipantAdmin && member.adminRights.deleteMessages;
-        } catch (e) {
-        }
-      }
-      if (!hasPermission && message2.chat instanceof import_telegram11.Api.Chat) {
-      }
-      if (hasPermission) {
-        await this.telegramDeleteMessage(message2.replyToMsgId, pair, replyMessage.senderId?.eq(this.tgBot.me.id));
-        try {
-          await pair.tg.deleteMessages(message2.replyToMsgId);
-        } catch (e) {
-          posthog_default.capture("\u64A4\u56DE TG \u6D88\u606F\u5931\u8D25", { error: e });
-          await pair.tg.sendMessage(`<i>\u5220\u9664\u6D88\u606F\u5931\u8D25</i>\uFF1A${e.message}`);
-        }
-      } else {
-        const tipMsg = await pair.tg.sendMessage({
-          message: "<i>\u4E0D\u80FD\u64A4\u56DE\u522B\u4EBA\u7684\u6D88\u606F</i>",
-          silent: true
-        });
-        setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
-      }
-    }
-    try {
-      await message2.delete({ revoke: true });
-    } catch (e) {
-      posthog_default.capture("Bot \u76EE\u524D\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7528\u6237\u7684\u6D88\u606F\uFF0CBot \u9700\u8981\u300C\u5220\u9664\u6D88\u606F\u300D\u6743\u9650", { error: e });
-      const tipMsg = await message2.reply({
-        message: "<i>Bot \u76EE\u524D\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7528\u6237\u7684\u6D88\u606F\uFF0CBot \u9700\u8981\u300C\u5220\u9664\u6D88\u606F\u300D\u6743\u9650</i>",
-        silent: true
-      });
-      setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
-    }
-  }
-  async handleQqRecall(event, pair) {
-    if (this.lock(`qq-${pair.qqRoomId}-${event.seq}`)) return;
-    try {
-      const message2 = await db_default.message.findFirst({
-        where: {
-          seq: event.seq,
-          rand: event.rand,
-          qqRoomId: pair.qqRoomId,
-          instanceId: this.instance.id
-        }
-      });
-      if (!message2) return;
-      if (this.lock(`tg-${pair.tgId}-${message2.tgMsgId}`)) return;
-      if (message2.ignoreDelete) return;
-      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_DELETE_MESSAGE) {
-        await pair.tg.editMessages({
-          message: message2.tgMsgId,
-          text: `<del>${message2.tgMessageText}</del>
-<i>\u6B64\u6D88\u606F\u5DF2\u5220\u9664</i>`,
-          parseMode: "html"
-        });
-      } else {
-        await pair.tg.deleteMessages(message2.tgMsgId);
-      }
-    } catch (e) {
-      posthog_default.capture("\u5904\u7406 QQ \u6D88\u606F\u64A4\u56DE\u5931\u8D25", { error: e });
-      this.log.error("\u5904\u7406 QQ \u6D88\u606F\u64A4\u56DE\u5931\u8D25", e);
-    }
-  }
-  async isInvalidEdit(message2, pair) {
-    const messageInfo = await db_default.message.findFirst({
-      where: {
-        tgChatId: pair.tgId,
-        tgMsgId: message2.id,
-        instanceId: this.instance.id
-      }
-    });
-    if (!messageInfo) return false;
-    const isTextSame = messageInfo.tgMessageText === message2.message;
-    if (forwardHelper_default.getMessageDocumentId(message2)) {
-      return forwardHelper_default.getMessageDocumentId(message2) === messageInfo.tgFileId && isTextSame;
-    }
-    return isTextSame;
-  }
-};
-
-// src/controllers/DeleteMessageController.ts
-var import_telegram12 = __toESM(require_telegram());
-var DeleteMessageController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    this.deleteMessageService = new DeleteMessageService(this.instance, tgBot);
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-    tgBot.addEditedMessageEventHandler(this.onTelegramEditMessage);
-    tgUser.addDeletedMessageEventHandler(this.onTgDeletedMessage);
-    oicq.addMessageRecallEventHandler(this.onQqRecall);
-  }
-  deleteMessageService;
-  onTelegramMessage = async (message2) => {
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return false;
-    if (message2.message?.split("@")?.[0] === "/rm") {
-      await this.deleteMessageService.handleTelegramMessageRm(message2, pair);
-      return true;
-    }
-  };
-  onTelegramEditMessage = async (message2) => {
-    if (message2.senderId?.eq(this.instance.botMe.id)) return true;
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return;
-    if (await this.deleteMessageService.isInvalidEdit(message2, pair)) {
-      return true;
-    }
-    await this.deleteMessageService.telegramDeleteMessage(message2.id, pair);
-    return await this.onTelegramMessage(message2);
-  };
-  onQqRecall = async (event) => {
-    const pair = this.instance.forwardPairs.find(event.chat);
-    if (!pair) return;
-    await this.deleteMessageService.handleQqRecall(event, pair);
-  };
-  onTgDeletedMessage = async (event) => {
-    if (!(event.peer instanceof import_telegram12.Api.PeerChannel)) return;
-    if (event._entities?.get("1087968824")) return;
-    const pair = this.instance.forwardPairs.find(event.peer.channelId);
-    if (!pair) return;
-    for (const messageId of event.deletedIds) {
-      await this.deleteMessageService.telegramDeleteMessage(messageId, pair);
-    }
-  };
-};
-
-// src/controllers/FileAndFlashPhotoController.ts
-var import_log4js15 = __toESM(require_log4js());
-var import_uploads5 = __toESM(require_uploads());
-init_posthog();
-var REGEX = /^\/start (file|flash)-(\d+)$/;
-var FileAndFlashPhotoController = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-    this.log = (0, import_log4js15.getLogger)(`FileAndFlashPhotoController - ${instance.id}`);
-  }
-  log;
-  onTelegramMessage = async (message2) => {
-    if (!message2.isPrivate || !message2.message) return false;
-    if (!REGEX.test(message2.message)) return false;
-    const exec = REGEX.exec(message2.message);
-    switch (exec[1]) {
-      case "file":
-        await this.handleFile(message2, Number(exec[2]));
-        break;
-      case "flash":
-        await this.handleFlashPhoto(message2, Number(exec[2]));
-        break;
-    }
-    return true;
-  };
-  async handleFile(message2, id) {
-    try {
-      const fileInfo = await db_default.file.findFirst({
-        where: { id }
-      });
-      const downloadUrl = new URL(await (await this.oicq.getChat(Number(fileInfo.roomId))).getFileUrl(fileInfo.fileId));
-      if (!downloadUrl.searchParams.get("fname")) {
-        downloadUrl.searchParams.set("fname", fileInfo.name);
-      }
-      await message2.reply({
-        message: fileInfo.info + `
-<a href="${downloadUrl}">\u4E0B\u8F7D</a>`
-      });
-    } catch (e) {
-      posthog_default.capture("\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25", { error: e });
-      this.log.error("\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25", e);
-      await message2.reply({
-        message: `\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25\uFF1A${e.message}
-${e}`
-      });
-    }
-  }
-  async handleFlashPhoto(message2, id) {
-    try {
-      const photoInfo = await db_default.flashPhoto.findFirst({
-        where: { id }
-      });
-      const viewInfo = await db_default.flashPhotoView.findFirst({
-        where: { flashPhotoId: id, viewerId: message2.senderId.valueOf() }
-      });
-      if (viewInfo) {
-        await message2.reply({ message: "\u4F60\u5DF2\u7ECF\u67E5\u770B\u8FC7\u4E86" });
-        return;
-      }
-      const file2 = await fetchFile(getImageUrlByMd5(photoInfo.photoMd5));
-      const user = await this.tgBot.getChat(message2.senderId);
-      await user.sendSelfDestructingPhoto(
-        {},
-        new import_uploads5.CustomFile("photo.jpg", file2.length, "", file2),
-        5
-      );
-      await db_default.flashPhotoView.create({
-        data: { flashPhotoId: id, viewerId: message2.senderId.valueOf() }
-      });
-    } catch (e) {
-      posthog_default.capture("\u83B7\u53D6\u95EA\u7167\u5931\u8D25", { error: e });
-      this.log.error("\u83B7\u53D6\u95EA\u7167\u5931\u8D25", e);
-      await message2.reply({
-        message: `\u83B7\u53D6\u95EA\u7167\u5931\u8D25\uFF1A${e.message}
-${e}`
-      });
-    }
-  }
-};
-
-// src/models/Instance.ts
-var import_log4js25 = __toESM(require_log4js());
-
-// src/models/Pair.ts
-var import_log4js16 = __toESM(require_log4js());
-init_NapCatClient();
-var log2 = (0, import_log4js16.getLogger)("ForwardPair");
-var Pair = class _Pair {
-  constructor(qq, _tg, tgUser, dbId, _flags, apiKey, qqClient) {
-    this.qq = qq;
-    this._tg = _tg;
-    this.tgUser = tgUser;
-    this.dbId = dbId;
-    this._flags = _flags;
-    this.apiKey = apiKey;
-    this.qqClient = qqClient;
-    if (apiKey) {
-      _Pair.apiKeyMap.set(apiKey, this);
-    }
-    _Pair.dbIdMap.set(dbId, this);
-  }
-  static apiKeyMap = /* @__PURE__ */ new Map();
-  static getByApiKey(key) {
-    return this.apiKeyMap.get(key);
-  }
-  static dbIdMap = /* @__PURE__ */ new Map();
-  static getByDbId(dbId) {
-    return this.dbIdMap.get(dbId);
-  }
-  // 群成员的 tg 账号对应它对应的 QQ 账号获取到的 Group 对象
-  // 只有群组模式有效
-  instanceMapForTg = {};
-  // 更新 TG 群组的头像和简介
-  async updateInfo() {
-    const avatarCache = await db_default.avatarCache.findFirst({
-      where: { forwardPairId: this.dbId }
-    });
-    const lastHash = avatarCache ? avatarCache.hash : null;
-    const avatar = await getAvatar(this.qqRoomId);
-    const newHash = md5(avatar);
-    try {
-      await this._tg.editAbout(await getAboutText(this.qq, false));
-    } catch (e) {
-      log2.error(`\u4FEE\u6539\u7FA4\u7B80\u4ECB\u5931\u8D25: ${e.message}`);
-    }
-    if (!(this.flags & flags_default.NAME_LOCKED) && this.qq instanceof NapCatGroup) {
-      const info = await this.qq.renew();
-      try {
-        await this._tg.editTitle(info.group_name);
-      } catch (e) {
-        log2.error(`\u4FEE\u6539\u7FA4\u540D\u5931\u8D25: ${e.message}`);
-      }
-    }
-    if (!lastHash || Buffer.from(lastHash).compare(newHash) !== 0) {
-      log2.debug(`\u66F4\u65B0\u7FA4\u5934\u50CF: ${this.qqRoomId}`);
-      await this._tg.setProfilePhoto(avatar);
-      await db_default.avatarCache.upsert({
-        where: { forwardPairId: this.dbId },
-        update: { hash: newHash },
-        create: { forwardPairId: this.dbId, hash: newHash }
-      });
-    }
-  }
-  get qqRoomId() {
-    return "uin" in this.qq ? this.qq.uin : -this.qq.gid;
-  }
-  get tgId() {
-    return Number(this._tg.id);
-  }
-  get tg() {
-    return this._tg;
-  }
-  set tg(value) {
-    this._tg = value;
-    db_default.forwardPair.update({
-      where: { id: this.dbId },
-      data: { tgChatId: Number(value.id) }
-    }).then(() => log2.info(`\u51FA\u73B0\u4E86\u5230\u8D85\u7EA7\u7FA4\u7EC4\u7684\u8F6C\u6362: ${value.id}`));
-  }
-  get flags() {
-    return this._flags;
-  }
-  set flags(value) {
-    this._flags = value;
-    db_default.forwardPair.update({
-      where: { id: this.dbId },
-      data: { flags: value }
-    }).then(() => 0);
-  }
-};
-
-// src/models/ForwardPairs.ts
-var import_log4js17 = __toESM(require_log4js());
-init_OicqClient();
-var ForwardPairs = class {
-  constructor(instanceId) {
-    this.instanceId = instanceId;
-    this.log = (0, import_log4js17.getLogger)(`ForwardPairs - ${instanceId}`);
-  }
-  pairs = [];
-  log;
-  // 在 forwardController 创建时初始化
-  async init(oicq, tgBot, tgUser) {
-    const dbValues = await db_default.forwardPair.findMany({
-      where: { instanceId: this.instanceId }
-    });
-    for (const i of dbValues) {
-      try {
-        const qq = await oicq.getChat(Number(i.qqRoomId), i.qqFromGroupId ? Number(i.qqFromGroupId) : void 0);
-        const tg = await tgBot.getChat(Number(i.tgChatId));
-        const tgUserChat = await tgUser.getChat(Number(i.tgChatId));
-        if (qq && tg && tgUserChat) {
-          this.log.debug("\u521D\u59CB\u5316", { qq, tg, tgUserChat });
-          this.pairs.push(new Pair(qq, tg, tgUserChat, i.id, i.flags, i.apiKey, oicq));
-        }
-      } catch (e) {
-        this.log.warn(`\u521D\u59CB\u5316\u9047\u5230\u95EE\u9898\uFF0CQQ: ${i.qqRoomId} TG: ${i.tgChatId}`);
-      }
-    }
-  }
-  static async load(instanceId, oicq, tgBot, tgUser) {
-    const instance = new this(instanceId);
-    await instance.init(oicq, tgBot, tgUser);
-    return instance;
-  }
-  async add(qq, tg, tgUser, qqClient, qqFromGroupId) {
-    const dbEntry = await db_default.forwardPair.create({
-      data: {
-        qqRoomId: "uin" in qq ? qq.uin : -qq.gid,
-        tgChatId: Number(tg.id),
-        instanceId: this.instanceId,
-        qqFromGroupId
-      }
-    });
-    this.pairs.push(new Pair(qq, tg, tgUser, dbEntry.id, dbEntry.flags, dbEntry.apiKey, qqClient));
-    return dbEntry;
-  }
-  async remove(pair) {
-    this.pairs.splice(this.pairs.indexOf(pair), 1);
-    await db_default.forwardPair.delete({
-      where: { id: pair.dbId }
-    });
-  }
-  find(target) {
-    if (!target) return null;
-    if (typeof target === "object" && "uin" in target) {
-      return this.pairs.find((e) => "uin" in e.qq && e.qq.uin === target.uin && e.qq.dm);
-    } else if (typeof target === "object" && "gid" in target) {
-      return this.pairs.find((e) => "gid" in e.qq && e.qq.gid === target.gid && !e.qq.dm);
-    } else if (typeof target === "number" || "eq" in target) {
-      return this.pairs.find((e) => e.qqRoomId === target || e.tg.id.eq(target));
-    } else {
-      return this.pairs.find((e) => e.tg.id.eq(target.id));
-    }
-  }
-  async initMapInstance(instances) {
-    for (const forwardPair of this.pairs) {
-      for (const instance of instances) {
-        if (!(instance.oicq instanceof OicqClient)) continue;
-        const instanceTgUserId = instance.userMe.id.toString();
-        if (forwardPair.instanceMapForTg[instanceTgUserId]) continue;
-        try {
-          const group = await instance.oicq.getChat(forwardPair.qqRoomId);
-          if (!group) continue;
-          forwardPair.instanceMapForTg[instanceTgUserId] = group;
-          this.log.info("MapInstance", { group: forwardPair.qqRoomId, tg: instanceTgUserId, qq: instance.qqUin });
-        } catch {
-        }
-      }
-    }
-  }
-  getAll() {
-    return this.pairs;
-  }
-};
-
-// src/controllers/InstanceManageController.ts
-var import_log4js18 = __toESM(require_log4js());
-var import_button7 = __toESM(require_button());
-var InstanceManageController = class {
-  constructor(instance, tgBot) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-  }
-  log = (0, import_log4js18.getLogger)("InstanceManageController");
-  onTelegramMessage = async (message2) => {
-    if (!(message2.chat.id.eq(this.instance.owner) && message2.message)) return;
-    const messageSplit = message2.message.split(" ");
-    if (messageSplit[0] !== "/newinstance") return;
-    if (messageSplit.length === 1) {
-      await message2.reply({
-        message: "\u901A\u8FC7 <code>/newinstance \u65B0\u7684 Bot API Token</code> \u521B\u5EFA\u4E00\u4E2A\u65B0\u7684\u8F6C\u53D1\u673A\u5668\u4EBA\u5B9E\u4F8B"
-      });
-      return true;
-    } else {
-      await message2.reply({
-        message: `\u6B63\u5728\u521B\u5EFA\uFF0C\u8BF7\u7A0D\u5019`
-      });
-      const newInstance = await Instance.createNew(messageSplit[1]);
-      this.log.info(`\u5DF2\u521B\u5EFA\u65B0\u7684\u5B9E\u4F8B \u5B9E\u4F8B ID: ${newInstance.id} Bot Token: ${messageSplit[1]}`);
-      await message2.reply({
-        message: `\u5DF2\u521B\u5EFA\u65B0\u7684\u5B9E\u4F8B
-\u5B9E\u4F8B ID: ${newInstance.id}`,
-        buttons: import_button7.Button.url("\u53BB\u914D\u7F6E", `https://t.me/${newInstance.botMe.username}?start=setup`)
-      });
-      return true;
-    }
-  };
-};
-
-// src/services/InChatCommandsService.ts
-var import_log4js19 = __toESM(require_log4js());
-var import_uploads6 = __toESM(require_uploads());
-var import_icqq5 = require("@icqqjs/icqq");
-init_posthog();
-var InChatCommandsService = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    this.log = (0, import_log4js19.getLogger)(`InChatCommandsService - ${instance.id}`);
-  }
-  log;
-  async info(message2, pair) {
-    const replyMessageId = message2.replyToMsgId;
-    if (replyMessageId) {
-      const messageInfo = await db_default.message.findFirst({
-        where: {
-          tgChatId: Number(message2.chat.id),
-          tgMsgId: replyMessageId
-        }
-      });
-      if (messageInfo) {
-        let textToSend = "";
-        if ("uin" in pair.qq) {
-          if (Number(messageInfo.qqSenderId) === pair.qqRoomId) {
-            textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${pair.qq.remark || pair.qq.nickname}(<code>${pair.qq.uin}</code>)
-`;
-          } else {
-            textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${this.oicq.nickname}(<code>${this.oicq.uin}</code>)
-`;
-          }
-        } else {
-          const sender = pair.qq.pickMember(Number(messageInfo.qqSenderId));
-          let memberInfo;
-          if (sender instanceof import_icqq5.Member) {
-            memberInfo = await sender.renew();
-          } else if (sender && "renew" in sender && typeof sender.renew === "function") {
-            memberInfo = await sender.renew();
-          } else if (sender && "info" in sender && sender.info) {
-            memberInfo = sender.info;
-          } else {
-            memberInfo = {
-              user_id: Number(messageInfo.qqSenderId),
-              card: "",
-              nickname: String(messageInfo.qqSenderId),
-              title: "",
-              role: "member",
-              sex: "unknown",
-              age: 0,
-              join_time: 0,
-              last_sent_time: 0
-            };
-          }
-          const displayName = memberInfo?.card || memberInfo?.nickname || String(sender?.uin || messageInfo.qqSenderId);
-          textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${memberInfo?.title ? `\u300C<i>${memberInfo.title}</i>\u300D` : ""}${displayName}(<code>${sender?.uin || messageInfo.qqSenderId}</code>)
-`;
-          if (memberInfo?.role && memberInfo.role !== "member") {
-            textToSend += `<b>\u804C\u52A1\uFF1A</b>${memberInfo.role === "owner" ? "\u7FA4\u4E3B" : "\u7BA1\u7406\u5458"}
-`;
-          }
-        }
-        textToSend += `<b>\u53D1\u9001\u65F6\u95F4\uFF1A</b>${format(new Date(messageInfo.time * 1e3), "yyyy-M-d hh:mm:ss")}`;
-        const avatar = await getAvatar(Number(messageInfo.qqSenderId));
-        if (this.instance.workMode === "personal") {
-          await message2.reply({
-            message: textToSend,
-            file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
-          });
-        } else {
-          const sender = await this.tgBot.getChat(message2.sender);
-          try {
-            await message2.delete({ revoke: true });
-            await sender.sendMessage({
-              message: textToSend,
-              file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
-            });
-          } catch {
-          }
-        }
-      } else {
-        await message2.reply({
-          message: "<i>\u83B7\u53D6\u6D88\u606F\u4FE1\u606F\u5931\u8D25</i>"
-        });
-      }
-    } else {
-      const avatar = await getAvatar(pair.qqRoomId);
-      await message2.reply({
-        message: await getAboutText(pair.qq, true),
-        file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
-      });
-    }
-  }
-  async poke(message2, pair) {
-    if (!("pokeMember" in pair.qq) && !("poke" in pair.qq)) {
-      await message2.reply({
-        message: "<i>\u6B64\u529F\u80FD\u4E0D\u652F\u6301</i>"
-      });
-      return;
-    }
-    const qq = pair.qq;
-    try {
-      let target;
-      if (message2.replyToMsgId) {
-        const dbEntry = await db_default.message.findFirst({
-          where: {
-            tgChatId: pair.tgId,
-            tgMsgId: message2.replyToMsgId
-          }
-        });
-        if (dbEntry) {
-          target = Number(dbEntry.qqSenderId);
-        }
-      }
-      if ("pokeMember" in qq && !target) {
-        await message2.reply({
-          message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
-        });
-      } else if ("pokeMember" in qq) {
-        await qq.pokeMember(target);
-      } else {
-        await qq.poke(target && target !== pair.qqRoomId);
-      }
-    } catch (e) {
-      await message2.reply({
-        message: `<i>\u9519\u8BEF</i>
-${e.message}`
-      });
-    }
-  }
-  // 禁言 QQ 成员
-  async mute(message2, pair, args) {
-    try {
-      const group = pair.qq;
-      if (!(group.is_admin || group.is_owner)) {
-        await message2.reply({
-          message: "<i>\u65E0\u7BA1\u7406\u5458\u6743\u9650</i>"
-        });
-        return;
-      }
-      let target;
-      if (message2.replyToMsgId) {
-        const dbEntry = await db_default.message.findFirst({
-          where: {
-            tgChatId: pair.tgId,
-            tgMsgId: message2.replyToMsgId
-          }
-        });
-        if (dbEntry) {
-          target = Number(dbEntry.qqSenderId);
-        }
-      }
-      if (!target) {
-        await message2.reply({
-          message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
-        });
-        return;
-      }
-      if (!args.length) {
-        await message2.reply({
-          message: "<i>\u8BF7\u8F93\u5165\u7981\u8A00\u7684\u65F6\u95F4</i>"
-        });
-        return;
-      }
-      let time = Number(args[0]);
-      if (isNaN(time)) {
-        const unit = args[0].substring(args[0].length - 1, args[0].length);
-        time = Number(args[0].substring(0, args[0].length - 1));
-        switch (unit) {
-          case "d":
-            time *= 24;
-          case "h":
-            time *= 60;
-          case "m":
-            time *= 60;
-            break;
-          default:
-            time = NaN;
-        }
-      }
-      if (isNaN(time)) {
-        await message2.reply({
-          message: "<i>\u8BF7\u8F93\u5165\u6B63\u786E\u7684\u65F6\u95F4</i>"
-        });
-        return;
-      }
-      await group.muteMember(target, time);
-      await message2.reply({
-        message: "<i>\u6210\u529F</i>"
-      });
-    } catch (e) {
-      posthog_default.capture("\u7981\u8A00\u8BF7\u6C42\u51FA\u9519", { error: e });
-      await message2.reply({
-        message: `<i>\u9519\u8BEF</i>
-${e.message}`
-      });
-    }
-  }
-  async rmt(message2, pair) {
-    if (!message2.replyToMsgId) {
-      const reply = await message2.reply({
-        message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
-      });
-      setTimeout(() => {
-        reply.delete({ revoke: true });
-        message2.delete({ revoke: true });
-      }, 5e3);
-      return;
-    }
-    await db_default.message.updateMany({
-      where: {
-        tgChatId: pair.tgId,
-        tgMsgId: message2.replyToMsgId
-      },
-      data: {
-        ignoreDelete: true
-      }
-    });
-    await message2.delete({ revoke: true });
-    await pair.tg.deleteMessages([message2.replyToMsgId]);
-  }
-  async rmq(message2, pair) {
-    if (!message2.replyToMsgId) {
-      const reply = await message2.reply({
-        message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
-      });
-      setTimeout(() => {
-        reply.delete({ revoke: true });
-        message2.delete({ revoke: true });
-      }, 5e3);
-      return;
-    }
-    const dbEntry = await db_default.message.findFirst({
-      where: {
-        tgChatId: pair.tgId,
-        tgMsgId: message2.replyToMsgId
-      }
-    });
-    await db_default.message.update({
-      where: {
-        id: dbEntry.id
-      },
-      data: {
-        ignoreDelete: true
-      }
-    });
-    await message2.delete({ revoke: true });
-    await pair.qq.recallMsg(dbEntry.seq, Number(dbEntry.rand), pair.qq.dm ? dbEntry.time : dbEntry.pktnum);
-  }
-};
-
-// src/controllers/InChatCommandsController.ts
-var import_log4js20 = __toESM(require_log4js());
-var InChatCommandsController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    this.log = (0, import_log4js20.getLogger)(`InChatCommandsController - ${instance.id}`);
-    this.service = new InChatCommandsService(instance, tgBot, oicq);
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-  }
-  service;
-  log;
-  onTelegramMessage = async (message2) => {
-    if (!message2.message) return;
-    const messageParts = message2.message.split(" ");
-    if (!messageParts.length || !messageParts[0].startsWith("/")) return;
-    let command = messageParts.shift();
-    const params = messageParts.join(" ");
-    if (command.includes("@")) {
-      let target;
-      [command, target] = command.split("@");
-      if (target !== this.tgBot.me.username) return false;
-    }
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return false;
-    switch (command) {
-      case "/info":
-        await this.service.info(message2, pair);
-        return true;
-      case "/poke":
-        await this.service.poke(message2, pair);
-        return true;
-      case "/unmute":
-        messageParts.unshift("0");
-      case "/mute":
-        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
-        if (!("gid" in pair.qq)) return true;
-        await this.service.mute(message2, pair, messageParts);
-        return true;
-      case "/forwardoff":
-        pair.flags |= flags_default.DISABLE_Q2TG | flags_default.DISABLE_TG2Q;
-        await message2.reply({ message: "\u8F6C\u53D1\u5DF2\u7981\u7528" });
-        return true;
-      case "/forwardon":
-        pair.flags &= ~flags_default.DISABLE_Q2TG & ~flags_default.DISABLE_TG2Q;
-        await message2.reply({ message: "\u8F6C\u53D1\u5DF2\u542F\u7528" });
-        return true;
-      case "/disable_qq_forward":
-        pair.flags |= flags_default.DISABLE_Q2TG;
-        await message2.reply({ message: "QQ->TG\u5DF2\u7981\u7528" });
-        return true;
-      case "/enable_qq_forward":
-        pair.flags &= ~flags_default.DISABLE_Q2TG;
-        await message2.reply({ message: "QQ->TG\u5DF2\u542F\u7528" });
-        return true;
-      case "/disable_tg_forward":
-        pair.flags |= flags_default.DISABLE_TG2Q;
-        await message2.reply({ message: "TG->QQ\u5DF2\u7981\u7528" });
-        return true;
-      case "/enable_tg_forward":
-        pair.flags &= ~flags_default.DISABLE_TG2Q;
-        await message2.reply({ message: "TG->QQ\u5DF2\u542F\u7528" });
-        return true;
-      case "/flags":
-      case "/flag":
-        if (!message2.senderId.eq(this.instance.owner)) {
-          await message2.reply({ message: "\u6743\u9650\u4E0D\u591F" });
-          return true;
-        }
-        await message2.reply({
-          message: await editFlags(messageParts, pair)
-        });
-        return true;
-      case "/refresh":
-        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
-        await pair.updateInfo();
-        await message2.reply({ message: "<i>\u5237\u65B0\u6210\u529F</i>" });
-        return true;
-      case "/nick":
-        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
-        if (!("gid" in pair.qq)) return true;
-        if (!params) {
-          return true;
-        }
-        const result = await pair.qq.setCard(this.instance.qqUin, params);
-        await message2.reply({
-          message: "\u8BBE\u7F6E" + (result ? "\u6210\u529F" : "\u5931\u8D25")
-        });
-        return true;
-      case "/rmt":
-        await this.service.rmt(message2, pair);
-        return true;
-      case "/rmq":
-        await this.service.rmq(message2, pair);
-        return true;
-      case "/announce":
-        if (pair.qq.dm) return;
-        if (!message2.senderId.eq(this.instance.owner)) {
-          await message2.reply({ message: "\u6743\u9650\u4E0D\u591F" });
-          return true;
-        }
-        if (!params.trim()) {
-          await message2.reply({ message: "\u7528\u6CD5: /announce <\u5185\u5BB9>" });
-          return true;
-        }
-        try {
-          if (await pair.qq.announce(params.trim())) {
-            await message2.reply({ message: "\u53D1\u9001\u6210\u529F" });
-          } else {
-            await message2.reply({ message: "\u53D1\u9001\u5931\u8D25" });
-          }
-        } catch (e) {
-          await message2.reply({ message: "\u53D1\u9001\u5931\u8D25\uFF1A" + e.message });
-        }
-        return true;
-    }
-  };
-};
-
-// src/models/Instance.ts
-var import_telegram16 = __toESM(require_telegram());
-
-// src/controllers/RequestController.ts
-var import_log4js21 = __toESM(require_log4js());
-var import_uploads7 = __toESM(require_uploads());
-var import_button8 = __toESM(require_button());
-init_posthog();
-var RequestController = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    this.log = (0, import_log4js21.getLogger)(`RequestController - ${instance.id}`);
-    oicq.addFriendRequestEventHandler(this.handleRequest);
-    oicq.addGroupInviteEventHandler(this.handleRequest);
-  }
-  log;
-  handleRequest = async (event) => {
-    this.log.info(`\u6536\u5230\u7533\u8BF7\uFF1A${event.nickname} (${event.user_id})`);
-    let avatar;
-    let messageText = "";
-    if (event.request_type === "friend") {
-      avatar = await getAvatar(event.user_id);
-      messageText = `\u6536\u5230\u597D\u53CB\u7533\u8BF7
-<b>\u6635\u79F0\uFF1A</b>${event.nickname}
-<b>\u8D26\u53F7\uFF1A</b><code>${event.user_id}</code>
-<b>\u5E74\u9F84\uFF1A</b>${event.age}
-<b>\u6027\u522B\uFF1A</b>${event.sex}
-<b>\u6765\u6E90\uFF1A</b>${event.source}
-<b>\u9644\u8A00\uFF1A</b>${event.comment}`;
-    } else {
-      avatar = await getAvatar(-event.group_id);
-      messageText = `\u6536\u5230\u52A0\u7FA4\u9080\u8BF7
-<b>\u9080\u8BF7\u4EBA\uFF1A</b>${event.nickname} (<code>${event.user_id}</code>)
-<b>\u7FA4\u540D\u79F0\uFF1A</b>${event.group_name}
-<b>\u7FA4\u53F7\uFF1A</b>${event.group_id}
-<b>\u9080\u8BF7\u8005\u8EAB\u4EFD\uFF1A</b>${event.role}`;
-    }
-    const message2 = await this.instance.ownerChat.sendMessage({
-      file: new import_uploads7.CustomFile("avatar.png", avatar.length, "", avatar),
-      message: messageText,
-      buttons: [[
-        import_button8.Button.inline("\u540C\u610F", this.tgBot.registerCallback(async () => {
-          try {
-            if (!await event.approve(true)) {
-              await message2.edit({ text: "\u540C\u610F\u5931\u8D25", buttons: import_button8.Button.clear() });
-            }
-          } catch (e) {
-            posthog_default.capture("\u540C\u610F\u7533\u8BF7\u5931\u8D25", { error: e });
-            await message2.edit({ text: `\u540C\u610F\u5931\u8D25\uFF1A${e.message}`, buttons: import_button8.Button.clear() });
-          }
-          await message2.edit({ text: "\u5DF2\u540C\u610F\u8BF7\u6C42", buttons: import_button8.Button.clear() });
-        })),
-        import_button8.Button.inline("\u62D2\u7EDD", this.tgBot.registerCallback(async () => {
-          try {
-            if (!await event.approve(false)) {
-              await message2.edit({ text: "\u62D2\u7EDD\u5931\u8D25", buttons: import_button8.Button.clear() });
-            }
-          } catch (e) {
-            posthog_default.capture("\u62D2\u7EDD\u7533\u8BF7\u5931\u8D25", { error: e });
-            await message2.edit({ text: `\u62D2\u7EDD\u5931\u8D25\uFF1A${e.message}`, buttons: import_button8.Button.clear() });
-          }
-          await message2.edit({ text: "\u5DF2\u62D2\u7EDD\u8BF7\u6C42", buttons: import_button8.Button.clear() });
-        }))
-      ]]
-    });
-  };
-};
-
-// src/controllers/OicqErrorNotifyController.ts
-init_OicqClient();
-var OicqErrorNotifyController = class {
-  constructor(instance, oicq) {
-    this.instance = instance;
-    this.oicq = oicq;
-    if (oicq instanceof OicqClient) {
-      oicq.oicq.on("system.offline", async ({ message: message2 }) => {
-        if (this.locked) return;
-        this.locked = true;
-        if (!(instance.flags & flags_default.DISABLE_OFFLINE_NOTICE))
-          await this.instance.ownerChat.sendMessage(`<i>QQ \u673A\u5668\u4EBA\u6389\u7EBF</i>
-${message2}`);
-      });
-      oicq.oicq.on("system.online", async () => {
-        this.locked = false;
-      });
-    }
-  }
-  locked = false;
-};
-
-// src/models/Instance.ts
-var import_button9 = __toESM(require_button());
-
-// src/controllers/HugController.ts
-var import_telegram13 = __toESM(require_telegram());
-var import_big_integer = __toESM(require_BigInteger());
-var import_log4js22 = __toESM(require_log4js());
-var import_member = require("@icqqjs/icqq/lib/member");
-init_env();
-var COMMAND_REGEX = /(^\/([^\w\s$¥]\S*)|^\/[$¥](\w\S*))( (\S*))?/;
-var HugController_default = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    this.log = (0, import_log4js22.getLogger)(`HugController - ${instance.id}`);
-    oicq.addNewMessageEventHandler(this.onQqMessage);
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-  }
-  log;
-  onQqMessage = async (event) => {
-    if (event.dm) return;
-    const pair = this.instance.forwardPairs.find(event.chat);
-    if (!pair) return;
-    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_SLASH_COMMAND) return;
-    const chain = [...event.message];
-    if (chain.some((it) => it.type === "face")) return;
-    while (chain.length && chain[0].type !== "text") {
-      chain.shift();
-    }
-    const firstElem = chain[0];
-    if (firstElem?.type !== "text") return;
-    const exec = COMMAND_REGEX.exec(firstElem.text.trim());
-    if (!exec) return;
-    const action = exec[2] || exec[3];
-    if (!action) return;
-    const from = {
-      from: "qq",
-      name: event.from.name,
-      id: event.from.id
-    };
-    let to;
-    const ats = chain.filter((it) => it.type === "at");
-    if (ats.length) {
-      const atName = ats[0].text.startsWith("@") ? ats[0].text.substring(1) : ats[0].text;
-      to = {
-        from: "qq",
-        name: atName,
-        id: ats[0].qq
-      };
-    } else if (event.replyTo && event.replyTo.fromId === this.oicq.uin) {
-      const sourceMessage = await db_default.message.findFirst({
-        where: {
-          instanceId: this.instance.id,
-          qqRoomId: pair.qqRoomId,
-          qqSenderId: event.replyTo.fromId,
-          seq: event.replyTo.seq
-          // rand: event.source.rand,
-        }
-      });
-      if (!sourceMessage) {
-        this.log.error("\u627E\u4E0D\u5230 sourceMessage");
-        return true;
-      }
-      to = {
-        from: "tg",
-        id: (await this.tgBot.getChat((0, import_big_integer.default)(sourceMessage.tgSenderId))).inputPeer,
-        name: sourceMessage.nick
-      };
-    } else if (event.replyTo) {
-      const sourceMember = pair.qq.pickMember(event.replyTo.fromId);
-      let memberInfo;
-      if (sourceMember instanceof import_member.Member) {
-        memberInfo = sourceMember.info;
-      } else {
-        memberInfo = await sourceMember.renew();
-      }
-      to = {
-        from: "qq",
-        name: memberInfo.card || memberInfo.nickname,
-        id: event.replyTo.fromId
-      };
-    } else {
-      to = {
-        from: "qq",
-        name: "\u81EA\u5DF1",
-        id: event.from.id
-      };
-    }
-    await this.sendAction(pair, from, to, action, exec[5]);
-    return true;
-  };
-  onTelegramMessage = async (message2) => {
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return;
-    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_SLASH_COMMAND) return;
-    const exec = COMMAND_REGEX.exec(message2.message);
-    if (!exec) return;
-    const action = exec[2] || exec[3];
-    if (!action) return;
-    const from = {
-      from: "tg",
-      name: forwardHelper_default.getUserDisplayName(message2.sender),
-      id: (await this.tgBot.getChat(message2.senderId)).inputPeer
-    };
-    let to;
-    if (message2.replyTo) {
-      const sourceMessage = await db_default.message.findFirst({
-        where: {
-          instanceId: this.instance.id,
-          tgChatId: pair.tgId,
-          tgMsgId: message2.replyToMsgId
-        }
-      });
-      if (!sourceMessage) {
-        this.log.error("\u627E\u4E0D\u5230 sourceMessage");
-        return true;
-      }
-      if (this.tgBot.me.id.eq(sourceMessage.tgSenderId)) {
-        to = {
-          from: "qq",
-          name: sourceMessage.nick,
-          id: Number(sourceMessage.qqSenderId)
-        };
-      } else {
-        to = {
-          from: "tg",
-          id: (await this.tgBot.getChat((0, import_big_integer.default)(sourceMessage.tgSenderId))).inputPeer,
-          name: sourceMessage.nick
-        };
-      }
-    } else {
-      to = {
-        from: "tg",
-        name: "\u81EA\u5DF1",
-        id: (await this.tgBot.getChat(message2.senderId)).inputPeer
-      };
-    }
-    await this.sendAction(pair, from, to, action, exec[5]);
-    return true;
-  };
-  async sendAction(pair, from, to, action, suffix) {
-    let tgText = "";
-    const tgEntities = [];
-    const qqMessageContent = [];
-    const addSubject = (subject) => {
-      if (subject.from === "tg") {
-        tgEntities.push(new import_telegram13.Api.InputMessageEntityMentionName({
-          offset: tgText.length,
-          length: subject.name.length,
-          userId: subject.id
-        }));
-        qqMessageContent.push(subject.name);
-      } else {
-        qqMessageContent.push({
-          type: "at",
-          text: subject.name,
-          qq: subject.id
-        });
-        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
-          tgEntities.push(new import_telegram13.Api.MessageEntityTextUrl({
-            offset: tgText.length,
-            length: subject.name.length,
-            url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, subject.id, subject.name)
-          }));
-        }
-      }
-      tgText += subject.name;
-    };
-    const addText = (text) => {
-      tgText += text;
-      qqMessageContent.push(text);
-    };
-    addSubject(from);
-    addText(" ");
-    addText(action);
-    if (!/[\u4e00-\u9fa5]$/.test(action)) {
-      addText(" ");
-    }
-    addText("\u4E86 ");
-    addSubject(to);
-    if (suffix) {
-      tgText += " " + suffix;
-    }
-    addText("\uFF01");
-    const tgMessage = await pair.tg.sendMessage({
-      message: tgText,
-      formattingEntities: tgEntities,
-      linkPreview: false
-    });
-    const qqMessage = await pair.qq.sendMsg(qqMessageContent);
-    await db_default.message.create({
-      data: {
-        qqRoomId: pair.qqRoomId,
-        qqSenderId: this.oicq.uin,
-        time: qqMessage.time,
-        brief: tgText,
-        seq: qqMessage.seq,
-        rand: qqMessage.rand,
-        pktnum: 1,
-        tgChatId: pair.tgId,
-        tgMsgId: tgMessage.id,
-        instanceId: this.instance.id,
-        tgMessageText: tgMessage.message,
-        nick: "\u7CFB\u7EDF",
-        tgSenderId: BigInt(this.tgBot.me.id.toString())
-      }
-    });
-  }
-};
-
-// src/controllers/QuotLyController.ts
-var import_log4js23 = __toESM(require_log4js());
-var import_telegram14 = __toESM(require_telegram());
-var import_uploads8 = __toESM(require_uploads());
-var import_big_integer2 = __toESM(require_BigInteger());
-init_env();
-init_posthog();
-var quotlyPkg;
-async function getQuotly() {
-  if (!quotlyPkg) {
-    quotlyPkg = (await import("quote-api/methods/generate.js")).default;
-  }
-  return quotlyPkg;
-}
-var QuotLyController_default = class {
-  constructor(instance, tgBot, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.oicq = oicq;
-    this.log = (0, import_log4js23.getLogger)(`QuotLyController - ${instance.id}`);
-    oicq.addNewMessageEventHandler(this.onQqMessage);
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-  }
-  log;
-  onQqMessage = async (event) => {
-    if (this.instance.workMode === "personal") return;
-    if (event.dm) return;
-    const pair = this.instance.forwardPairs.find(event.chat);
-    if (!pair) return;
-    const chain = [...event.message];
-    while (chain.length && chain[0].type !== "text") {
-      chain.shift();
-    }
-    const firstElem = chain[0];
-    if (firstElem?.type !== "text") return;
-    if (firstElem.text.trim() !== "/q") return;
-    if (!event.replyTo) {
-      await event.reply("\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F", true);
-      return true;
-    }
-    const sourceMessage = await db_default.message.findFirst({
-      where: {
-        instanceId: this.instance.id,
-        qqRoomId: pair.qqRoomId,
-        qqSenderId: event.replyTo.fromId,
-        seq: event.replyTo.seq
-        // rand: event.source.rand,
-      }
-    });
-    if (!sourceMessage) {
-      await event.reply("\u65E0\u6CD5\u4ECE\u6570\u636E\u5E93\u627E\u5230\u539F\u6D88\u606F", true);
-      this.log.error("\u627E\u4E0D\u5230 sourceMessage");
-      return true;
-    }
-    if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_QUOTE_PIN)) {
-      this.pinMessageOnBothSide(pair, sourceMessage).then();
-    }
-    this.sendQuote(pair, sourceMessage).catch(async (e) => {
-      this.log.error(e);
-      posthog_default.capture("sendQuote \u9519\u8BEF", { error: e });
-      await event.reply(e.toString(), true);
-    });
-  };
-  onTelegramMessage = async (message2) => {
-    if (!["/q", `/q@${this.tgBot.me.username}`].includes(message2.message)) return;
-    const pair = this.instance.forwardPairs.find(message2.chat);
-    if (!pair) return;
-    if (!message2.replyTo) {
-      await message2.reply({
-        message: "\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F"
-      });
-      return true;
-    }
-    const sourceMessage = await db_default.message.findFirst({
-      where: {
-        instanceId: this.instance.id,
-        tgChatId: pair.tgId,
-        tgMsgId: message2.replyToMsgId
-      }
-    });
-    if (!sourceMessage) {
-      await message2.reply({
-        message: "\u65E0\u6CD5\u4ECE\u6570\u636E\u5E93\u627E\u5230\u539F\u6D88\u606F"
-      });
-      this.log.error("\u627E\u4E0D\u5230 sourceMessage");
-      return true;
-    }
-    if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_QUOTE_PIN)) {
-      this.pinMessageOnBothSide(pair, sourceMessage).then();
-    }
-    this.sendQuote(pair, sourceMessage).catch(async (e) => {
-      this.log.error(e);
-      posthog_default.capture("sendQuote \u9519\u8BEF", { error: e });
-      await message2.reply({
-        message: e.toString()
-      });
-    });
-    if (this.instance.workMode === "personal") return true;
-  };
-  async pinMessageOnBothSide(pair, sourceMessage) {
-    if ("gid" in pair.qq) {
-      try {
-      } catch (e) {
-        this.log.warn("\u65E0\u6CD5\u6DFB\u52A0\u7CBE\u534E\u6D88\u606F\uFF0C\u7FA4\uFF1A", pair.qqRoomId, e);
-      }
-    }
-    try {
-      const tgMessage = await pair.tg.getMessage({ ids: sourceMessage.tgMsgId });
-      await tgMessage.pin({ notify: false, pmOneSide: false });
-    } catch (e) {
-      this.log.warn("\u65E0\u6CD5\u7F6E\u9876\u6D88\u606F\uFF0C\u7FA4\uFF1A", pair.tgId, "\u6D88\u606F ID\uFF1A", sourceMessage.tgMsgId, e);
-    }
-  }
-  async genQuote(message2) {
-    const GROUP_ANONYMOUS_BOT = 1087968824n;
-    const backgroundColor = "#292232";
-    const emojiBrand = "apple";
-    const width = 512;
-    const height = 512 * 1.5;
-    const scale = 2;
-    const type = "quote";
-    const format2 = "png";
-    const originTgMessages = await this.tgBot.getMessage((0, import_big_integer2.default)(message2.tgChatId), {
-      ids: message2.tgMsgId
-    });
-    if (!originTgMessages.length) {
-      throw new Error("\u65E0\u6CD5\u83B7\u53D6 Tg \u539F\u6D88\u606F");
-    }
-    const originTgMessage = originTgMessages[0];
-    let messageFrom;
-    let quoteMessage = {
-      chatId: Number(message2.tgChatId),
-      avatar: true,
-      from: null,
-      // to be added
-      text: message2.tgMessageText
-    };
-    if (this.tgBot.me.id.eq(message2.tgSenderId)) {
-      messageFrom = {
-        id: Number(message2.qqSenderId),
-        name: message2.nick,
-        title: message2.nick,
-        photo: { url: getAvatarUrl(message2.qqSenderId) }
-      };
-      if (message2.qqRoomId > 0 || message2.richHeaderUsed) {
-        quoteMessage.text = message2.tgMessageText;
-      } else if (message2.tgMessageText.includes("\n")) {
-        quoteMessage.text = message2.tgMessageText.substring(message2.tgMessageText.indexOf("\n")).trim();
-      } else {
-        quoteMessage.text = null;
-      }
-    } else if (message2.tgSenderId === GROUP_ANONYMOUS_BOT || message2.tgSenderId === 777000n) {
-      const chat = originTgMessage.chat;
-      let photo;
-      if (chat.photo instanceof import_telegram14.Api.ChatPhoto) {
-        photo = await convert_default.cachedBuffer(`${chat.photo.photoId.toString(16)}.jpg`, () => this.tgBot.downloadEntityPhoto(chat));
-      }
-      messageFrom = {
-        id: Number(chat.id.toString()),
-        name: chat.title,
-        title: chat.title,
-        username: chat.username || null,
-        photo: photo ? { url: photo } : null
-      };
-      quoteMessage.entities = originTgMessage.entities;
-    } else {
-      const sender = originTgMessage.sender;
-      let photo;
-      if (sender.photo instanceof import_telegram14.Api.UserProfilePhoto) {
-        photo = await convert_default.cachedBuffer(`${sender.photo.photoId.toString(16)}.jpg`, () => this.tgBot.downloadEntityPhoto(sender));
-      }
-      messageFrom = {
-        id: sender.color?.color || Number(message2.tgSenderId),
-        name: message2.nick,
-        title: message2.nick,
-        username: sender.username,
-        first_name: sender.firstName,
-        last_name: sender.lastName,
-        photo: photo ? { url: photo } : null
-      };
-      if (originTgMessage.entities)
-        quoteMessage.entities = await Promise.all(originTgMessage.entities?.map?.(async (it) => {
-          let type2 = "";
-          let emoji = "";
-          switch (it.className) {
-            case "MessageEntityBold":
-              type2 = "bold";
-              break;
-            case "MessageEntityItalic":
-              type2 = "italic";
-              break;
-            case "MessageEntityStrike":
-              type2 = "strikethrough";
-              break;
-            case "MessageEntityUnderline":
-              type2 = "underline";
-              break;
-            case "MessageEntitySpoiler":
-              type2 = "spoiler";
-              break;
-            case "MessageEntityCode":
-            case "MessageEntityPre":
-              type2 = "code";
-              break;
-            case "MessageEntityMention":
-            case "MessageEntityMentionName":
-            case "InputMessageEntityMentionName":
-            case "MessageEntityHashtag":
-            case "MessageEntityEmail":
-            case "MessageEntityPhone":
-            case "MessageEntityBotCommand":
-            case "MessageEntityUrl":
-            case "MessageEntityTextUrl":
-              type2 = "mention";
-              break;
-            case "MessageEntityCustomEmoji":
-              type2 = "custom_emoji";
-              emoji = await convert_default.customEmoji(
-                it.documentId.toString(16),
-                () => this.tgBot.getCustomEmoji(it.documentId),
-                false
-              );
-              break;
-          }
-          return {
-            type: type2,
-            emoji,
-            offset: it.offset,
-            length: it.length
-          };
-        }));
-    }
-    if (originTgMessage.voice) {
-      const attribute = originTgMessage.voice.attributes.find((it) => it instanceof import_telegram14.Api.DocumentAttributeAudio);
-      quoteMessage.voice = { waveform: attribute.waveform };
-    } else if (originTgMessage.photo instanceof import_telegram14.Api.Photo || originTgMessage.document?.mimeType?.startsWith("image/")) {
-      if (originTgMessage.document?.mimeType === "image/webp") {
-        quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.document.id.toString(16)}.webp`, () => originTgMessage.downloadMedia({})) };
-      } else {
-        quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.photo.id.toString(16)}.jpg`, () => originTgMessage.downloadMedia({})) };
-      }
-    } else if (originTgMessage.video || originTgMessage.videoNote || originTgMessage.gif) {
-      const file2 = originTgMessage.video || originTgMessage.videoNote || originTgMessage.gif;
-      quoteMessage.media = { url: await convert_default.cachedBuffer(`${file2.id.toString(16)}-thumb.webp`, () => this.tgBot.downloadThumb(file2)) };
-    } else if (originTgMessage.sticker) {
-      quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.document.id.toString(16)}.tgs`, () => originTgMessage.downloadMedia({})) };
-    }
-    if (originTgMessage.sticker) {
-      quoteMessage.mediaType = "sticker";
-    }
-    quoteMessage.from = messageFrom;
-    if (!quoteMessage.text && !quoteMessage.media && !quoteMessage.voice) {
-      throw new Error("\u4E0D\u652F\u6301\u7684\u6D88\u606F\u7C7B\u578B");
-    }
-    const quotly = await getQuotly();
-    const res = await quotly({
-      botToken: env_default.TG_BOT_TOKEN,
-      type,
-      format: format2,
-      backgroundColor,
-      width,
-      height,
-      scale,
-      messages: [quoteMessage],
-      emojiBrand
-    });
-    return Buffer.from(res.image, "base64");
-  }
-  async sendQuote(pair, message2) {
-    const image = await this.genQuote(message2);
-    const tgMessage = await pair.tg.sendMessage({
-      file: new import_uploads8.CustomFile("quote.webp", image.length, void 0, image)
-    });
-    if (this.instance.workMode === "personal") return;
-    const qqMessage = await pair.qq.sendMsg({
-      type: "image",
-      file: image,
-      asface: true
-    });
-    await db_default.message.create({
-      data: {
-        qqRoomId: pair.qqRoomId,
-        qqSenderId: this.oicq.uin,
-        time: qqMessage.time,
-        brief: "[Quote]",
-        seq: qqMessage.seq,
-        rand: qqMessage.rand,
-        pktnum: 1,
-        tgChatId: pair.tgId,
-        tgMsgId: tgMessage.id,
-        instanceId: this.instance.id,
-        tgMessageText: tgMessage.message,
-        nick: "\u7CFB\u7EDF",
-        tgSenderId: BigInt(this.tgBot.me.id.toString())
-      }
-    });
-  }
-};
-
-// src/controllers/MiraiSkipFilterController.ts
-var MiraiSkipFilterController_default = class {
-  constructor(instance, tgBot, tgUser, qqBot) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.qqBot = qqBot;
-    qqBot.addNewMessageEventHandler(this.onQqMessage);
-  }
-  // 当 mapInstance 用同服务器其他个人模式账号发送消息后，message mirai 会带 q2tgSkip=true
-  // 防止 bot 重新收到消息再转一圈回来重新转发或者重新响应命令
-  onQqMessage = async (event) => {
-    if ("friend" in event) return;
-    if (!event.message) return;
-    const messageMirai = event.message.find((it) => it.type === "mirai");
-    if (messageMirai) {
-      try {
-        const miraiData = JSON.parse(messageMirai.data);
-        if (miraiData.q2tgSkip) return true;
-      } catch {
-      }
-    }
-  };
-};
-
-// src/models/Instance.ts
-init_env();
-
-// src/controllers/AliveCheckController.ts
-init_OicqClient();
-var AliveCheckController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    tgBot.addNewMessageEventHandler(this.handleMessage);
-  }
-  handleMessage = async (message2) => {
-    const senderId = message2.senderId || message2.sender?.id;
-    if (!senderId || !senderId.eq(this.instance.owner) || !message2.isPrivate) {
-      return false;
-    }
-    if (!["\u4F3C\u4E86\u5417", "/alive"].includes(message2.message)) {
-      return false;
-    }
-    await message2.reply({
-      message: await this.genMessage(this.instance.id === 0 ? Instance.instances : [this.instance])
-    });
-    return true;
-  };
-  async genMessage(instances) {
-    const boolToStr = (value) => {
-      return value ? "\u597D" : "\u574F";
-    };
-    const messageParts = [];
-    for (const instance of instances) {
-      const oicq = instance.oicq;
-      const tgBot = instance.tgBot;
-      const tgUser = instance.tgUser;
-      const sign = oicq instanceof OicqClient ? await oicq.oicq.getSign("MessageSvc.PbSendMsg", 233, Buffer.alloc(10)) : null;
-      const tgUserName = tgUser.me.username || tgUser.me.usernames.length ? "@" + (tgUser.me.username || tgUser.me.usernames[0].username) : tgUser.me.firstName;
-      messageParts.push([
-        `Instance #${instance.id} (${instance.workMode}) ${instance.isInit ? "" : "\u521D\u59CB\u5316\u672A\u5B8C\u6210"}`,
-        `QQ <code>${instance.qqUin}</code> (${oicq.constructor.name})	${boolToStr(await oicq.isOnline())}`,
-        ...oicq instanceof OicqClient ? [`\u7B7E\u540D\u670D\u52A1\u5668	${boolToStr(sign.length > 0)}`] : [],
-        `TG @${tgBot.me.username}	${boolToStr(tgBot.isOnline)}`,
-        `TG User ${tgUserName}	${boolToStr(tgBot.isOnline)}`
-      ].join("\n"));
-    }
-    return messageParts.join("\n\n");
-  }
-};
-
-// src/models/Instance.ts
-init_QQClient();
-init_posthog();
-
-// src/controllers/LoadingController.ts
-var LoadingController_default = class {
-  constructor(instance, tgBot, tgUser, qqBot) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.qqBot = qqBot;
-    this.initStickerPack();
-    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
-  }
-  stickerPackHandles = null;
-  async initStickerPack() {
-    const pack = await this.tgBot.getStickerSet("Clansty_WEBM");
-    this.stickerPackHandles = pack.documents;
-  }
-  onTelegramMessage = async (message2) => {
-    if ((message2.isGroup || message2.isChannel) && this.instance.workMode === "group") return;
-    if (this.stickerPackHandles)
-      await message2.reply({
-        file: this.stickerPackHandles[0]
-      });
-    await message2.reply({
-      message: "Q2TG \u8FD8\u5728\u521D\u59CB\u5316\u4E2D\uFF0C\u6240\u4EE5\u6682\u65F6\u65E0\u6CD5\u5904\u7406\u4F60\u7684\u6D88\u606F\u3002\u8BF7\u7A0D\u540E\u518D\u8BD5"
-    });
-    return true;
-  };
-  off() {
-    this.tgBot.removeNewMessageEventHandler(this.onTelegramMessage);
-  }
-};
-
-// src/controllers/TypingController.ts
-var import_telegram15 = __toESM(require_telegram());
-var TypingController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    oicq.addInputStatusChangeHandler(this.handleInputStatusChange);
-  }
-  handleInputStatusChange = async (event) => {
-    const pair = this.instance.forwardPairs.find(event.chat);
-    if (!pair) return;
-    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_Q2TG) return;
-    if (event.typing) {
-      await pair.tg.setTyping();
-    } else {
-      await pair.tg.setTyping(new import_telegram15.Api.SendMessageCancelAction());
-    }
-  };
-};
-
-// src/controllers/GroupNameRefreshController.ts
-init_NapCatClient();
-init_env();
-var import_log4js24 = __toESM(require_log4js());
-var GroupNameRefreshController = class {
-  constructor(instance, tgBot, tgUser, oicq) {
-    this.instance = instance;
-    this.tgBot = tgBot;
-    this.tgUser = tgUser;
-    this.oicq = oicq;
-    oicq.addGroupNameChangeHandler(this.handleGroupNameChange.bind(this));
-    this.log = (0, import_log4js24.getLogger)(`GroupNameRefreshController - ${instance.id}`);
-  }
-  log;
-  async handleGroupNameChange(event) {
-    this.log.debug(event);
-    const pair = this.instance.forwardPairs.find(event.group);
-    if (!pair) return;
-    if ((pair.flags | this.instance.flags) & flags_default.NAME_LOCKED) return;
-    await pair.tg.editTitle(event.newName);
-    if (event.operator instanceof NapCatGroupMember) {
-      const operatorInfo = await event.operator.renew();
-      let operatorName = operatorInfo.card || operatorInfo.nickname;
-      if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
-        const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, operatorInfo.user_id, operatorName);
-        operatorName = `<a href="${richHeaderUrl}">${operatorName}</a>`;
-      }
-      await pair.tg.sendMessage({
-        message: `<i>${operatorName} \u4FEE\u6539\u7FA4\u540D\u4E3A <b>${event.newName}</b></i>`,
-        parseMode: "html",
-        silent: true
-      });
-    }
-  }
-};
-
-// src/models/Instance.ts
-var Instance = class _Instance {
-  constructor(id) {
-    this.id = id;
-    this.log = (0, import_log4js25.getLogger)(`Instance - ${this.id}`);
-  }
-  static instances = [];
-  _owner = 0;
-  _isSetup = false;
-  _workMode = "";
-  _botSessionId = 0;
-  _userSessionId = 0;
-  _qq;
-  _flags;
-  log;
-  tgBot;
-  tgUser;
-  oicq;
-  isInit = false;
-  _ownerChat;
-  forwardPairs;
-  setupController;
-  instanceManageController;
-  oicqErrorNotifyController;
-  requestController;
-  configController;
-  deleteMessageController;
-  inChatCommandsController;
-  forwardController;
-  fileAndFlashPhotoController;
-  hugController;
-  quotLyController;
-  miraiSkipFilterController;
-  aliveCheckController;
-  loadingController;
-  typingController;
-  groupNameRefreshController;
-  async load() {
-    const dbEntry = await db_default.instance.findFirst({
-      where: { id: this.id },
-      include: { qqBot: true }
-    });
-    if (!dbEntry) {
-      if (this.id === 0) {
-        await db_default.instance.create({
-          data: { id: 0 }
-        });
-        return;
-      } else
-        throw new Error("Instance not found");
-    }
-    this._owner = Number(dbEntry.owner);
-    this._qq = dbEntry.qqBot;
-    this._botSessionId = dbEntry.botSessionId;
-    this._userSessionId = dbEntry.userSessionId;
-    this._isSetup = dbEntry.isSetup;
-    this._workMode = dbEntry.workMode;
-    this._flags = dbEntry.flags;
-  }
-  init(botToken) {
-    (async () => {
-      this.log.debug("\u6B63\u5728\u767B\u5F55 TG Bot");
-      if (this.botSessionId) {
-        this.tgBot = await Telegram.connect(this._botSessionId);
-      } else {
-        const token = this.id === 0 ? env_default.TG_BOT_TOKEN : botToken;
-        if (!token) {
-          throw new Error("botToken \u672A\u6307\u5B9A");
-        }
-        this.tgBot = await Telegram.create({
-          botAuthToken: token
-        });
-        this.botSessionId = this.tgBot.sessionId;
-      }
-      this.log.info("TG Bot \u767B\u5F55\u5B8C\u6210");
-      if (!this.isSetup || !this._owner) {
-        this.log.info("\u5F53\u524D\u670D\u52A1\u5668\u672A\u914D\u7F6E\uFF0C\u8BF7\u5411 Bot \u53D1\u9001 /setup \u6765\u8BBE\u7F6E");
-        this.setupController = new SetupController(this, this.tgBot);
-        ({ tgUser: this.tgUser, oicq: this.oicq } = await this.setupController.waitForFinish());
-        this._ownerChat = await this.tgBot.getChat(this.owner);
-      } else {
-        this.log.debug("\u6B63\u5728\u767B\u5F55 TG UserBot");
-        this.tgUser = await Telegram.connect(this._userSessionId);
-        this.log.info("TG UserBot \u767B\u5F55\u5B8C\u6210");
-        this._ownerChat = await this.tgBot.getChat(this.owner);
-        this.log.debug("\u6B63\u5728\u767B\u5F55 OICQ");
-        this.oicq = await QQClient.create({
-          type: this.qq.type,
-          id: this.qq.id,
-          uin: Number(this.qq.uin),
-          password: this.qq.password,
-          platform: this.qq.platform,
-          signApi: this.qq.signApi,
-          signVer: this.qq.signVer,
-          signDockerId: this.qq.signDockerId,
-          onVerifyDevice: async (phone) => {
-            return await this.waitForOwnerInput(`\u8BF7\u8F93\u5165\u624B\u673A ${phone} \u6536\u5230\u7684\u9A8C\u8BC1\u7801`);
-          },
-          onVerifySlider: async (url2) => {
-            return await this.waitForOwnerInput(
-              `\u6536\u5230\u6ED1\u5757\u9A8C\u8BC1\u7801 <code>${url2}</code>
-\u8BF7\u4F7F\u7528<a href="https://github.com/mzdluo123/TxCaptchaHelper/releases">\u6B64\u8F6F\u4EF6</a>\u9A8C\u8BC1\u5E76\u8F93\u5165 Ticket`
-            );
-          },
-          wsUrl: this.qq.wsUrl
-        });
-        this.log.info("OICQ \u767B\u5F55\u5B8C\u6210");
-      }
-      this.aliveCheckController = new AliveCheckController(this, this.tgBot, this.tgUser, this.oicq);
-      this.loadingController = new LoadingController_default(this, this.tgBot, this.tgUser, this.oicq);
-      this.forwardPairs = await ForwardPairs.load(this.id, this.oicq, this.tgBot, this.tgUser);
-      this.setupCommands().then(() => this.log.info("\u547D\u4EE4\u8BBE\u7F6E\u6210\u529F")).catch((e) => {
-        this.log.error("\u547D\u4EE4\u8BBE\u7F6E\u9519\u8BEF", e);
-        posthog_default.capture("\u547D\u4EE4\u8BBE\u7F6E\u9519\u8BEF", { error: e });
-      });
-      if (this.id === 0) {
-        this.instanceManageController = new InstanceManageController(this, this.tgBot);
-      }
-      this.oicqErrorNotifyController = new OicqErrorNotifyController(this, this.oicq);
-      this.requestController = new RequestController(this, this.tgBot, this.oicq);
-      this.configController = new ConfigController(this, this.tgBot, this.tgUser, this.oicq);
-      this.deleteMessageController = new DeleteMessageController(this, this.tgBot, this.tgUser, this.oicq);
-      this.miraiSkipFilterController = new MiraiSkipFilterController_default(this, this.tgBot, this.tgUser, this.oicq);
-      this.inChatCommandsController = new InChatCommandsController(this, this.tgBot, this.tgUser, this.oicq);
-      this.quotLyController = new QuotLyController_default(this, this.tgBot, this.oicq);
-      this.typingController = new TypingController(this, this.tgBot, this.tgUser, this.oicq);
-      this.forwardController = new ForwardController(this, this.tgBot, this.tgUser, this.oicq);
-      if (this.workMode === "group") {
-        this.hugController = new HugController_default(this, this.tgBot, this.oicq);
-      } else {
-        this.groupNameRefreshController = new GroupNameRefreshController(this, this.tgBot, this.tgUser, this.oicq);
-      }
-      this.fileAndFlashPhotoController = new FileAndFlashPhotoController(this, this.tgBot, this.oicq);
-      this.isInit = true;
-      this.loadingController.off();
-    })().then(() => this.log.info("\u521D\u59CB\u5316\u5DF2\u5B8C\u6210"));
-  }
-  async login(botToken) {
-    await this.load();
-    this.init(botToken);
-  }
-  static async start(instanceId, botToken) {
-    const instance = new this(instanceId);
-    _Instance.instances.push(instance);
-    await instance.login(botToken);
-    return instance;
-  }
-  static async createNew(botToken) {
-    const dbEntry = await db_default.instance.create({ data: {} });
-    return await this.start(dbEntry.id, botToken);
-  }
-  async setupCommands() {
-    await this.tgBot.setCommands([], new import_telegram16.Api.BotCommandScopeUsers());
-    if (this.id === 0) {
-      await this.tgBot.setCommands(
-        this.workMode === "personal" ? commands_default.personalPrivateSuperAdminCommands : commands_default.groupPrivateSuperAdminCommands,
-        new import_telegram16.Api.BotCommandScopePeer({
-          peer: this.ownerChat.inputPeer
-        })
-      );
-    } else {
-      await this.tgBot.setCommands(
-        this.workMode === "personal" ? commands_default.personalPrivateCommands : commands_default.groupPrivateCommands,
-        new import_telegram16.Api.BotCommandScopePeer({
-          peer: this.ownerChat.inputPeer
-        })
-      );
-    }
-    await this.tgBot.setCommands(
-      this.workMode === "personal" ? commands_default.personalInChatCommands : commands_default.groupInChatCommands,
-      // 普通用户其实不需要这些命令，这样可以让用户的输入框少点东西
-      new import_telegram16.Api.BotCommandScopeChatAdmins()
-    );
-  }
-  async waitForOwnerInput(message2, buttons, remove = false) {
-    if (!this.owner) {
-      throw new Error("\u5E94\u8BE5\u4E0D\u4F1A\u8FD0\u884C\u5230\u8FD9\u91CC");
-    }
-    message2 && await this.ownerChat.sendMessage({ message: message2, buttons: buttons || import_button9.Button.clear(), linkPreview: false });
-    const reply = await this.ownerChat.waitForInput();
-    remove && await reply.delete({ revoke: true });
-    return reply.message;
-  }
-  get owner() {
-    return this._owner;
-  }
-  get qq() {
-    return this._qq;
-  }
-  get qqUin() {
-    return this.oicq.uin;
-  }
-  get isSetup() {
-    return this._isSetup;
-  }
-  get workMode() {
-    return this._workMode;
-  }
-  get botMe() {
-    return this.tgBot.me;
-  }
-  get userMe() {
-    return this.tgUser.me;
-  }
-  get ownerChat() {
-    return this._ownerChat;
-  }
-  get botSessionId() {
-    return this._botSessionId;
-  }
-  get userSessionId() {
-    return this._userSessionId;
-  }
-  get flags() {
-    return this._flags;
-  }
-  set owner(owner) {
-    this._owner = owner;
-    db_default.instance.update({
-      data: { owner },
-      where: { id: this.id }
-    }).then(() => this.log.trace(owner));
-  }
-  set isSetup(isSetup) {
-    this._isSetup = isSetup;
-    db_default.instance.update({
-      data: { isSetup },
-      where: { id: this.id }
-    }).then(() => this.log.trace(isSetup));
-  }
-  set workMode(workMode) {
-    this._workMode = workMode;
-    db_default.instance.update({
-      data: { workMode },
-      where: { id: this.id }
-    }).then(() => this.log.trace(workMode));
-  }
-  set botSessionId(sessionId) {
-    this._botSessionId = sessionId;
-    db_default.instance.update({
-      data: { botSessionId: sessionId },
-      where: { id: this.id }
-    }).then(() => this.log.trace(sessionId));
-  }
-  set userSessionId(sessionId) {
-    this._userSessionId = sessionId;
-    db_default.instance.update({
-      data: { userSessionId: sessionId },
-      where: { id: this.id }
-    }).then(() => this.log.trace(sessionId));
-  }
-  set qqBotId(id) {
-    db_default.instance.update({
-      data: { qqBotId: id },
-      where: { id: this.id }
-    }).then(() => this.log.trace(id));
-  }
-  set flags(value) {
-    this._flags = value;
-    db_default.instance.update({
-      data: { flags: value },
-      where: { id: this.id }
-    }).then(() => this.log.trace(value));
-  }
-};
-
-// src/api/index.ts
-var import_log4js28 = __toESM(require_log4js());
-init_env();
-
-// src/api/richHeader.tsx
-var import_icqq6 = require("@icqqjs/icqq");
-init_NapCatClient();
+var import_fs5 = __toESM(require("fs"));
 
 // ../node_modules/.pnpm/@sinclair+typebox@0.34.13/node_modules/@sinclair/typebox/build/esm/value/guard/guard.mjs
 function IsAsyncIterator(value) {
@@ -105409,6 +102381,3337 @@ ${staticRouter.map[loosePath].code}`;
   }
 };
 
+// src/models/Pair.ts
+var import_log4js13 = __toESM(require_log4js());
+init_NapCatClient();
+var log2 = (0, import_log4js13.getLogger)("ForwardPair");
+var Pair = class _Pair {
+  constructor(qq, _tg, tgUser, dbId, _flags, apiKey, qqClient) {
+    this.qq = qq;
+    this._tg = _tg;
+    this.tgUser = tgUser;
+    this.dbId = dbId;
+    this._flags = _flags;
+    this.apiKey = apiKey;
+    this.qqClient = qqClient;
+    if (apiKey) {
+      _Pair.apiKeyMap.set(apiKey, this);
+    }
+    _Pair.dbIdMap.set(dbId, this);
+  }
+  static apiKeyMap = /* @__PURE__ */ new Map();
+  static getByApiKey(key) {
+    return this.apiKeyMap.get(key);
+  }
+  static dbIdMap = /* @__PURE__ */ new Map();
+  static getByDbId(dbId) {
+    return this.dbIdMap.get(dbId);
+  }
+  // 群成员的 tg 账号对应它对应的 QQ 账号获取到的 Group 对象
+  // 只有群组模式有效
+  instanceMapForTg = {};
+  // 更新 TG 群组的头像和简介
+  async updateInfo() {
+    const avatarCache = await db_default.avatarCache.findFirst({
+      where: { forwardPairId: this.dbId }
+    });
+    const lastHash = avatarCache ? avatarCache.hash : null;
+    const avatar = await getAvatar(this.qqRoomId);
+    const newHash = md5(avatar);
+    try {
+      await this._tg.editAbout(await getAboutText(this.qq, false));
+    } catch (e) {
+      log2.error(`\u4FEE\u6539\u7FA4\u7B80\u4ECB\u5931\u8D25: ${e.message}`);
+    }
+    if (!(this.flags & flags_default.NAME_LOCKED) && this.qq instanceof NapCatGroup) {
+      const info = await this.qq.renew();
+      try {
+        await this._tg.editTitle(info.group_name);
+      } catch (e) {
+        log2.error(`\u4FEE\u6539\u7FA4\u540D\u5931\u8D25: ${e.message}`);
+      }
+    }
+    if (!lastHash || Buffer.from(lastHash).compare(newHash) !== 0) {
+      log2.debug(`\u66F4\u65B0\u7FA4\u5934\u50CF: ${this.qqRoomId}`);
+      await this._tg.setProfilePhoto(avatar);
+      await db_default.avatarCache.upsert({
+        where: { forwardPairId: this.dbId },
+        update: { hash: newHash },
+        create: { forwardPairId: this.dbId, hash: newHash }
+      });
+    }
+  }
+  get qqRoomId() {
+    return "uin" in this.qq ? this.qq.uin : -this.qq.gid;
+  }
+  get tgId() {
+    return Number(this._tg.id);
+  }
+  get tg() {
+    return this._tg;
+  }
+  set tg(value) {
+    this._tg = value;
+    db_default.forwardPair.update({
+      where: { id: this.dbId },
+      data: { tgChatId: Number(value.id) }
+    }).then(() => log2.info(`\u51FA\u73B0\u4E86\u5230\u8D85\u7EA7\u7FA4\u7EC4\u7684\u8F6C\u6362: ${value.id}`));
+  }
+  get flags() {
+    return this._flags;
+  }
+  set flags(value) {
+    this._flags = value;
+    db_default.forwardPair.update({
+      where: { id: this.dbId },
+      data: { flags: value }
+    }).then(() => 0);
+  }
+};
+
+// src/api/q2tgServlet/index.ts
+init_OicqClient();
+
+// src/utils/processNestedForward.ts
+var processNestedForward = async (messages, fromPairId) => {
+  if (!Array.isArray(messages)) return;
+  for (const message2 of messages) {
+    if (!message2 || !Array.isArray(message2.message)) continue;
+    for (const elem of message2.message) {
+      if (!elem) continue;
+      let resId;
+      let fileName = "";
+      let nestedContent;
+      if (elem.type === "json" && typeof elem.data === "string") {
+        const parsed = forwardHelper_default.processJson(elem.data);
+        if (parsed?.type === "forward") {
+          resId = parsed.resId;
+          fileName = parsed.fileName || "";
+        }
+      } else if (elem.type === "xml" && typeof elem.data === "string") {
+        const parsed = forwardHelper_default.processXml(elem.data);
+        if (parsed?.type === "forward") {
+          resId = parsed.resId;
+          fileName = "";
+        }
+      } else if (elem.type === "forward") {
+        resId = elem.id || elem.resId || elem.resid;
+        fileName = elem.fileName || "";
+        if (Array.isArray(elem.content)) {
+          nestedContent = elem.content;
+        }
+      }
+      if (resId) {
+        let entity = await db_default.forwardMultiple.findFirst({ where: { resId } });
+        if (!entity) {
+          entity = await db_default.forwardMultiple.create({
+            data: {
+              resId,
+              fileName,
+              fromPairId
+            }
+          });
+        }
+        elem.uuid = entity.id;
+        if (elem.type === "json") {
+          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId, fileName });
+        } else if (elem.type === "xml") {
+          elem.type = "forward";
+          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId });
+        }
+        if (nestedContent) {
+          setForwardCache(entity.id, nestedContent);
+          await processNestedForward(nestedContent, fromPairId);
+        }
+      }
+    }
+  }
+};
+var processNestedForward_default = processNestedForward;
+
+// src/api/q2tgServlet/index.ts
+var forwardCache = /* @__PURE__ */ new Map();
+var setForwardCache = (uuid, data) => {
+  forwardCache.set(uuid, data);
+  const timer = setTimeout(() => {
+    forwardCache.delete(uuid);
+  }, 1e3 * 60 * 5);
+  timer?.unref?.();
+};
+var app = new Elysia().post("/Q2tgServlet/GetForwardMultipleMessageApi", async ({ body }) => {
+  const uuid = body.uuid;
+  if (!forwardCache.has(uuid)) {
+    const data = await db_default.forwardMultiple.findFirst({
+      where: { id: uuid }
+    });
+    if (!data) {
+      return { error: "Record not found" };
+    }
+    const pair = Pair.getByDbId(data.fromPairId);
+    if (!pair || !pair.qq) {
+      return { error: "Pair not found" };
+    }
+    let messages;
+    try {
+      messages = await pair.qq.getForwardMsg(data.resId, data.fileName);
+    } catch (e) {
+      return { error: "Failed to fetch forward message: " + e?.message };
+    }
+    if (!messages || !messages.length) {
+      return { error: "Message not found" };
+    }
+    if (pair.qqClient instanceof OicqClient) {
+      await pair.qqClient.refreshImageRKey(messages);
+    }
+    await processNestedForward_default(messages, data.fromPairId);
+    setForwardCache(uuid, messages);
+  }
+  return forwardCache.get(uuid);
+}, {
+  body: t.Object({
+    // 不许注入
+    uuid: t.String({ format: "uuid" })
+  })
+});
+var q2tgServlet_default = app;
+
+// src/services/ForwardService.ts
+var ReplyKeyboardHide = import_telegram9.Api.ReplyKeyboardHide;
+var NOT_CHAINABLE_ELEMENTS = ["flash", "record", "video", "location", "share", "json", "xml", "poke"];
+var IMAGE_MIMES = ["image/jpeg", "image/png", "image/apng", "image/webp", "image/gif", "image/bmp", "image/tiff", "image/x-icon", "image/avif", "image/heic", "image/heif"];
+var createTempFile3 = (options = {}) => (0, import_tmp_promise4.file)({
+  tmpdir: env_default.CACHE_DIR,
+  ...options
+});
+var ForwardService = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    this.log = (0, import_log4js14.getLogger)(`ForwardService - ${instance.id}`);
+    if (oicq instanceof OicqClient && oicq.signDockerId) {
+      const socket = new import_dockerode.default({ socketPath: "/var/run/docker.sock" });
+      const container = socket.getContainer(oicq.signDockerId);
+      this.restartSignCallbackHandle = tgBot.registerCallback(async (event) => {
+        const message2 = await event.edit({
+          message: event.messageId,
+          text: "\u6B63\u5728\u91CD\u542F\u7B7E\u540D\u670D\u52A1...",
+          buttons: new ReplyKeyboardHide({})
+        });
+        await container.restart();
+        await event.answer({
+          message: "\u5DF2\u53D1\u9001\u91CD\u542F\u6307\u4EE4"
+        });
+        await message2.reply({
+          message: "\u5DF2\u53D1\u9001\u91CD\u542F\u6307\u4EE4\n\u4F60\u9700\u8981\u7A0D\u540E\u91CD\u65B0\u53D1\u9001\u4E00\u4E0B\u6D88\u606F"
+        });
+      });
+    }
+    this.initStickerPack().then(() => this.log.info("Sticker Pack \u521D\u59CB\u5316\u5B8C\u6210")).catch((e) => {
+      posthog_default.capture("Sticker Pack \u521D\u59CB\u5316\u5931\u8D25", { error: e });
+      this.log.warn("Sticker Pack \u521D\u59CB\u5316\u5931\u8D25", e);
+    });
+  }
+  log;
+  restartSignCallbackHandle;
+  stickerPackMap = {};
+  async initStickerPack() {
+    for (const handle of Object.keys(lottie_default.packInfo)) {
+      const pack = await this.tgBot.getStickerSet(handle);
+      this.stickerPackMap[handle] = pack.documents;
+    }
+  }
+  getStickerByQQFaceId(id, resultId) {
+    if (!id) return;
+    for (const [pack, ids] of Object.entries(lottie_default.packInfo)) {
+      if (resultId && ids.includes(`${id}_${resultId}`)) {
+        if (this.stickerPackMap[pack])
+          return this.stickerPackMap[pack][ids.indexOf(`${id}_${resultId}`)];
+      }
+      if (ids.includes(id.toString())) {
+        if (this.stickerPackMap[pack])
+          return this.stickerPackMap[pack][ids.indexOf(id.toString())];
+      }
+    }
+  }
+  getFaceByTgFileId(fileId) {
+    for (const [pack, documents] of Object.entries(this.stickerPackMap)) {
+      for (const document2 of documents) {
+        if (document2.id.eq(fileId)) {
+          const id = lottie_default.packInfo[pack][documents.indexOf(document2)];
+          const ids = id.split("_");
+          return {
+            type: "face",
+            id: parseInt(ids[0]),
+            resultId: ids[1],
+            stickerType: 1
+          };
+        }
+      }
+    }
+  }
+  crhPlayerInfo = /* @__PURE__ */ new Map();
+  async forwardFromQq(event, pair) {
+    const tempFiles = [], messageToSend = {};
+    try {
+      let message2 = "", files = [], buttons = [], replyTo = 0, forceDocument = false, isContainAtOrChannelFace = false, isVoiceNote = false, voiceDuration = 0;
+      let messageHeader = "", messageHeaderWithLink = "", sender = "";
+      if (!event.dm) {
+        sender = event.from.name;
+        if (event.anonymous) {
+          sender = `[${sender}]${event.anonymous.name}`;
+        }
+        if ((pair.flags | this.instance.flags) & flags_default.COLOR_EMOJI_PREFIX) {
+          messageHeader += emoji_default.color(event.from.id);
+          messageHeaderWithLink += emoji_default.color(event.from.id);
+        }
+        messageHeader += `<b>${forwardHelper_default.htmlEscape(sender)}</b>: `;
+        messageHeaderWithLink += `<b><a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader)}">${forwardHelper_default.htmlEscape(sender)}</a></b>: `;
+      }
+      const useSticker = (file2) => {
+        files.push(file2);
+        if (!event.dm) {
+          if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
+            buttons.push(import_button6.Button.url(`${sender}:`, forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader)));
+          } else {
+            buttons.push(import_button6.Button.inline(`${sender}:`));
+          }
+          messageHeader = messageHeaderWithLink = "";
+        }
+      };
+      const useForward = async (resId, fileName, messages) => {
+        if (!messages) {
+          try {
+            messages = await pair.qq.getForwardMsg(resId, fileName);
+          } catch (e) {
+            posthog_default.capture("\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u65E0\u6CD5\u83B7\u53D6\uFF09", { error: e });
+            message2 = "[<i>\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u65E0\u6CD5\u83B7\u53D6\uFF09</i>]";
+          }
+        }
+        if (messages)
+          message2 = forwardHelper_default.generateForwardBrief(messages);
+        if (env_default.WEB_ENDPOINT) {
+          let dbEntry = await db_default.forwardMultiple.findFirst({
+            where: { resId }
+          });
+          if (!dbEntry) {
+            dbEntry = await db_default.forwardMultiple.create({
+              data: { resId, fileName: fileName || "", fromPairId: pair.dbId }
+            });
+          }
+          if (messages && messages.length) {
+            setForwardCache(dbEntry.id, messages);
+            await processNestedForward_default(messages, pair.dbId);
+          }
+          const hash = dbEntry.id;
+          const viewerUrl = env_default.CRV_VIEWER_APP ? `${env_default.CRV_VIEWER_APP}?startapp=${hash}` : `${env_default.WEB_ENDPOINT}/ui/chatRecord?tgWebAppStartParam=${hash}`;
+          buttons.push(import_button6.Button.url("\u{1F4C3}\u67E5\u770B", viewerUrl));
+        } else if (env_default.CRV_API) {
+          if (!message2) return;
+          const hash = md5Hex(resId);
+          const viewerUrl = env_default.CRV_VIEWER_APP ? `${env_default.CRV_VIEWER_APP}?startapp=${hash}` : `${env_default.CRV_API}/?hash=${hash}`;
+          buttons.push(import_button6.Button.url("\u{1F4C3}\u67E5\u770B", viewerUrl));
+          axios_default.post(`${env_default.CRV_API}/add`, {
+            auth: env_default.CRV_KEY,
+            key: hash,
+            data: messages
+          }).then((data) => this.log.trace("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare", data.data)).catch((e) => {
+            this.log.error("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare \u5931\u8D25", e);
+            posthog_default.capture("\u4E0A\u4F20\u6D88\u606F\u8BB0\u5F55\u5230 Cloudflare \u5931\u8D25", { error: e });
+          });
+        } else {
+          message2 = "[<i>\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u672A\u914D\u7F6E\uFF09</i>]";
+        }
+      };
+      const useCrhTrain = async () => {
+        let existed = this.crhPlayerInfo.get(pair);
+        if (!existed) {
+          existed = {
+            users: [],
+            tgMessage: null
+          };
+          this.crhPlayerInfo.set(pair, existed);
+        }
+        if (!existed.users.some((it) => it.id === event.from.id)) {
+          existed.users.push({ id: event.from.id, name: event.from.name });
+        }
+        const message3 = `<i>\u4EE5\u4E0B\u6210\u5458\u63A5\u4E86\u706B\u8F66\uFF1A</i>
+
+` + existed.users.map((it) => `<b><a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, it.id)}">${it.name}</a></b>`).join("\n");
+        if (existed.tgMessage) {
+          try {
+            existed.tgMessage = await existed.tgMessage.edit({
+              text: message3
+            });
+          } catch (e) {
+          }
+        } else {
+          existed.tgMessage = await pair.tg.sendMessage(message3);
+        }
+      };
+      const chain = event.message.filter((elem) => !(elem.type === "at" && elem.qq === this.oicq.uin)).filter((elem) => !(elem.type === "at" && elem.qq === event.replyTo?.fromId)).filter((elem) => !(elem.type === "text" && event.message.some((it) => it.type === "face" && it.text === elem.text)));
+      messageElemLoop: for (let elem of chain) {
+        if (elem.type === "flash" && (pair.flags | this.instance.flags) & flags_default.DISABLE_FLASH_PIC) {
+          message2 += "<i>[\u95EA\u7167]</i>";
+          elem = {
+            ...elem,
+            type: "image"
+          };
+        }
+        let url2;
+        switch (elem.type) {
+          case "markdown":
+          case "text": {
+            let text = elem.type === "text" ? elem.text : elem.content;
+            const WECHAT_ARTICLE_REGEX = /https?:\/\/mp\.weixin\.qq\.com\/[0-9a-zA-Z\-_+=&?#\/]+/;
+            if (WECHAT_ARTICLE_REGEX.test(text)) {
+              const instantViewUrl = new URL("https://t.me/iv");
+              instantViewUrl.searchParams.set("url", WECHAT_ARTICLE_REGEX.exec(text)[0]);
+              instantViewUrl.searchParams.set("rhash", "45756f9b0bb3c6");
+              message2 += `<a href="${instantViewUrl}">\u200E</a>`;
+            }
+            message2 += forwardHelper_default.htmlEscape(text);
+            if (text === "[\u8BE5\u63A5\u9F99\u8868\u60C5\u4E0D\u652F\u6301\u67E5\u770B\uFF0C\u8BF7\u4F7F\u7528QQ\u6700\u65B0\u7248\u672C]") {
+              await useCrhTrain();
+              return { tgMessage: null, richHeaderUsed: false };
+            }
+            break;
+          }
+          case "at": {
+            if (!elem.text) {
+              if (isNaN(elem.qq) || elem.qq === "all") {
+                elem.text = `@\u5168\u4F53\u6210\u5458`;
+              } else {
+                try {
+                  const member = pair.qq.pickMember(elem.qq);
+                  const info = await member.renew();
+                  elem.text = `@${info?.card || info?.nickname || elem.qq}`;
+                } catch {
+                  elem.text = `@${elem.qq}`;
+                }
+              }
+            }
+            if (env_default.WEB_ENDPOINT && typeof elem.qq === "number" && !((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER)) {
+              message2 += `<a href="${forwardHelper_default.generateRichHeaderUrl(pair.apiKey, elem.qq)}">[<i>${forwardHelper_default.htmlEscape(elem.text)}</i>]</a>`;
+              isContainAtOrChannelFace = true;
+            } else {
+              message2 += `<b>${forwardHelper_default.htmlEscape(elem.text)}</b> `;
+            }
+            break;
+          }
+          case "face":
+            const tgs = this.getStickerByQQFaceId(elem.id, elem.resultId);
+            if (tgs && chain.length === 1) {
+              useSticker(tgs);
+            }
+          case "sface": {
+            if (typeof elem.text !== "string") {
+              if (qface_default[elem.id]) {
+                elem.text = qface_default[elem.id];
+              } else {
+                elem.text = "\u8868\u60C5:" + elem.id;
+              }
+            }
+            if (qfaceChannelMap_default[elem.id]) {
+              message2 += `[<i><a href="https://t.me/qq_face/${qfaceChannelMap_default[elem.id]}">${forwardHelper_default.htmlEscape(elem.text)}</a></i>]`;
+              isContainAtOrChannelFace = true;
+            } else {
+              message2 += `[<i>${forwardHelper_default.htmlEscape(elem.text)}</i>]`;
+            }
+            break;
+          }
+          case "bface": {
+            useSticker(await convert_default.webp(elem.file, () => fetchFile(getBigFaceUrl(elem.file))));
+            break;
+          }
+          case "video":
+            if (!elem.url) {
+              url2 = await pair.qq.getVideoUrl(elem.fid, elem.md5);
+            }
+          case "image":
+            if ("url" in elem)
+              url2 = elem.url;
+            if (this.oicq instanceof NapCatClient && !url2.startsWith("http")) {
+              const ret = await this.oicq.callApi("download_file", { url: "file://" + url2 });
+              url2 = ret.file;
+              tempFiles.push({
+                path: url2,
+                fd: 0,
+                cleanup: () => import_promises9.default.unlink(url2)
+              });
+            }
+            try {
+              if (elem.type === "image" && (elem.asface || "emoji_package_id" in elem) && !event.message.some((it) => it.type === "text") && event.message.filter((it) => it.type === "image").length === 1) {
+                const res = await convert_default.webpOrWebm(elem.file, () => fetchFile(elem.url));
+                const stat = await import_promises9.default.stat(res);
+                const upload = await pair.tg.parent.uploadFile({
+                  file: new import_uploads4.CustomFile(import_path6.default.basename(res), stat.size, res),
+                  workers: 2
+                });
+                const fileType = await fileTypeFromFile(res);
+                useSticker(new import_telegram9.Api.InputMediaUploadedDocument({
+                  file: upload,
+                  mimeType: fileType.mime,
+                  attributes: [new import_telegram9.Api.DocumentAttributeSticker({
+                    alt: "\u732B",
+                    stickerset: new import_telegram9.Api.InputStickerSetEmpty()
+                  })]
+                }));
+              } else {
+                const file2 = await forwardHelper_default.downloadToCustomFile(url2, !(message2 || messageHeader));
+                files.push(file2);
+                if (file2 instanceof import_uploads4.CustomFile && elem.type === "image" && file2.size > 10 * 1024 * 1024) {
+                  this.log.info("\u5F3A\u5236\u4F7F\u7528\u6587\u4EF6\u53D1\u9001");
+                  forceDocument = true;
+                }
+                buttons.push(import_button6.Button.url(`${emoji_default.picture()} \u67E5\u770B\u539F\u56FE`, url2));
+              }
+            } catch (e) {
+              this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
+              posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
+              files.push(url2);
+            }
+            break;
+          case "flash": {
+            message2 += `[<i>\u95EA\u7167<i>]
+${this.instance.workMode === "group" ? "\u6BCF\u4EBA" : ""}\u53EA\u80FD\u67E5\u770B\u4E00\u6B21`;
+            const dbEntry = await db_default.flashPhoto.create({
+              data: { photoMd5: elem.file.substring(0, 32) }
+            });
+            buttons.push(import_button6.Button.url("\u{1F4F8}\u67E5\u770B", `https://t.me/${this.tgBot.me.username}?start=flash-${dbEntry.id}`));
+            break;
+          }
+          case "file": {
+            message2 = `\u6587\u4EF6: ${forwardHelper_default.htmlEscape(elem.name)}
+\u5927\u5C0F: ${forwardHelper_default.hSize(elem.size)}`;
+            if (elem.size < 1024 * 1024 * 50) {
+              try {
+                let url3 = await pair.qq.getFileUrl(elem.fid);
+                if (url3.includes("?fname=")) {
+                  url3 = url3.split("?fname=")[0];
+                } else if (url3.startsWith("/")) {
+                  tempFiles.push({
+                    path: url3,
+                    fd: 0,
+                    cleanup: () => import_promises9.default.unlink(url3)
+                  });
+                }
+                this.log.info("\u6B63\u5728\u53D1\u9001\u5A92\u4F53\uFF0C\u957F\u5EA6", forwardHelper_default.hSize(elem.size));
+                try {
+                  const file2 = await forwardHelper_default.downloadToCustomFile(url3, !(message2 || messageHeader), elem.name);
+                  const type = await forwardHelper_default.fileTypeFromCustomFile(file2);
+                  if (file2 instanceof import_uploads4.CustomFile && type.mime.startsWith("image/") && file2.size > 10 * 1024 * 1024) {
+                    this.log.info("\u5F3A\u5236\u4F7F\u7528\u6587\u4EF6\u53D1\u9001");
+                    forceDocument = true;
+                  }
+                  files.push(file2);
+                } catch (e) {
+                  this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
+                  posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
+                  if (/^https?:\/\//.test(url3)) {
+                    files.push(url3);
+                  } else {
+                    message2 += "\n\n<i>\u4E0B\u8F7D\u5931\u8D25</i>";
+                  }
+                }
+              } catch (e) {
+                this.log.error("QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25", e);
+                posthog_default.capture("QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25", { error: e });
+                message2 += "\n\n<i>QQ \u5BA2\u6237\u7AEF\u5904\u7406\u7FA4\u6587\u4EF6\u5931\u8D25</i>";
+              }
+            }
+            const dbEntry = await db_default.file.create({
+              data: { fileId: elem.fid, roomId: pair.qqRoomId, info: message2, name: elem.name }
+            });
+            buttons.push(import_button6.Button.url(
+              "\u{1F4CE}\u83B7\u53D6\u4E0B\u8F7D\u5730\u5740",
+              `https://t.me/${this.tgBot.me.username}?start=file-${dbEntry.id}`
+            ));
+            break;
+          }
+          case "record": {
+            let bufAudio;
+            const audioDuration = Number(elem.duration) || 0;
+            if (typeof elem.file === "string" && !elem.file.startsWith("http")) {
+              const localPath = elem.file.replace(/^file:\/\//, "");
+              if (import_fs5.default.existsSync(localPath)) {
+                try {
+                  bufAudio = await import_promises9.default.readFile(localPath);
+                } catch {
+                }
+              }
+            }
+            if (!bufAudio && typeof elem.path === "string") {
+              const localPath = elem.path.replace(/^file:\/\//, "");
+              if (import_fs5.default.existsSync(localPath)) {
+                try {
+                  bufAudio = await import_promises9.default.readFile(localPath);
+                } catch {
+                }
+              }
+            }
+            url2 = elem.url;
+            if (!url2 && typeof elem.file === "string" && elem.file.startsWith("http")) {
+              url2 = elem.file;
+            }
+            if (!url2 && pair.qq instanceof import_internal.Contactable && elem.md5 === "ntptt") {
+              try {
+                url2 = await pair.qq.getPttUrl(elem);
+              } catch {
+              }
+            } else if (!url2 && this.oicq instanceof OicqClient) {
+              try {
+                const refetchMessage = await this.oicq.oicq.getMsg(event.messageId);
+                url2 = refetchMessage.message.find((it) => it.type === "record")?.url;
+              } catch {
+              }
+            }
+            if (!bufAudio && url2) {
+              try {
+                if (this.oicq instanceof NapCatClient) {
+                  const ret = await this.oicq.callApi("download_file", { url: url2 });
+                  if (ret && ret.file && import_fs5.default.existsSync(ret.file)) {
+                    bufAudio = await import_promises9.default.readFile(ret.file);
+                    import_promises9.default.unlink(ret.file).catch(() => {
+                    });
+                  }
+                } else {
+                  bufAudio = await fetchFile(url2);
+                }
+              } catch (e) {
+                this.log.warn("\u901A\u8FC7 URL \u4E0B\u8F7D\u8BED\u97F3\u5931\u8D25", e);
+              }
+            }
+            if (!bufAudio && this.oicq instanceof NapCatClient) {
+              const fileKey = elem.file || elem.file_id || elem.path;
+              if (fileKey) {
+                try {
+                  const ret = await this.oicq.callApi("get_record", {
+                    file: fileKey,
+                    file_id: fileKey,
+                    out_format: "mp3"
+                  });
+                  if (ret) {
+                    if (ret.base64) {
+                      bufAudio = Buffer.from(ret.base64, "base64");
+                    } else if (ret.url && ret.url.startsWith("http")) {
+                      bufAudio = await fetchFile(ret.url);
+                    } else if (ret.file && import_fs5.default.existsSync(ret.file)) {
+                      bufAudio = await import_promises9.default.readFile(ret.file);
+                    }
+                  }
+                } catch (e) {
+                  this.log.warn("NapCat get_record \u5931\u8D25\uFF0C\u5C1D\u8BD5 get_file", e);
+                  try {
+                    const ret = await this.oicq.callApi("get_file", {
+                      file_id: fileKey
+                    });
+                    if (ret) {
+                      if (ret.base64) {
+                        bufAudio = Buffer.from(ret.base64, "base64");
+                      } else if (ret.url && ret.url.startsWith("http")) {
+                        bufAudio = await fetchFile(ret.url);
+                      } else if (ret.file && import_fs5.default.existsSync(ret.file)) {
+                        bufAudio = await import_promises9.default.readFile(ret.file);
+                      }
+                    }
+                  } catch (e2) {
+                    this.log.error("NapCat \u83B7\u53D6\u8BED\u97F3\u6587\u4EF6\u5931\u8D25", e2);
+                  }
+                }
+              }
+            }
+            if (bufAudio && bufAudio.length > 0) {
+              const tempOgg = await createTempFile3({ postfix: ".ogg" });
+              tempFiles.push(tempOgg);
+              let decoded = false;
+              if (silk_default.isSilk(bufAudio)) {
+                try {
+                  await silk_default.decode(bufAudio, tempOgg.path);
+                  decoded = true;
+                } catch (err) {
+                  this.log.warn("silk \u89E3\u7801\u5931\u8D25\uFF0C\u5C1D\u8BD5\u901A\u8FC7 ffmpeg \u8F6C\u6362", err);
+                }
+              }
+              if (!decoded) {
+                const rawTemp = await createTempFile3({ postfix: ".tmp" });
+                tempFiles.push(rawTemp);
+                await import_promises9.default.writeFile(rawTemp.path, bufAudio);
+                try {
+                  await silk_default.convertToVoiceOgg(rawTemp.path, tempOgg.path);
+                  decoded = true;
+                } catch (err) {
+                  this.log.error("\u97F3\u9891\u8F6C\u7801\u4E3A Telegram Voice (OGG Opus) \u5931\u8D25", err);
+                }
+              }
+              if (decoded) {
+                files.push(tempOgg.path);
+                isVoiceNote = true;
+                voiceDuration = audioDuration;
+                forceDocument = false;
+              } else {
+                message2 += "<i>[\u8BED\u97F3(\u89E3\u7801\u5931\u8D25)]</i>";
+              }
+            } else {
+              message2 += "<i>[\u8BED\u97F3]</i>";
+            }
+            break;
+          }
+          case "share": {
+            message2 = forwardHelper_default.htmlEscape(elem.url);
+            break;
+          }
+          case "json": {
+            const result = forwardHelper_default.processJson(elem.data);
+            switch (result.type) {
+              case "text":
+                message2 = forwardHelper_default.htmlEscape(result.text);
+                break;
+              case "forward":
+                await useForward(result.resId, result.fileName);
+                break;
+              case "location":
+                const convertedLoc = import_eviltransform.default.gcj2wgs(result.lat, result.lng);
+                files.push(new import_telegram9.Api.InputMediaVenue({
+                  address: result.address,
+                  title: messageHeader.replace("<b>", "").replace("</b>", ""),
+                  geoPoint: new import_telegram9.Api.InputGeoPoint({
+                    lat: convertedLoc.lat,
+                    long: convertedLoc.lng
+                  }),
+                  provider: "Q2TG",
+                  venueId: "Q2TG",
+                  venueType: "Q2TG"
+                }));
+                messageHeader = messageHeaderWithLink = "";
+                message2 = `<a href="https://uri.amap.com/marker?position=${result.lng},${result.lat}">\u5728\u9AD8\u5FB7\u5730\u56FE\u4E2D\u67E5\u770B</a>`;
+                break;
+            }
+            break messageElemLoop;
+          }
+          case "xml": {
+            const result = forwardHelper_default.processXml(elem.data);
+            switch (result.type) {
+              case "text":
+                message2 = forwardHelper_default.htmlEscape(result.text);
+                break;
+              case "image":
+                try {
+                  files.push(await forwardHelper_default.downloadToCustomFile(getImageUrlByMd5(result.md5)));
+                } catch (e) {
+                  this.log.error("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", e);
+                  posthog_default.capture("\u4E0B\u8F7D\u5A92\u4F53\u5931\u8D25", { error: e });
+                  files.push(getImageUrlByMd5(result.md5));
+                }
+                break;
+              case "forward":
+                await useForward(result.resId);
+                break;
+            }
+            break messageElemLoop;
+          }
+          case "rps":
+          case "dice":
+            message2 = `[<i>${elem.type === "rps" ? "\u731C\u62F3" : "\u9AB0\u5B50"}</i>] ${elem.id}`;
+            break;
+          case "poke":
+            message2 = `[<i>\u6233\u4E00\u6233</i>] ${forwardHelper_default.htmlEscape(elem.text)}`;
+            break;
+          case "forward":
+            await useForward(elem.id, "", elem.content);
+            break;
+        }
+      }
+      this.crhPlayerInfo.delete(pair);
+      message2 = message2.trim();
+      if (!event.message.length) {
+        message2 += "<i>[\u6D88\u606F\u65E0\u6CD5\u89E3\u6790\u51FA\u5185\u5BB9]</i>";
+      }
+      if (event.replyTo) {
+        try {
+          const quote = await db_default.message.findFirst({
+            where: {
+              qqRoomId: pair.qqRoomId,
+              seq: event.replyTo.seq,
+              // rand: event.source.rand,
+              qqSenderId: event.replyTo.fromId,
+              instanceId: this.instance.id
+            }
+          });
+          if (quote) {
+            replyTo = quote.tgMsgId;
+          } else {
+            message2 += "\n\n<i>*\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230</i>";
+            this.log.error("\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230", {
+              qqRoomId: pair.qqRoomId,
+              seq: event.replyTo.seq,
+              rand: event.replyTo.rand,
+              qqSenderId: event.replyTo.fromId,
+              instanceId: this.instance.id
+            });
+          }
+        } catch (e) {
+          this.log.error("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", e);
+          posthog_default.capture("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", { error: e });
+          message2 += "\n\n<i>*\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25</i>";
+        }
+      }
+      if (this.instance.workMode === "personal" && !event.dm && event.atMe && !replyTo) {
+        message2 += `
+<b>@${this.instance.userMe.usernames?.length ? this.instance.userMe.usernames[0].username : this.instance.userMe.username}</b>`;
+      }
+      let richHeaderUsed = false;
+      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER || !env_default.WEB_ENDPOINT) {
+        messageHeaderWithLink = messageHeader;
+      }
+      messageToSend.forceDocument = forceDocument;
+      messageToSend.linkPreview = false;
+      if (files.length === 1) {
+        messageToSend.file = files[0];
+        if (isVoiceNote) {
+          messageToSend.attributes = [new import_telegram9.Api.DocumentAttributeAudio({
+            voice: true,
+            duration: voiceDuration || 0
+          })];
+          messageToSend.forceDocument = false;
+        }
+      } else if (files.length) {
+        messageToSend.file = files;
+      } else if (!event.dm && !((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT && (isContainAtOrChannelFace || !isContainsUrl(message2))) {
+        richHeaderUsed = true;
+        messageToSend.file = new import_telegram9.Api.InputMediaWebPage({
+          url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.from.id, messageHeader),
+          forceSmallMedia: true,
+          optional: true
+        });
+        messageToSend.linkPreview = { showAboveText: true };
+      } else if (!isContainAtOrChannelFace && isContainsUrl(message2)) {
+        const urls = message2.match(regExps_default.url);
+        if (urls?.length) {
+          const url2 = urls[0];
+          messageToSend.file = new import_telegram9.Api.InputMediaWebPage({
+            url: url2,
+            forceSmallMedia: true,
+            optional: true
+          });
+          messageToSend.linkPreview = { showAboveText: false };
+        }
+      }
+      if (!richHeaderUsed) {
+        message2 = messageHeaderWithLink + (message2 && messageHeaderWithLink ? "\n" : "") + message2;
+      }
+      message2 && (messageToSend.message = message2);
+      buttons.length && (messageToSend.buttons = import_lodash.default.chunk(buttons, 3));
+      replyTo && (messageToSend.replyTo = replyTo);
+      let tgMessage;
+      try {
+        tgMessage = await pair.tg.sendMessage(messageToSend);
+      } catch (e) {
+        if (richHeaderUsed) {
+          richHeaderUsed = false;
+          this.log.warn("Rich Header \u53D1\u9001\u9519\u8BEF", messageToSend.file, e);
+          posthog_default.capture("Rich Header \u53D1\u9001\u9519\u8BEF", { error: e, attach: messageToSend.file });
+          delete messageToSend.file;
+          delete messageToSend.linkPreview;
+          message2 = messageHeader + (message2 && messageHeader ? "\n" : "") + message2;
+          message2 && (messageToSend.message = message2);
+          tgMessage = await pair.tg.sendMessage(messageToSend);
+        } else if (messageToSend.file instanceof import_telegram9.Api.InputMediaWebPage) {
+          delete messageToSend.file;
+          tgMessage = await pair.tg.sendMessage(messageToSend);
+        } else throw e;
+      }
+      if (richHeaderUsed) {
+        setTimeout(async () => {
+          const userMessage = await pair.tgUser.getMessage({
+            ids: tgMessage.id
+          });
+          if (["WebPage", "WebPageNotModified"].includes(userMessage?.media?.webpage?.className))
+            return;
+          this.log.warn("Rich Header \u56DE\u6D4B\u9519\u8BEF", messageToSend.file);
+          await tgMessage.edit({
+            text: messageHeaderWithLink + (message2 && messageHeaderWithLink ? "\n" : "") + message2
+          });
+        }, 3e3);
+      }
+      if (this.instance.workMode === "personal" && !event.dm && event.atAll) {
+        await tgMessage.pin({ notify: false });
+      }
+      return { tgMessage, richHeaderUsed };
+    } catch (e) {
+      this.log.error("\u4ECE QQ \u5230 TG \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", e);
+      posthog_default.capture("\u4ECE QQ \u5230 TG \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", { error: e });
+      let pbUrl;
+      let error2 = e;
+      if (JSON.stringify(error2) === "{}") {
+        error2 = {
+          message: e.message,
+          stack: e.stack,
+          str: e.toString()
+        };
+      }
+      try {
+        pbUrl = await pastebin_default.upload(JSON.stringify({
+          error: error2,
+          event,
+          messageToSend
+        }));
+        if (pbUrl)
+          pbUrl += ".json";
+        this.log.info("\u9519\u8BEF\u62A5\u544A", pbUrl);
+      } catch (e2) {
+        this.log.error("\u4E0A\u4F20\u5230 Pastebin \u5931\u8D25", e2);
+      }
+      try {
+        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_ERROR_NOTIFY))
+          await pair.tg.sendMessage({
+            message: "<i>\u6709\u4E00\u6761\u6765\u81EA QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25</i>",
+            buttons: pbUrl ? [[import_button6.Button.url("\u67E5\u770B\u8BE6\u60C5", pbUrl)]] : []
+          });
+      } catch {
+      }
+      return {};
+    } finally {
+      tempFiles.forEach((it) => it.cleanup());
+    }
+  }
+  async forwardFromTelegram(message2, pair) {
+    const tempFiles = [];
+    try {
+      let chain = [];
+      const senderId = Number(message2.senderId || message2.sender?.id) || pair.tgId;
+      this.log.debug("senderId", senderId);
+      let brief = "", isSpoilerPhoto = false;
+      let userDisplayName = forwardHelper_default.getUserDisplayName(message2.sender);
+      if (senderId === pair.tgId && !message2.sender) {
+        userDisplayName = forwardHelper_default.getUserDisplayName(message2.chat);
+      }
+      let messageHeader = (userDisplayName.length > 25 ? userDisplayName.substring(0, 25) + "\u2026" : userDisplayName) + (message2.forward ? " \u8F6C\u53D1\u81EA " + // 要是隐私设置了，应该会有这个，然后下面两个都获取不到
+      (message2.fwdFrom?.fromName || forwardHelper_default.getUserDisplayName(await message2.forward.getChat() || await message2.forward.getSender())) : "");
+      messageHeader += ": \n";
+      if ((pair.flags | this.instance.flags) & flags_default.COLOR_EMOJI_PREFIX) {
+        let emoji1 = emoji_default.tgColor(message2.sender?.color?.color || senderId);
+        if (message2.sender instanceof import_telegram9.Api.Channel && message2.sender.broadcast) {
+          emoji1 = "\u{1F4E2}" + emoji1;
+        } else if (message2.sender instanceof import_telegram9.Api.Chat || message2.sender instanceof import_telegram9.Api.Channel || !message2.senderId) {
+          emoji1 = "\u{1F47B}" + emoji1;
+        }
+        messageHeader = emoji1 + messageHeader;
+      }
+      this.crhPlayerInfo.delete(pair);
+      const useImage = (image, asface, brief2) => {
+        chain.push({
+          type: "image",
+          file: image,
+          asface,
+          brief: brief2
+        });
+      };
+      const useText = (text) => {
+        chain.push(text);
+      };
+      if (message2.photo instanceof import_telegram9.Api.Photo || // stickers 和以文件发送的图片都是这个
+      IMAGE_MIMES.includes(message2.document?.mimeType)) {
+        if ("spoiler" in message2.media && message2.media.spoiler) {
+          isSpoilerPhoto = true;
+          chain.push(...await this.oicq.createSpoilerImageEndpoint({
+            type: "image",
+            file: await message2.downloadMedia({}),
+            asface: !!message2.sticker
+          }, messageHeader.substring(0, messageHeader.length - 3), message2.message));
+          brief += "[Spoiler \u56FE\u7247]";
+        } else {
+          useImage(await message2.downloadMedia({}), !!message2.sticker, message2.sticker ? forwardHelper_default.getStickerBrief(message2.sticker) : void 0);
+          brief += "[\u56FE\u7247]";
+        }
+      } else if (message2.video || message2.videoNote || message2.gif) {
+        const file2 = message2.video || message2.videoNote || message2.gif;
+        const face = this.getFaceByTgFileId(file2.id);
+        if (face) {
+          chain.push(face);
+        } else if (file2.size.gt(200 * 1024 * 1024)) {
+          chain.push("[\u89C6\u9891\u5927\u4E8E 200MB]");
+        } else if (file2.mimeType === "video/webm" || message2.gif) {
+          const convertedPath = await convert_default.video2gif(message2.document.id.toString(16), () => message2.downloadMedia({}), file2.mimeType === "video/webm");
+          useImage(convertedPath, true, forwardHelper_default.getStickerBrief(file2));
+        } else {
+          const temp = await createTempFile3();
+          tempFiles.push(temp);
+          await message2.downloadMedia({ outputFile: temp.path });
+          chain.push(import_icqq4.segment.video(temp.path));
+        }
+        brief += "[\u89C6\u9891]";
+      } else if (message2.sticker) {
+        this.log.debug("sticker", message2.sticker);
+        const face = this.getFaceByTgFileId(message2.sticker.id);
+        if (face) {
+          chain.push(face);
+        } else {
+          const gifPath = await convert_default.tgs2gif(message2.sticker.id.toString(16), () => message2.downloadMedia({}));
+          useImage(gifPath, true, forwardHelper_default.getStickerBrief(message2.sticker));
+        }
+        brief += "[\u8D34\u7EB8]";
+      } else if (message2.voice) {
+        const temp = await createTempFile3({ postfix: ".ogg" });
+        tempFiles.push(temp);
+        await message2.downloadMedia({ outputFile: temp.path });
+        let bufSilk;
+        try {
+          bufSilk = await silk_default.encode(temp.path);
+        } catch (e) {
+          this.log.warn("silk \u7F16\u7801\u5931\u8D25\uFF0C\u5C06\u5C1D\u8BD5\u76F4\u63A5/\u8F6C\u7801\u53D1\u9001\u97F3\u9891", e);
+        }
+        if (bufSilk) {
+          if (this.oicq instanceof NapCatClient) {
+            const silkFile = await createTempFile3({ postfix: ".silk" });
+            tempFiles.push(silkFile);
+            await import_promises9.default.writeFile(silkFile.path, bufSilk);
+            chain.push(import_icqq4.segment.record(silkFile.path));
+          } else {
+            chain.push(import_icqq4.segment.record(bufSilk));
+          }
+        } else {
+          chain.push(import_icqq4.segment.record(temp.path));
+        }
+        brief += "[\u8BED\u97F3]";
+      } else if (message2.poll) {
+        const poll = message2.poll.poll;
+        useText(`${poll.multipleChoice ? "\u591A" : "\u5355"}\u9009\u6295\u7968\uFF1A
+${poll.question}`);
+        chain.push("\n");
+        useText(poll.answers.map((answer) => ` - ${answer.text}`).join("\n"));
+        brief += "[\u6295\u7968]";
+      } else if (message2.contact) {
+        const contact = message2.contact;
+        useText(`\u540D\u7247\uFF1A
+` + contact.firstName + (contact.lastName ? " " + contact.lastName : "") + (contact.phoneNumber ? `
+\u7535\u8BDD\uFF1A${contact.phoneNumber}` : ""));
+        brief += "[\u540D\u7247]";
+      } else if (message2.venue && message2.venue.geo instanceof import_telegram9.Api.GeoPoint) {
+        const geo = import_eviltransform.default.wgs2gcj(message2.venue.geo.lat, message2.venue.geo.long);
+        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
+          chain.push(import_icqq4.segment.location(geo.lat, geo.lng, `${message2.venue.title} (${message2.venue.address})`));
+        } else {
+          chain.push(`[\u4F4D\u7F6E\uFF1A${message2.venue.title} (${message2.venue.address})]`);
+        }
+        brief += `[\u4F4D\u7F6E\uFF1A${message2.venue.title}]`;
+      } else if (message2.geo instanceof import_telegram9.Api.GeoPoint) {
+        const geo = import_eviltransform.default.wgs2gcj(message2.geo.lat, message2.geo.long);
+        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
+          chain.push(import_icqq4.segment.location(geo.lat, geo.lng, "\u9009\u4E2D\u7684\u4F4D\u7F6E"));
+        } else {
+          chain.push(`[\u4F4D\u7F6E\uFF1A${geo.lat} ${geo.lng}]
+https://uri.amap.com/marker?position=${geo.lng},${geo.lat}`);
+        }
+        brief += "[\u4F4D\u7F6E]";
+      } else if (message2.media instanceof import_telegram9.Api.MessageMediaDocument && message2.media.document instanceof import_telegram9.Api.Document) {
+        const file2 = message2.media.document;
+        const fileNameAttribute = file2.attributes.find((attribute) => attribute instanceof import_telegram9.Api.DocumentAttributeFilename);
+        useText(`\u6587\u4EF6\uFF1A${fileNameAttribute ? fileNameAttribute.fileName : ""}
+\u7C7B\u578B\uFF1A${file2.mimeType}
+\u5927\u5C0F\uFF1A${file2.size}`);
+        if (file2.size.leq(50 * 1024 * 1024) || (pair.flags | this.instance.flags) & flags_default.ALWAYS_FORWARD_TG_FILE) {
+          useText("\n");
+          const file3 = await createTempFile3();
+          tempFiles.push(file3);
+          useText("\u6587\u4EF6\u6B63\u5728\u4E0A\u4F20\u4E2D\u2026");
+          if ("gid" in pair.qq) {
+            await message2.downloadMedia({ outputFile: file3.path });
+            pair.qq.fs.upload(
+              file3.path,
+              "/",
+              fileNameAttribute ? fileNameAttribute.fileName : "file"
+            ).catch((err) => {
+              message2.reply({ message: `\u4E0A\u4F20\u5931\u8D25\uFF1A
+${err.message}` });
+              posthog_default.capture("\u4E0A\u4F20\u7FA4\u6587\u4EF6\u5931\u8D25", { error: err });
+            }).finally(() => file3.cleanup());
+          } else {
+            await message2.downloadMedia({ outputFile: file3.path });
+            pair.qq.sendFile(file3.path, fileNameAttribute ? fileNameAttribute.fileName : "file").catch((err) => {
+              message2.reply({ message: `\u4E0A\u4F20\u5931\u8D25\uFF1A
+${err.message}` });
+              posthog_default.capture("\u4E0A\u4F20\u597D\u53CB\u6587\u4EF6\u5931\u8D25", { error: err });
+            });
+          }
+        }
+        brief += "[\u6587\u4EF6]";
+        if (env_default.DISABLE_FILE_UPLOAD_TIP) {
+          chain = [];
+        }
+      }
+      if (message2.message && !isSpoilerPhoto) {
+        const emojiEntities = (message2.entities || []).filter((it) => it instanceof import_telegram9.Api.MessageEntityCustomEmoji);
+        if (emojiEntities.length) {
+          const isMessageAllEmojis = import_lodash.default.sum(emojiEntities.map((it) => it.length)) === message2.message.length;
+          const newChain = [];
+          let messageLeft = message2.message;
+          for (let i = emojiEntities.length - 1; i >= 0; i--) {
+            newChain.unshift(messageLeft.substring(emojiEntities[i].offset + emojiEntities[i].length));
+            messageLeft = messageLeft.substring(0, emojiEntities[i].offset);
+            newChain.unshift({
+              type: "image",
+              file: await convert_default.customEmoji(
+                emojiEntities[i].documentId.toString(16),
+                () => this.tgBot.getCustomEmoji(emojiEntities[i].documentId),
+                !isMessageAllEmojis
+              ),
+              asface: true
+            });
+          }
+          chain.push(messageLeft, ...newChain);
+          brief += message2.message;
+        } else if (message2.forward?.senderId?.eq?.(this.tgBot.me.id) && /^.*: ?$/.test(message2.message.split("\n")[0])) {
+          const originalMessage = message2.message.includes("\n") ? message2.message.substring(message2.message.indexOf("\n") + 1) : "";
+          useText(originalMessage);
+          brief += originalMessage;
+          messageHeader = forwardHelper_default.getUserDisplayName(message2.sender) + " \u8F6C\u53D1\u81EA " + message2.message.substring(0, message2.message.indexOf(":")) + ": \n";
+        } else {
+          if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_AT_PARSE)) {
+            const candidates = await atHelper_default.getGroupMemberCandidates(pair);
+            const parsedElements = atHelper_default.parseTextWithAtMentions(message2.message, candidates);
+            chain.push(...parsedElements);
+          } else {
+            useText(message2.message);
+          }
+          brief += message2.message;
+        }
+      }
+      let source;
+      if (message2.replyToMsgId || message2.replyTo) {
+        try {
+          const quote = message2.replyToMsgId && await db_default.message.findFirst({
+            where: {
+              tgChatId: Number(pair.tg.id),
+              tgMsgId: message2.replyToMsgId,
+              instanceId: this.instance.id
+            }
+          });
+          if (quote) {
+            source = {
+              message: message2.replyTo?.quoteText || quote.brief || " ",
+              seq: quote.seq,
+              rand: Number(quote.rand),
+              user_id: Number(quote.qqSenderId),
+              time: quote.time
+            };
+            const replyQq = Number(quote.qqSenderId);
+            if (replyQq && replyQq !== this.oicq.uin && !((pair.flags | this.instance.flags) & flags_default.DISABLE_REPLY_AT)) {
+              const alreadyHasAt = chain.some((it) => typeof it === "object" && it.type === "at" && it.qq === replyQq);
+              if (!alreadyHasAt) {
+                chain.unshift(" ");
+                chain.unshift({
+                  type: "at",
+                  qq: replyQq
+                });
+              }
+            }
+          } else {
+            source = {
+              message: message2.replyTo?.quoteText || "\u56DE\u590D\u6D88\u606F\u627E\u4E0D\u5230",
+              seq: 1,
+              time: Math.floor((/* @__PURE__ */ new Date()).getTime() / 1e3),
+              rand: 1,
+              user_id: this.oicq.uin
+            };
+          }
+        } catch (e) {
+          this.log.error("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", e);
+          posthog_default.capture("\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25", { error: e });
+          source = {
+            message: "\u67E5\u627E\u56DE\u590D\u6D88\u606F\u5931\u8D25",
+            seq: 1,
+            time: Math.floor((/* @__PURE__ */ new Date()).getTime() / 1e3),
+            rand: 1,
+            user_id: this.oicq.uin
+          };
+        }
+      }
+      if (chain.length === 0) {
+        return [];
+      }
+      const notChainableElements = chain.filter((element) => typeof element === "object" && NOT_CHAINABLE_ELEMENTS.includes(element.type));
+      const chainableElements = chain.filter((element) => typeof element !== "object" || !NOT_CHAINABLE_ELEMENTS.includes(element.type));
+      if (!notChainableElements.length && chainableElements.length && this.instance.workMode && pair.instanceMapForTg[senderId] && !((pair.flags | this.instance.flags) & flags_default.DISABLE_SEAMLESS)) {
+        try {
+          const messageSent = await pair.instanceMapForTg[senderId].sendMsg([
+            ...chainableElements,
+            {
+              type: "mirai",
+              data: JSON.stringify({
+                id: senderId,
+                eqq: { type: "tg", tgUid: senderId, noSplitSender: true, version: 2 },
+                q2tgSkip: true
+              }, void 0, 0)
+              // 能启用无缝模式一定是 icqq 而不是 NapCat
+            }
+          ], source);
+          tempFiles.forEach((it) => it.cleanup());
+          return [{
+            ...messageSent,
+            senderId: pair.instanceMapForTg[senderId] instanceof import_icqq4.Group ? pair.instanceMapForTg[senderId].client.uin : 0,
+            //TODO
+            brief
+          }];
+        } catch (e) {
+          this.log.error("\u4F7F\u7528 MapInstance \u53D1\u9001\u6D88\u606F\u5931\u8D25", e);
+          posthog_default.capture("\u4F7F\u7528 MapInstance \u53D1\u9001\u6D88\u606F\u5931\u8D25", { error: e });
+        }
+      }
+      if (this.instance.workMode === "group" && !isSpoilerPhoto) {
+        let headerImage;
+        if ((pair.flags | this.instance.flags) & flags_default.QQ_HEADER_IMAGE && message2.sender?.photo instanceof import_telegram9.Api.UserProfilePhoto) {
+          try {
+            this.log.debug("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247");
+            const sender = message2.sender;
+            const part = await memberRoleCache_default.getEx(pair, senderId, () => pair.tg.getMember(sender));
+            let role = "member";
+            let title;
+            if ("rank" in part.participant) {
+              title = part.participant.rank;
+            }
+            if (part.participant instanceof import_telegram9.Api.ChannelParticipantCreator) {
+              role = "owner";
+              title = title || "\u7FA4\u4E3B";
+            } else if (part.participant instanceof import_telegram9.Api.ChannelParticipantAdmin) {
+              role = "admin";
+              title = title || "\u7BA1\u7406\u5458";
+            }
+            const avatarHash = sender.photo.photoId.toString(16);
+            this.log.debug("avatarHash", avatarHash);
+            headerImage = forwardHelper_default.headImageForQQ(
+              nameColor_default(sender.color?.color || senderId),
+              avatarHash,
+              () => convert_default.cachedBuffer(`${avatarHash}.jpg`, () => this.tgBot.downloadEntityPhoto(sender)),
+              userDisplayName,
+              title,
+              role
+            );
+            this.log.debug("headerImage", headerImage);
+          } catch (e) {
+            this.log.error("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247\u51FA\u9519", e);
+            posthog_default.capture("\u51C6\u5907\u5236\u4F5C header \u56FE\u7247\u51FA\u9519", { error: e });
+          }
+        }
+        if (headerImage) {
+          chainableElements.unshift({
+            type: "image",
+            file: headerImage,
+            asface: true,
+            brief: messageHeader
+          });
+        } else {
+          chainableElements.unshift(messageHeader);
+        }
+      }
+      const qqMessages = [];
+      if (chainableElements.length) {
+        if (this.oicq instanceof import_icqq4.Group || this.oicq instanceof import_icqq4.Friend) {
+          chainableElements.push({
+            type: "mirai",
+            data: JSON.stringify({
+              id: senderId,
+              eqq: { type: "tg", tgUid: senderId, noSplitSender: this.instance.workMode === "personal", version: 2 }
+            }, void 0, 0)
+          });
+        }
+        let messageToSend = chainableElements;
+        qqMessages.push({
+          ...await pair.qq.sendMsg(messageToSend, source),
+          brief,
+          senderId: this.oicq.uin
+        });
+      }
+      if (notChainableElements.length) {
+        for (const notChainableElement of notChainableElements) {
+          qqMessages.push({
+            ...await pair.qq.sendMsg(notChainableElement, source),
+            brief,
+            senderId: this.oicq.uin
+          });
+        }
+      }
+      return qqMessages;
+    } catch (e) {
+      this.log.error("\u4ECE TG \u5230 QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", e);
+      posthog_default.capture("\u4ECE TG \u5230 QQ \u7684\u6D88\u606F\u8F6C\u53D1\u5931\u8D25", { error: e });
+      try {
+        await message2.reply({
+          message: `<i>\u8F6C\u53D1\u5931\u8D25\uFF1A${e.message}</i>`,
+          buttons: e.message === "\u7B7E\u540Dapi\u5F02\u5E38" && this.restartSignCallbackHandle ? import_button6.Button.inline("\u91CD\u542F\u7B7E\u540D\u670D\u52A1", this.restartSignCallbackHandle) : void 0
+        });
+      } catch {
+      }
+    } finally {
+      tempFiles.forEach((it) => {
+        try {
+          it.cleanup();
+        } catch (err) {
+          this.log.debug("\u6E05\u7406\u4E34\u65F6\u6587\u4EF6\u5931\u8D25", err);
+        }
+      });
+    }
+  }
+};
+
+// src/controllers/ForwardController.ts
+var import_telegram10 = __toESM(require_telegram());
+var import_log4js15 = __toESM(require_log4js());
+init_posthog();
+init_env();
+var ForwardController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    this.log = (0, import_log4js15.getLogger)(`ForwardController - ${instance.id}`);
+    this.forwardService = new ForwardService(this.instance, tgBot, oicq);
+    oicq.addNewMessageEventHandler(this.onQqMessage);
+    oicq.addGroupMemberIncreaseEventHandler(this.onQqGroupMemberIncrease);
+    oicq.addPokeEventHandler(this.onQqPoke);
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+    tgUser.addNewMessageEventHandler(this.onTelegramUserMessage);
+    tgBot.addEditedMessageEventHandler(this.onTelegramMessage);
+    instance.workMode === "group" && tgBot.addChannelParticipantEventHandler(this.onTelegramParticipant);
+  }
+  forwardService;
+  log;
+  onQqMessage = async (event) => {
+    this.log.debug("\u6536\u5230 QQ \u6D88\u606F", event);
+    try {
+      const pair = this.instance.forwardPairs.find(event.chat);
+      if (!pair) return;
+      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_Q2TG) return;
+      let existed = event.dm && await db_default.message.findFirst({
+        where: {
+          qqRoomId: pair.qqRoomId,
+          qqSenderId: event.from.id,
+          seq: event.seq,
+          rand: event.rand,
+          pktnum: event.pktnum,
+          time: event.time,
+          instanceId: this.instance.id
+        }
+      });
+      if (existed) return;
+      let { tgMessage, richHeaderUsed } = await this.forwardService.forwardFromQq(event, pair);
+      if (!tgMessage) return;
+      let tgMessages = tgMessage;
+      if (!Array.isArray(tgMessages)) tgMessages = [tgMessage];
+      for (const tgMessage2 of tgMessages) {
+        await db_default.message.create({
+          data: {
+            qqRoomId: pair.qqRoomId,
+            qqSenderId: event.from.id,
+            time: event.time,
+            brief: event.brief,
+            seq: event.seq,
+            rand: event.rand,
+            pktnum: event.pktnum,
+            tgChatId: pair.tgId,
+            tgMsgId: tgMessage2.id,
+            instanceId: this.instance.id,
+            tgMessageText: tgMessage2.message,
+            tgFileId: forwardHelper_default.getMessageDocumentId(tgMessage2),
+            nick: event.from.name,
+            tgSenderId: BigInt(this.tgBot.me.id.toString()),
+            richHeaderUsed
+          }
+        });
+      }
+    } catch (e) {
+      this.log.error("\u5904\u7406 QQ \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", e);
+      posthog_default.capture("\u5904\u7406 QQ \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", { error: e });
+    }
+  };
+  onTelegramUserMessage = async (message2) => {
+    if (!message2.sender) return;
+    if (!("bot" in message2.sender) || !message2.sender.bot) return;
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return;
+    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_FORWARD_OTHER_BOT) return;
+    await this.onTelegramMessage(message2, pair);
+  };
+  onTelegramMessage = async (message2, pair = this.instance.forwardPairs.find(message2.chat)) => {
+    try {
+      if (message2.senderId?.eq(this.instance.botMe.id)) return true;
+      if (!pair) return false;
+      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_TG2Q) return;
+      this.log.debug("\u6536\u5230 TG \u6D88\u606F", message2);
+      const qqMessagesSent = await this.forwardService.forwardFromTelegram(message2, pair);
+      if (qqMessagesSent) {
+        for (const qqMessageSent of qqMessagesSent) {
+          await db_default.message.create({
+            data: {
+              qqRoomId: pair.qqRoomId,
+              qqSenderId: qqMessageSent.senderId,
+              time: qqMessageSent.time,
+              brief: qqMessageSent.brief,
+              seq: qqMessageSent.seq,
+              rand: qqMessageSent.rand,
+              pktnum: 1,
+              tgChatId: pair.tgId,
+              tgMsgId: message2.id,
+              instanceId: this.instance.id,
+              tgMessageText: message2.message,
+              tgFileId: forwardHelper_default.getMessageDocumentId(message2),
+              nick: forwardHelper_default.getUserDisplayName(message2.sender),
+              tgSenderId: BigInt(Number(message2.senderId || message2.sender?.id) || forwardHelper_default.peerToId(message2.peerId))
+            }
+          });
+        }
+      }
+    } catch (e) {
+      this.log.error("\u5904\u7406 Telegram \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", e);
+      posthog_default.capture("\u5904\u7406 Telegram \u6D88\u606F\u65F6\u9047\u5230\u95EE\u9898", { error: e });
+    }
+  };
+  onQqGroupMemberIncrease = async (event) => {
+    try {
+      const pair = this.instance.forwardPairs.find(event.chat);
+      if (!pair) return false;
+      if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_JOIN_NOTICE) return false;
+      const hideAllQqNumber = (pair.flags | this.instance.flags) & flags_default.HIDE_ALL_QQ_NUMBER;
+      await pair.tg.sendMessage({
+        file: new import_telegram10.Api.InputMediaWebPage({
+          url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, event.userId),
+          forceSmallMedia: true,
+          optional: true
+        }),
+        message: `<b>${event.nickname}</b>${hideAllQqNumber ? "" : ` (<code>${event.userId}</code>)`} <i>\u52A0\u5165\u4E86\u672C\u7FA4</i>`,
+        silent: true
+      });
+    } catch (e) {
+      this.log.error("\u5904\u7406 QQ \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", e);
+      posthog_default.capture("\u5904\u7406 QQ \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", { error: e });
+    }
+  };
+  onTelegramParticipant = async (event) => {
+    try {
+      this.log.debug("\u6536\u5230 TG \u7FA4\u6210\u5458\u4E8B\u4EF6", event);
+      const pair = this.instance.forwardPairs.find(event.channelId);
+      memberRoleCache_default.delete(pair, event.userId.toJSNumber());
+      if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_JOIN_NOTICE) return false;
+      if (event.prevParticipant && !(event.prevParticipant instanceof import_telegram10.Api.ChannelParticipantBanned)) return false;
+      if (!(event.newParticipant instanceof import_telegram10.Api.ChannelParticipantAdmin) && !(event.newParticipant instanceof import_telegram10.Api.ChannelParticipantCreator) && !(event.newParticipant instanceof import_telegram10.Api.ChannelParticipant))
+        return false;
+      const member = await this.tgBot.getChat(event.newParticipant.userId);
+      await pair.qq.sendMsg(`${forwardHelper_default.getUserDisplayName(member.entity)} \u52A0\u5165\u4E86\u672C\u7FA4`);
+    } catch (e) {
+      this.log.error("\u5904\u7406 TG \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", e);
+      posthog_default.capture("\u5904\u7406 TG \u7FA4\u6210\u5458\u589E\u52A0\u4E8B\u4EF6\u65F6\u9047\u5230\u95EE\u9898", { error: e });
+    }
+  };
+  onQqPoke = async (event) => {
+    const pair = this.instance.forwardPairs.find(event.chat);
+    if (!pair) return;
+    if ((pair?.flags | this.instance.flags) & flags_default.DISABLE_POKE) return;
+    let operatorName, targetName;
+    if (event.dm) {
+      const chat = event.chat;
+      if (event.fromId === event.chatId) {
+        operatorName = chat.remark || chat.nickname;
+      } else {
+        operatorName = "\u4F60";
+      }
+      if (event.fromId === event.targetId) {
+        targetName = "\u81EA\u5DF1";
+      } else if (event.targetId === event.chatId) {
+        targetName = chat.remark || chat.nickname;
+      } else {
+        targetName = "\u4F60";
+      }
+    } else {
+      const chat = event.chat;
+      const operator = chat.pickMember(event.fromId);
+      let operatorInfo = await operator.renew();
+      operatorName = operatorInfo.card || operatorInfo.nickname;
+      if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
+        const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, operatorInfo.user_id, operatorName);
+        operatorName = `<a href="${richHeaderUrl}">${operatorName}</a>`;
+      }
+      if (event.fromId === event.targetId) {
+        targetName = "\u81EA\u5DF1";
+      } else {
+        const targetUser = chat.pickMember(event.targetId);
+        let targetInfo = await targetUser.renew();
+        targetName = targetInfo.card || targetInfo.nickname;
+        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
+          const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, targetInfo.user_id, targetName);
+          targetName = `<a href="${richHeaderUrl}">${targetName}</a>`;
+        }
+      }
+    }
+    await pair.tg.sendMessage({
+      message: `<i><b>${operatorName}</b>${event.action || "\u6233\u4E86\u6233"}<b>${targetName}</b>${event.suffix || ""}</i>`,
+      silent: true,
+      linkPreview: false
+    });
+  };
+};
+
+// src/services/DeleteMessageService.ts
+var import_log4js16 = __toESM(require_log4js());
+var import_telegram11 = __toESM(require_telegram());
+
+// src/utils/highLevelFunces.ts
+function consumer(fn, time = 100) {
+  const tasks = [];
+  let timer;
+  const nextTask = () => {
+    if (tasks.length === 0) return false;
+    tasks.shift().call(null);
+    return true;
+  };
+  return function(...args) {
+    tasks.push(fn.bind(this, ...args));
+    if (timer == null) {
+      nextTask();
+      timer = setInterval(() => {
+        if (!nextTask()) {
+          clearInterval(timer);
+          timer = null;
+        }
+      }, time);
+    }
+  };
+}
+
+// src/services/DeleteMessageService.ts
+init_posthog();
+var DeleteMessageService = class {
+  constructor(instance, tgBot) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.log = (0, import_log4js16.getLogger)(`DeleteMessageService - ${instance.id}`);
+  }
+  log;
+  lockIds = /* @__PURE__ */ new Set();
+  lock(lockId) {
+    if (this.lockIds.has(lockId)) {
+      this.log.debug("\u91CD\u590D\u6267\u884C\u6D88\u606F\u64A4\u56DE", lockId);
+      return true;
+    }
+    this.lockIds.add(lockId);
+    setTimeout(() => this.lockIds.delete(lockId), 5e3);
+  }
+  // 500ms 内只撤回一条消息，防止频繁导致一部分消息没有成功撤回。不过这样的话，会得不到返回的结果
+  recallQqMessage = consumer(async (qq, seq, rand, timeOrPktnum, pair, isOthersMsg, noSendError = false) => {
+    try {
+      const result = await qq.recallMsg(seq, rand, timeOrPktnum);
+      if (!result) throw new Error("\u64A4\u56DE\u5931\u8D25");
+    } catch (e) {
+      this.log.error("\u64A4\u56DE\u5931\u8D25", e);
+      posthog_default.capture("\u64A4\u56DE QQ \u6D88\u606F\u5931\u8D25", { error: e });
+      if (noSendError) return;
+      const tipMsg = await pair.tg.sendMessage({
+        message: "<i>\u64A4\u56DE QQ \u4E2D\u5BF9\u5E94\u7684\u6D88\u606F\u5931\u8D25" + (this.instance.workMode === "group" ? "\uFF0CQQ Bot \u9700\u8981\u662F\u7BA1\u7406\u5458" : "") + (isOthersMsg ? "\uFF0C\u800C\u4E14\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7BA1\u7406\u5458\u7684\u6D88\u606F" : "") + "</i>" + (e.message ? "\n" + e.message : ""),
+        silent: true
+      });
+      this.instance.workMode === "group" && setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
+    }
+  }, 1e3);
+  /**
+   * 删除 QQ 对应的消息
+   * @param messageId
+   * @param pair
+   * @param isOthersMsg
+   */
+  async telegramDeleteMessage(messageId, pair, isOthersMsg = false) {
+    if (this.lock(`tg-${pair.tgId}-${messageId}`)) return;
+    try {
+      const messageInfo = await db_default.message.findFirst({
+        where: {
+          tgChatId: pair.tgId,
+          tgMsgId: messageId,
+          instanceId: this.instance.id
+        }
+      });
+      if (messageInfo) {
+        try {
+          if (this.lock(`qq-${pair.qqRoomId}-${messageInfo.seq}`)) return;
+          if (messageInfo.ignoreDelete) return;
+          const mapQq = pair.instanceMapForTg[messageInfo.tgSenderId.toString()];
+          mapQq && this.recallQqMessage(mapQq, messageInfo.seq, Number(messageInfo.rand), messageInfo.pktnum, pair, false, true);
+          this.recallQqMessage(
+            pair.qq,
+            messageInfo.seq,
+            Number(messageInfo.rand),
+            pair.qq.dm ? messageInfo.time : messageInfo.pktnum,
+            pair,
+            isOthersMsg,
+            !!mapQq
+          );
+        } catch (e) {
+          this.log.error(e);
+          posthog_default.capture("telegramDeleteMessage \u51FA\u9519", { error: e });
+        }
+      }
+    } catch (e) {
+    }
+  }
+  /**
+   * 处理 TG 里面发送的 /rm
+   * @param message
+   * @param pair
+   */
+  async handleTelegramMessageRm(message2, pair) {
+    const replyMessage = await message2.getReplyMessage();
+    if (replyMessage instanceof import_telegram11.Api.Message) {
+      let hasPermission = this.instance.workMode === "personal" || replyMessage.senderId?.eq(message2.senderId);
+      if (!hasPermission && message2.chat instanceof import_telegram11.Api.Channel) {
+        try {
+          const member = (await pair.tg.getMember(message2.sender)).participant;
+          hasPermission = member instanceof import_telegram11.Api.ChannelParticipantCreator || member instanceof import_telegram11.Api.ChannelParticipantAdmin && member.adminRights.deleteMessages;
+        } catch (e) {
+        }
+      }
+      if (!hasPermission && message2.chat instanceof import_telegram11.Api.Chat) {
+      }
+      if (hasPermission) {
+        await this.telegramDeleteMessage(message2.replyToMsgId, pair, replyMessage.senderId?.eq(this.tgBot.me.id));
+        try {
+          await pair.tg.deleteMessages(message2.replyToMsgId);
+        } catch (e) {
+          posthog_default.capture("\u64A4\u56DE TG \u6D88\u606F\u5931\u8D25", { error: e });
+          await pair.tg.sendMessage(`<i>\u5220\u9664\u6D88\u606F\u5931\u8D25</i>\uFF1A${e.message}`);
+        }
+      } else {
+        const tipMsg = await pair.tg.sendMessage({
+          message: "<i>\u4E0D\u80FD\u64A4\u56DE\u522B\u4EBA\u7684\u6D88\u606F</i>",
+          silent: true
+        });
+        setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
+      }
+    }
+    try {
+      await message2.delete({ revoke: true });
+    } catch (e) {
+      posthog_default.capture("Bot \u76EE\u524D\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7528\u6237\u7684\u6D88\u606F\uFF0CBot \u9700\u8981\u300C\u5220\u9664\u6D88\u606F\u300D\u6743\u9650", { error: e });
+      const tipMsg = await message2.reply({
+        message: "<i>Bot \u76EE\u524D\u65E0\u6CD5\u64A4\u56DE\u5176\u4ED6\u7528\u6237\u7684\u6D88\u606F\uFF0CBot \u9700\u8981\u300C\u5220\u9664\u6D88\u606F\u300D\u6743\u9650</i>",
+        silent: true
+      });
+      setTimeout(async () => await tipMsg.delete({ revoke: true }), 5e3);
+    }
+  }
+  async handleQqRecall(event, pair) {
+    if (this.lock(`qq-${pair.qqRoomId}-${event.seq}`)) return;
+    try {
+      const message2 = await db_default.message.findFirst({
+        where: {
+          seq: event.seq,
+          rand: event.rand,
+          qqRoomId: pair.qqRoomId,
+          instanceId: this.instance.id
+        }
+      });
+      if (!message2) return;
+      if (this.lock(`tg-${pair.tgId}-${message2.tgMsgId}`)) return;
+      if (message2.ignoreDelete) return;
+      if ((pair.flags | this.instance.flags) & flags_default.DISABLE_DELETE_MESSAGE) {
+        await pair.tg.editMessages({
+          message: message2.tgMsgId,
+          text: `<del>${message2.tgMessageText}</del>
+<i>\u6B64\u6D88\u606F\u5DF2\u5220\u9664</i>`,
+          parseMode: "html"
+        });
+      } else {
+        await pair.tg.deleteMessages(message2.tgMsgId);
+      }
+    } catch (e) {
+      posthog_default.capture("\u5904\u7406 QQ \u6D88\u606F\u64A4\u56DE\u5931\u8D25", { error: e });
+      this.log.error("\u5904\u7406 QQ \u6D88\u606F\u64A4\u56DE\u5931\u8D25", e);
+    }
+  }
+  async isInvalidEdit(message2, pair) {
+    const messageInfo = await db_default.message.findFirst({
+      where: {
+        tgChatId: pair.tgId,
+        tgMsgId: message2.id,
+        instanceId: this.instance.id
+      }
+    });
+    if (!messageInfo) return false;
+    const isTextSame = messageInfo.tgMessageText === message2.message;
+    if (forwardHelper_default.getMessageDocumentId(message2)) {
+      return forwardHelper_default.getMessageDocumentId(message2) === messageInfo.tgFileId && isTextSame;
+    }
+    return isTextSame;
+  }
+};
+
+// src/controllers/DeleteMessageController.ts
+var import_telegram12 = __toESM(require_telegram());
+var DeleteMessageController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    this.deleteMessageService = new DeleteMessageService(this.instance, tgBot);
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+    tgBot.addEditedMessageEventHandler(this.onTelegramEditMessage);
+    tgUser.addDeletedMessageEventHandler(this.onTgDeletedMessage);
+    oicq.addMessageRecallEventHandler(this.onQqRecall);
+  }
+  deleteMessageService;
+  onTelegramMessage = async (message2) => {
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return false;
+    if (message2.message?.split("@")?.[0] === "/rm") {
+      await this.deleteMessageService.handleTelegramMessageRm(message2, pair);
+      return true;
+    }
+  };
+  onTelegramEditMessage = async (message2) => {
+    if (message2.senderId?.eq(this.instance.botMe.id)) return true;
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return;
+    if (await this.deleteMessageService.isInvalidEdit(message2, pair)) {
+      return true;
+    }
+    await this.deleteMessageService.telegramDeleteMessage(message2.id, pair);
+    return await this.onTelegramMessage(message2);
+  };
+  onQqRecall = async (event) => {
+    const pair = this.instance.forwardPairs.find(event.chat);
+    if (!pair) return;
+    await this.deleteMessageService.handleQqRecall(event, pair);
+  };
+  onTgDeletedMessage = async (event) => {
+    if (!(event.peer instanceof import_telegram12.Api.PeerChannel)) return;
+    if (event._entities?.get("1087968824")) return;
+    const pair = this.instance.forwardPairs.find(event.peer.channelId);
+    if (!pair) return;
+    for (const messageId of event.deletedIds) {
+      await this.deleteMessageService.telegramDeleteMessage(messageId, pair);
+    }
+  };
+};
+
+// src/controllers/FileAndFlashPhotoController.ts
+var import_log4js17 = __toESM(require_log4js());
+var import_uploads5 = __toESM(require_uploads());
+init_posthog();
+var REGEX = /^\/start (file|flash)-(\d+)$/;
+var FileAndFlashPhotoController = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+    this.log = (0, import_log4js17.getLogger)(`FileAndFlashPhotoController - ${instance.id}`);
+  }
+  log;
+  onTelegramMessage = async (message2) => {
+    if (!message2.isPrivate || !message2.message) return false;
+    if (!REGEX.test(message2.message)) return false;
+    const exec = REGEX.exec(message2.message);
+    switch (exec[1]) {
+      case "file":
+        await this.handleFile(message2, Number(exec[2]));
+        break;
+      case "flash":
+        await this.handleFlashPhoto(message2, Number(exec[2]));
+        break;
+    }
+    return true;
+  };
+  async handleFile(message2, id) {
+    try {
+      const fileInfo = await db_default.file.findFirst({
+        where: { id }
+      });
+      const downloadUrl = new URL(await (await this.oicq.getChat(Number(fileInfo.roomId))).getFileUrl(fileInfo.fileId));
+      if (!downloadUrl.searchParams.get("fname")) {
+        downloadUrl.searchParams.set("fname", fileInfo.name);
+      }
+      await message2.reply({
+        message: fileInfo.info + `
+<a href="${downloadUrl}">\u4E0B\u8F7D</a>`
+      });
+    } catch (e) {
+      posthog_default.capture("\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25", { error: e });
+      this.log.error("\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25", e);
+      await message2.reply({
+        message: `\u83B7\u53D6\u6587\u4EF6\u4E0B\u8F7D\u5730\u5740\u5931\u8D25\uFF1A${e.message}
+${e}`
+      });
+    }
+  }
+  async handleFlashPhoto(message2, id) {
+    try {
+      const photoInfo = await db_default.flashPhoto.findFirst({
+        where: { id }
+      });
+      const viewInfo = await db_default.flashPhotoView.findFirst({
+        where: { flashPhotoId: id, viewerId: message2.senderId.valueOf() }
+      });
+      if (viewInfo) {
+        await message2.reply({ message: "\u4F60\u5DF2\u7ECF\u67E5\u770B\u8FC7\u4E86" });
+        return;
+      }
+      const file2 = await fetchFile(getImageUrlByMd5(photoInfo.photoMd5));
+      const user = await this.tgBot.getChat(message2.senderId);
+      await user.sendSelfDestructingPhoto(
+        {},
+        new import_uploads5.CustomFile("photo.jpg", file2.length, "", file2),
+        5
+      );
+      await db_default.flashPhotoView.create({
+        data: { flashPhotoId: id, viewerId: message2.senderId.valueOf() }
+      });
+    } catch (e) {
+      posthog_default.capture("\u83B7\u53D6\u95EA\u7167\u5931\u8D25", { error: e });
+      this.log.error("\u83B7\u53D6\u95EA\u7167\u5931\u8D25", e);
+      await message2.reply({
+        message: `\u83B7\u53D6\u95EA\u7167\u5931\u8D25\uFF1A${e.message}
+${e}`
+      });
+    }
+  }
+};
+
+// src/models/Instance.ts
+var import_log4js26 = __toESM(require_log4js());
+
+// src/models/ForwardPairs.ts
+var import_log4js18 = __toESM(require_log4js());
+init_OicqClient();
+var ForwardPairs = class {
+  constructor(instanceId) {
+    this.instanceId = instanceId;
+    this.log = (0, import_log4js18.getLogger)(`ForwardPairs - ${instanceId}`);
+  }
+  pairs = [];
+  log;
+  // 在 forwardController 创建时初始化
+  async init(oicq, tgBot, tgUser) {
+    const dbValues = await db_default.forwardPair.findMany({
+      where: { instanceId: this.instanceId }
+    });
+    for (const i of dbValues) {
+      try {
+        const qq = await oicq.getChat(Number(i.qqRoomId), i.qqFromGroupId ? Number(i.qqFromGroupId) : void 0);
+        const tg = await tgBot.getChat(Number(i.tgChatId));
+        const tgUserChat = await tgUser.getChat(Number(i.tgChatId));
+        if (qq && tg && tgUserChat) {
+          this.log.debug("\u521D\u59CB\u5316", { qq, tg, tgUserChat });
+          this.pairs.push(new Pair(qq, tg, tgUserChat, i.id, i.flags, i.apiKey, oicq));
+        }
+      } catch (e) {
+        this.log.warn(`\u521D\u59CB\u5316\u9047\u5230\u95EE\u9898\uFF0CQQ: ${i.qqRoomId} TG: ${i.tgChatId}`);
+      }
+    }
+  }
+  static async load(instanceId, oicq, tgBot, tgUser) {
+    const instance = new this(instanceId);
+    await instance.init(oicq, tgBot, tgUser);
+    return instance;
+  }
+  async add(qq, tg, tgUser, qqClient, qqFromGroupId) {
+    const dbEntry = await db_default.forwardPair.create({
+      data: {
+        qqRoomId: "uin" in qq ? qq.uin : -qq.gid,
+        tgChatId: Number(tg.id),
+        instanceId: this.instanceId,
+        qqFromGroupId
+      }
+    });
+    this.pairs.push(new Pair(qq, tg, tgUser, dbEntry.id, dbEntry.flags, dbEntry.apiKey, qqClient));
+    return dbEntry;
+  }
+  async remove(pair) {
+    this.pairs.splice(this.pairs.indexOf(pair), 1);
+    await db_default.forwardPair.delete({
+      where: { id: pair.dbId }
+    });
+  }
+  find(target) {
+    if (!target) return null;
+    if (typeof target === "object" && "uin" in target) {
+      return this.pairs.find((e) => "uin" in e.qq && e.qq.uin === target.uin && e.qq.dm);
+    } else if (typeof target === "object" && "gid" in target) {
+      return this.pairs.find((e) => "gid" in e.qq && e.qq.gid === target.gid && !e.qq.dm);
+    } else if (typeof target === "number" || "eq" in target) {
+      return this.pairs.find((e) => e.qqRoomId === target || e.tg.id.eq(target));
+    } else {
+      return this.pairs.find((e) => e.tg.id.eq(target.id));
+    }
+  }
+  async initMapInstance(instances) {
+    for (const forwardPair of this.pairs) {
+      for (const instance of instances) {
+        if (!(instance.oicq instanceof OicqClient)) continue;
+        const instanceTgUserId = instance.userMe.id.toString();
+        if (forwardPair.instanceMapForTg[instanceTgUserId]) continue;
+        try {
+          const group = await instance.oicq.getChat(forwardPair.qqRoomId);
+          if (!group) continue;
+          forwardPair.instanceMapForTg[instanceTgUserId] = group;
+          this.log.info("MapInstance", { group: forwardPair.qqRoomId, tg: instanceTgUserId, qq: instance.qqUin });
+        } catch {
+        }
+      }
+    }
+  }
+  getAll() {
+    return this.pairs;
+  }
+};
+
+// src/controllers/InstanceManageController.ts
+var import_log4js19 = __toESM(require_log4js());
+var import_button7 = __toESM(require_button());
+var InstanceManageController = class {
+  constructor(instance, tgBot) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+  }
+  log = (0, import_log4js19.getLogger)("InstanceManageController");
+  onTelegramMessage = async (message2) => {
+    if (!(message2.chat.id.eq(this.instance.owner) && message2.message)) return;
+    const messageSplit = message2.message.split(" ");
+    if (messageSplit[0] !== "/newinstance") return;
+    if (messageSplit.length === 1) {
+      await message2.reply({
+        message: "\u901A\u8FC7 <code>/newinstance \u65B0\u7684 Bot API Token</code> \u521B\u5EFA\u4E00\u4E2A\u65B0\u7684\u8F6C\u53D1\u673A\u5668\u4EBA\u5B9E\u4F8B"
+      });
+      return true;
+    } else {
+      await message2.reply({
+        message: `\u6B63\u5728\u521B\u5EFA\uFF0C\u8BF7\u7A0D\u5019`
+      });
+      const newInstance = await Instance.createNew(messageSplit[1]);
+      this.log.info(`\u5DF2\u521B\u5EFA\u65B0\u7684\u5B9E\u4F8B \u5B9E\u4F8B ID: ${newInstance.id} Bot Token: ${messageSplit[1]}`);
+      await message2.reply({
+        message: `\u5DF2\u521B\u5EFA\u65B0\u7684\u5B9E\u4F8B
+\u5B9E\u4F8B ID: ${newInstance.id}`,
+        buttons: import_button7.Button.url("\u53BB\u914D\u7F6E", `https://t.me/${newInstance.botMe.username}?start=setup`)
+      });
+      return true;
+    }
+  };
+};
+
+// src/services/InChatCommandsService.ts
+var import_log4js20 = __toESM(require_log4js());
+var import_uploads6 = __toESM(require_uploads());
+var import_icqq5 = require("@icqqjs/icqq");
+init_posthog();
+var InChatCommandsService = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    this.log = (0, import_log4js20.getLogger)(`InChatCommandsService - ${instance.id}`);
+  }
+  log;
+  async info(message2, pair) {
+    const replyMessageId = message2.replyToMsgId;
+    if (replyMessageId) {
+      const messageInfo = await db_default.message.findFirst({
+        where: {
+          tgChatId: Number(message2.chat.id),
+          tgMsgId: replyMessageId
+        }
+      });
+      if (messageInfo) {
+        let textToSend = "";
+        if ("uin" in pair.qq) {
+          if (Number(messageInfo.qqSenderId) === pair.qqRoomId) {
+            textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${pair.qq.remark || pair.qq.nickname}(<code>${pair.qq.uin}</code>)
+`;
+          } else {
+            textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${this.oicq.nickname}(<code>${this.oicq.uin}</code>)
+`;
+          }
+        } else {
+          const sender = pair.qq.pickMember(Number(messageInfo.qqSenderId));
+          let memberInfo;
+          if (sender instanceof import_icqq5.Member) {
+            memberInfo = await sender.renew();
+          } else if (sender && "renew" in sender && typeof sender.renew === "function") {
+            memberInfo = await sender.renew();
+          } else if (sender && "info" in sender && sender.info) {
+            memberInfo = sender.info;
+          } else {
+            memberInfo = {
+              user_id: Number(messageInfo.qqSenderId),
+              card: "",
+              nickname: String(messageInfo.qqSenderId),
+              title: "",
+              role: "member",
+              sex: "unknown",
+              age: 0,
+              join_time: 0,
+              last_sent_time: 0
+            };
+          }
+          const displayName = memberInfo?.card || memberInfo?.nickname || String(sender?.uin || messageInfo.qqSenderId);
+          textToSend += `<b>\u53D1\u9001\u8005\uFF1A</b>${memberInfo?.title ? `\u300C<i>${memberInfo.title}</i>\u300D` : ""}${displayName}(<code>${sender?.uin || messageInfo.qqSenderId}</code>)
+`;
+          if (memberInfo?.role && memberInfo.role !== "member") {
+            textToSend += `<b>\u804C\u52A1\uFF1A</b>${memberInfo.role === "owner" ? "\u7FA4\u4E3B" : "\u7BA1\u7406\u5458"}
+`;
+          }
+        }
+        textToSend += `<b>\u53D1\u9001\u65F6\u95F4\uFF1A</b>${format(new Date(messageInfo.time * 1e3), "yyyy-M-d hh:mm:ss")}`;
+        const avatar = await getAvatar(Number(messageInfo.qqSenderId));
+        if (this.instance.workMode === "personal") {
+          await message2.reply({
+            message: textToSend,
+            file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
+          });
+        } else {
+          const sender = await this.tgBot.getChat(message2.sender);
+          try {
+            await message2.delete({ revoke: true });
+            await sender.sendMessage({
+              message: textToSend,
+              file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
+            });
+          } catch {
+          }
+        }
+      } else {
+        await message2.reply({
+          message: "<i>\u83B7\u53D6\u6D88\u606F\u4FE1\u606F\u5931\u8D25</i>"
+        });
+      }
+    } else {
+      const avatar = await getAvatar(pair.qqRoomId);
+      await message2.reply({
+        message: await getAboutText(pair.qq, true),
+        file: new import_uploads6.CustomFile("avatar.png", avatar.length, "", avatar)
+      });
+    }
+  }
+  async poke(message2, pair) {
+    if (!("pokeMember" in pair.qq) && !("poke" in pair.qq)) {
+      await message2.reply({
+        message: "<i>\u6B64\u529F\u80FD\u4E0D\u652F\u6301</i>"
+      });
+      return;
+    }
+    const qq = pair.qq;
+    try {
+      let target;
+      if (message2.replyToMsgId) {
+        const dbEntry = await db_default.message.findFirst({
+          where: {
+            tgChatId: pair.tgId,
+            tgMsgId: message2.replyToMsgId
+          }
+        });
+        if (dbEntry) {
+          target = Number(dbEntry.qqSenderId);
+        }
+      }
+      if ("pokeMember" in qq && !target) {
+        await message2.reply({
+          message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
+        });
+      } else if ("pokeMember" in qq) {
+        await qq.pokeMember(target);
+      } else {
+        await qq.poke(target && target !== pair.qqRoomId);
+      }
+    } catch (e) {
+      await message2.reply({
+        message: `<i>\u9519\u8BEF</i>
+${e.message}`
+      });
+    }
+  }
+  // 禁言 QQ 成员
+  async mute(message2, pair, args) {
+    try {
+      const group = pair.qq;
+      if (!(group.is_admin || group.is_owner)) {
+        await message2.reply({
+          message: "<i>\u65E0\u7BA1\u7406\u5458\u6743\u9650</i>"
+        });
+        return;
+      }
+      let target;
+      if (message2.replyToMsgId) {
+        const dbEntry = await db_default.message.findFirst({
+          where: {
+            tgChatId: pair.tgId,
+            tgMsgId: message2.replyToMsgId
+          }
+        });
+        if (dbEntry) {
+          target = Number(dbEntry.qqSenderId);
+        }
+      }
+      if (!target) {
+        await message2.reply({
+          message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
+        });
+        return;
+      }
+      if (!args.length) {
+        await message2.reply({
+          message: "<i>\u8BF7\u8F93\u5165\u7981\u8A00\u7684\u65F6\u95F4</i>"
+        });
+        return;
+      }
+      let time = Number(args[0]);
+      if (isNaN(time)) {
+        const unit = args[0].substring(args[0].length - 1, args[0].length);
+        time = Number(args[0].substring(0, args[0].length - 1));
+        switch (unit) {
+          case "d":
+            time *= 24;
+          case "h":
+            time *= 60;
+          case "m":
+            time *= 60;
+            break;
+          default:
+            time = NaN;
+        }
+      }
+      if (isNaN(time)) {
+        await message2.reply({
+          message: "<i>\u8BF7\u8F93\u5165\u6B63\u786E\u7684\u65F6\u95F4</i>"
+        });
+        return;
+      }
+      await group.muteMember(target, time);
+      await message2.reply({
+        message: "<i>\u6210\u529F</i>"
+      });
+    } catch (e) {
+      posthog_default.capture("\u7981\u8A00\u8BF7\u6C42\u51FA\u9519", { error: e });
+      await message2.reply({
+        message: `<i>\u9519\u8BEF</i>
+${e.message}`
+      });
+    }
+  }
+  async rmt(message2, pair) {
+    if (!message2.replyToMsgId) {
+      const reply = await message2.reply({
+        message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
+      });
+      setTimeout(() => {
+        reply.delete({ revoke: true });
+        message2.delete({ revoke: true });
+      }, 5e3);
+      return;
+    }
+    await db_default.message.updateMany({
+      where: {
+        tgChatId: pair.tgId,
+        tgMsgId: message2.replyToMsgId
+      },
+      data: {
+        ignoreDelete: true
+      }
+    });
+    await message2.delete({ revoke: true });
+    await pair.tg.deleteMessages([message2.replyToMsgId]);
+  }
+  async rmq(message2, pair) {
+    if (!message2.replyToMsgId) {
+      const reply = await message2.reply({
+        message: "<i>\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F</i>"
+      });
+      setTimeout(() => {
+        reply.delete({ revoke: true });
+        message2.delete({ revoke: true });
+      }, 5e3);
+      return;
+    }
+    const dbEntry = await db_default.message.findFirst({
+      where: {
+        tgChatId: pair.tgId,
+        tgMsgId: message2.replyToMsgId
+      }
+    });
+    await db_default.message.update({
+      where: {
+        id: dbEntry.id
+      },
+      data: {
+        ignoreDelete: true
+      }
+    });
+    await message2.delete({ revoke: true });
+    await pair.qq.recallMsg(dbEntry.seq, Number(dbEntry.rand), pair.qq.dm ? dbEntry.time : dbEntry.pktnum);
+  }
+};
+
+// src/controllers/InChatCommandsController.ts
+var import_log4js21 = __toESM(require_log4js());
+var InChatCommandsController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    this.log = (0, import_log4js21.getLogger)(`InChatCommandsController - ${instance.id}`);
+    this.service = new InChatCommandsService(instance, tgBot, oicq);
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+  }
+  service;
+  log;
+  onTelegramMessage = async (message2) => {
+    if (!message2.message) return;
+    const messageParts = message2.message.split(" ");
+    if (!messageParts.length || !messageParts[0].startsWith("/")) return;
+    let command = messageParts.shift();
+    const params = messageParts.join(" ");
+    if (command.includes("@")) {
+      let target;
+      [command, target] = command.split("@");
+      if (target !== this.tgBot.me.username) return false;
+    }
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return false;
+    switch (command) {
+      case "/info":
+        await this.service.info(message2, pair);
+        return true;
+      case "/poke":
+        await this.service.poke(message2, pair);
+        return true;
+      case "/unmute":
+        messageParts.unshift("0");
+      case "/mute":
+        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
+        if (!("gid" in pair.qq)) return true;
+        await this.service.mute(message2, pair, messageParts);
+        return true;
+      case "/forwardoff":
+        pair.flags |= flags_default.DISABLE_Q2TG | flags_default.DISABLE_TG2Q;
+        await message2.reply({ message: "\u8F6C\u53D1\u5DF2\u7981\u7528" });
+        return true;
+      case "/forwardon":
+        pair.flags &= ~flags_default.DISABLE_Q2TG & ~flags_default.DISABLE_TG2Q;
+        await message2.reply({ message: "\u8F6C\u53D1\u5DF2\u542F\u7528" });
+        return true;
+      case "/disable_qq_forward":
+        pair.flags |= flags_default.DISABLE_Q2TG;
+        await message2.reply({ message: "QQ->TG\u5DF2\u7981\u7528" });
+        return true;
+      case "/enable_qq_forward":
+        pair.flags &= ~flags_default.DISABLE_Q2TG;
+        await message2.reply({ message: "QQ->TG\u5DF2\u542F\u7528" });
+        return true;
+      case "/disable_tg_forward":
+        pair.flags |= flags_default.DISABLE_TG2Q;
+        await message2.reply({ message: "TG->QQ\u5DF2\u7981\u7528" });
+        return true;
+      case "/enable_tg_forward":
+        pair.flags &= ~flags_default.DISABLE_TG2Q;
+        await message2.reply({ message: "TG->QQ\u5DF2\u542F\u7528" });
+        return true;
+      case "/flags":
+      case "/flag":
+        if (!message2.senderId.eq(this.instance.owner)) {
+          await message2.reply({ message: "\u6743\u9650\u4E0D\u591F" });
+          return true;
+        }
+        await message2.reply({
+          message: await editFlags(messageParts, pair)
+        });
+        return true;
+      case "/refresh":
+        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
+        await pair.updateInfo();
+        await message2.reply({ message: "<i>\u5237\u65B0\u6210\u529F</i>" });
+        return true;
+      case "/nick":
+        if (this.instance.workMode !== "personal" || !message2.senderId?.eq(this.instance.owner)) return false;
+        if (!("gid" in pair.qq)) return true;
+        if (!params) {
+          return true;
+        }
+        const result = await pair.qq.setCard(this.instance.qqUin, params);
+        await message2.reply({
+          message: "\u8BBE\u7F6E" + (result ? "\u6210\u529F" : "\u5931\u8D25")
+        });
+        return true;
+      case "/rmt":
+        await this.service.rmt(message2, pair);
+        return true;
+      case "/rmq":
+        await this.service.rmq(message2, pair);
+        return true;
+      case "/announce":
+        if (pair.qq.dm) return;
+        if (!message2.senderId.eq(this.instance.owner)) {
+          await message2.reply({ message: "\u6743\u9650\u4E0D\u591F" });
+          return true;
+        }
+        if (!params.trim()) {
+          await message2.reply({ message: "\u7528\u6CD5: /announce <\u5185\u5BB9>" });
+          return true;
+        }
+        try {
+          if (await pair.qq.announce(params.trim())) {
+            await message2.reply({ message: "\u53D1\u9001\u6210\u529F" });
+          } else {
+            await message2.reply({ message: "\u53D1\u9001\u5931\u8D25" });
+          }
+        } catch (e) {
+          await message2.reply({ message: "\u53D1\u9001\u5931\u8D25\uFF1A" + e.message });
+        }
+        return true;
+    }
+  };
+};
+
+// src/models/Instance.ts
+var import_telegram16 = __toESM(require_telegram());
+
+// src/controllers/RequestController.ts
+var import_log4js22 = __toESM(require_log4js());
+var import_uploads7 = __toESM(require_uploads());
+var import_button8 = __toESM(require_button());
+init_posthog();
+var RequestController = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    this.log = (0, import_log4js22.getLogger)(`RequestController - ${instance.id}`);
+    oicq.addFriendRequestEventHandler(this.handleRequest);
+    oicq.addGroupInviteEventHandler(this.handleRequest);
+  }
+  log;
+  handleRequest = async (event) => {
+    this.log.info(`\u6536\u5230\u7533\u8BF7\uFF1A${event.nickname} (${event.user_id})`);
+    let avatar;
+    let messageText = "";
+    if (event.request_type === "friend") {
+      avatar = await getAvatar(event.user_id);
+      messageText = `\u6536\u5230\u597D\u53CB\u7533\u8BF7
+<b>\u6635\u79F0\uFF1A</b>${event.nickname}
+<b>\u8D26\u53F7\uFF1A</b><code>${event.user_id}</code>
+<b>\u5E74\u9F84\uFF1A</b>${event.age}
+<b>\u6027\u522B\uFF1A</b>${event.sex}
+<b>\u6765\u6E90\uFF1A</b>${event.source}
+<b>\u9644\u8A00\uFF1A</b>${event.comment}`;
+    } else {
+      avatar = await getAvatar(-event.group_id);
+      messageText = `\u6536\u5230\u52A0\u7FA4\u9080\u8BF7
+<b>\u9080\u8BF7\u4EBA\uFF1A</b>${event.nickname} (<code>${event.user_id}</code>)
+<b>\u7FA4\u540D\u79F0\uFF1A</b>${event.group_name}
+<b>\u7FA4\u53F7\uFF1A</b>${event.group_id}
+<b>\u9080\u8BF7\u8005\u8EAB\u4EFD\uFF1A</b>${event.role}`;
+    }
+    const message2 = await this.instance.ownerChat.sendMessage({
+      file: new import_uploads7.CustomFile("avatar.png", avatar.length, "", avatar),
+      message: messageText,
+      buttons: [[
+        import_button8.Button.inline("\u540C\u610F", this.tgBot.registerCallback(async () => {
+          try {
+            if (!await event.approve(true)) {
+              await message2.edit({ text: "\u540C\u610F\u5931\u8D25", buttons: import_button8.Button.clear() });
+            }
+          } catch (e) {
+            posthog_default.capture("\u540C\u610F\u7533\u8BF7\u5931\u8D25", { error: e });
+            await message2.edit({ text: `\u540C\u610F\u5931\u8D25\uFF1A${e.message}`, buttons: import_button8.Button.clear() });
+          }
+          await message2.edit({ text: "\u5DF2\u540C\u610F\u8BF7\u6C42", buttons: import_button8.Button.clear() });
+        })),
+        import_button8.Button.inline("\u62D2\u7EDD", this.tgBot.registerCallback(async () => {
+          try {
+            if (!await event.approve(false)) {
+              await message2.edit({ text: "\u62D2\u7EDD\u5931\u8D25", buttons: import_button8.Button.clear() });
+            }
+          } catch (e) {
+            posthog_default.capture("\u62D2\u7EDD\u7533\u8BF7\u5931\u8D25", { error: e });
+            await message2.edit({ text: `\u62D2\u7EDD\u5931\u8D25\uFF1A${e.message}`, buttons: import_button8.Button.clear() });
+          }
+          await message2.edit({ text: "\u5DF2\u62D2\u7EDD\u8BF7\u6C42", buttons: import_button8.Button.clear() });
+        }))
+      ]]
+    });
+  };
+};
+
+// src/controllers/OicqErrorNotifyController.ts
+init_OicqClient();
+var OicqErrorNotifyController = class {
+  constructor(instance, oicq) {
+    this.instance = instance;
+    this.oicq = oicq;
+    if (oicq instanceof OicqClient) {
+      oicq.oicq.on("system.offline", async ({ message: message2 }) => {
+        if (this.locked) return;
+        this.locked = true;
+        if (!(instance.flags & flags_default.DISABLE_OFFLINE_NOTICE))
+          await this.instance.ownerChat.sendMessage(`<i>QQ \u673A\u5668\u4EBA\u6389\u7EBF</i>
+${message2}`);
+      });
+      oicq.oicq.on("system.online", async () => {
+        this.locked = false;
+      });
+    }
+  }
+  locked = false;
+};
+
+// src/models/Instance.ts
+var import_button9 = __toESM(require_button());
+
+// src/controllers/HugController.ts
+var import_telegram13 = __toESM(require_telegram());
+var import_big_integer = __toESM(require_BigInteger());
+var import_log4js23 = __toESM(require_log4js());
+var import_member = require("@icqqjs/icqq/lib/member");
+init_env();
+var COMMAND_REGEX = /(^\/([^\w\s$¥]\S*)|^\/[$¥](\w\S*))( (\S*))?/;
+var HugController_default = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    this.log = (0, import_log4js23.getLogger)(`HugController - ${instance.id}`);
+    oicq.addNewMessageEventHandler(this.onQqMessage);
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+  }
+  log;
+  onQqMessage = async (event) => {
+    if (event.dm) return;
+    const pair = this.instance.forwardPairs.find(event.chat);
+    if (!pair) return;
+    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_SLASH_COMMAND) return;
+    const chain = [...event.message];
+    if (chain.some((it) => it.type === "face")) return;
+    while (chain.length && chain[0].type !== "text") {
+      chain.shift();
+    }
+    const firstElem = chain[0];
+    if (firstElem?.type !== "text") return;
+    const exec = COMMAND_REGEX.exec(firstElem.text.trim());
+    if (!exec) return;
+    const action = exec[2] || exec[3];
+    if (!action) return;
+    const from = {
+      from: "qq",
+      name: event.from.name,
+      id: event.from.id
+    };
+    let to;
+    const ats = chain.filter((it) => it.type === "at");
+    if (ats.length) {
+      const atName = ats[0].text.startsWith("@") ? ats[0].text.substring(1) : ats[0].text;
+      to = {
+        from: "qq",
+        name: atName,
+        id: ats[0].qq
+      };
+    } else if (event.replyTo && event.replyTo.fromId === this.oicq.uin) {
+      const sourceMessage = await db_default.message.findFirst({
+        where: {
+          instanceId: this.instance.id,
+          qqRoomId: pair.qqRoomId,
+          qqSenderId: event.replyTo.fromId,
+          seq: event.replyTo.seq
+          // rand: event.source.rand,
+        }
+      });
+      if (!sourceMessage) {
+        this.log.error("\u627E\u4E0D\u5230 sourceMessage");
+        return true;
+      }
+      to = {
+        from: "tg",
+        id: (await this.tgBot.getChat((0, import_big_integer.default)(sourceMessage.tgSenderId))).inputPeer,
+        name: sourceMessage.nick
+      };
+    } else if (event.replyTo) {
+      const sourceMember = pair.qq.pickMember(event.replyTo.fromId);
+      let memberInfo;
+      if (sourceMember instanceof import_member.Member) {
+        memberInfo = sourceMember.info;
+      } else {
+        memberInfo = await sourceMember.renew();
+      }
+      to = {
+        from: "qq",
+        name: memberInfo.card || memberInfo.nickname,
+        id: event.replyTo.fromId
+      };
+    } else {
+      to = {
+        from: "qq",
+        name: "\u81EA\u5DF1",
+        id: event.from.id
+      };
+    }
+    await this.sendAction(pair, from, to, action, exec[5]);
+    return true;
+  };
+  onTelegramMessage = async (message2) => {
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return;
+    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_SLASH_COMMAND) return;
+    const exec = COMMAND_REGEX.exec(message2.message);
+    if (!exec) return;
+    const action = exec[2] || exec[3];
+    if (!action) return;
+    const from = {
+      from: "tg",
+      name: forwardHelper_default.getUserDisplayName(message2.sender),
+      id: (await this.tgBot.getChat(message2.senderId)).inputPeer
+    };
+    let to;
+    if (message2.replyTo) {
+      const sourceMessage = await db_default.message.findFirst({
+        where: {
+          instanceId: this.instance.id,
+          tgChatId: pair.tgId,
+          tgMsgId: message2.replyToMsgId
+        }
+      });
+      if (!sourceMessage) {
+        this.log.error("\u627E\u4E0D\u5230 sourceMessage");
+        return true;
+      }
+      if (this.tgBot.me.id.eq(sourceMessage.tgSenderId)) {
+        to = {
+          from: "qq",
+          name: sourceMessage.nick,
+          id: Number(sourceMessage.qqSenderId)
+        };
+      } else {
+        to = {
+          from: "tg",
+          id: (await this.tgBot.getChat((0, import_big_integer.default)(sourceMessage.tgSenderId))).inputPeer,
+          name: sourceMessage.nick
+        };
+      }
+    } else {
+      to = {
+        from: "tg",
+        name: "\u81EA\u5DF1",
+        id: (await this.tgBot.getChat(message2.senderId)).inputPeer
+      };
+    }
+    await this.sendAction(pair, from, to, action, exec[5]);
+    return true;
+  };
+  async sendAction(pair, from, to, action, suffix) {
+    let tgText = "";
+    const tgEntities = [];
+    const qqMessageContent = [];
+    const addSubject = (subject) => {
+      if (subject.from === "tg") {
+        tgEntities.push(new import_telegram13.Api.InputMessageEntityMentionName({
+          offset: tgText.length,
+          length: subject.name.length,
+          userId: subject.id
+        }));
+        qqMessageContent.push(subject.name);
+      } else {
+        qqMessageContent.push({
+          type: "at",
+          text: subject.name,
+          qq: subject.id
+        });
+        if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
+          tgEntities.push(new import_telegram13.Api.MessageEntityTextUrl({
+            offset: tgText.length,
+            length: subject.name.length,
+            url: forwardHelper_default.generateRichHeaderUrl(pair.apiKey, subject.id, subject.name)
+          }));
+        }
+      }
+      tgText += subject.name;
+    };
+    const addText = (text) => {
+      tgText += text;
+      qqMessageContent.push(text);
+    };
+    addSubject(from);
+    addText(" ");
+    addText(action);
+    if (!/[\u4e00-\u9fa5]$/.test(action)) {
+      addText(" ");
+    }
+    addText("\u4E86 ");
+    addSubject(to);
+    if (suffix) {
+      tgText += " " + suffix;
+    }
+    addText("\uFF01");
+    const tgMessage = await pair.tg.sendMessage({
+      message: tgText,
+      formattingEntities: tgEntities,
+      linkPreview: false
+    });
+    const qqMessage = await pair.qq.sendMsg(qqMessageContent);
+    await db_default.message.create({
+      data: {
+        qqRoomId: pair.qqRoomId,
+        qqSenderId: this.oicq.uin,
+        time: qqMessage.time,
+        brief: tgText,
+        seq: qqMessage.seq,
+        rand: qqMessage.rand,
+        pktnum: 1,
+        tgChatId: pair.tgId,
+        tgMsgId: tgMessage.id,
+        instanceId: this.instance.id,
+        tgMessageText: tgMessage.message,
+        nick: "\u7CFB\u7EDF",
+        tgSenderId: BigInt(this.tgBot.me.id.toString())
+      }
+    });
+  }
+};
+
+// src/controllers/QuotLyController.ts
+var import_log4js24 = __toESM(require_log4js());
+var import_telegram14 = __toESM(require_telegram());
+var import_uploads8 = __toESM(require_uploads());
+var import_big_integer2 = __toESM(require_BigInteger());
+init_env();
+init_posthog();
+var quotlyPkg;
+async function getQuotly() {
+  if (!quotlyPkg) {
+    quotlyPkg = (await import("quote-api/methods/generate.js")).default;
+  }
+  return quotlyPkg;
+}
+var QuotLyController_default = class {
+  constructor(instance, tgBot, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.oicq = oicq;
+    this.log = (0, import_log4js24.getLogger)(`QuotLyController - ${instance.id}`);
+    oicq.addNewMessageEventHandler(this.onQqMessage);
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+  }
+  log;
+  onQqMessage = async (event) => {
+    if (this.instance.workMode === "personal") return;
+    if (event.dm) return;
+    const pair = this.instance.forwardPairs.find(event.chat);
+    if (!pair) return;
+    const chain = [...event.message];
+    while (chain.length && chain[0].type !== "text") {
+      chain.shift();
+    }
+    const firstElem = chain[0];
+    if (firstElem?.type !== "text") return;
+    if (firstElem.text.trim() !== "/q") return;
+    if (!event.replyTo) {
+      await event.reply("\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F", true);
+      return true;
+    }
+    const sourceMessage = await db_default.message.findFirst({
+      where: {
+        instanceId: this.instance.id,
+        qqRoomId: pair.qqRoomId,
+        qqSenderId: event.replyTo.fromId,
+        seq: event.replyTo.seq
+        // rand: event.source.rand,
+      }
+    });
+    if (!sourceMessage) {
+      await event.reply("\u65E0\u6CD5\u4ECE\u6570\u636E\u5E93\u627E\u5230\u539F\u6D88\u606F", true);
+      this.log.error("\u627E\u4E0D\u5230 sourceMessage");
+      return true;
+    }
+    if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_QUOTE_PIN)) {
+      this.pinMessageOnBothSide(pair, sourceMessage).then();
+    }
+    this.sendQuote(pair, sourceMessage).catch(async (e) => {
+      this.log.error(e);
+      posthog_default.capture("sendQuote \u9519\u8BEF", { error: e });
+      await event.reply(e.toString(), true);
+    });
+  };
+  onTelegramMessage = async (message2) => {
+    if (!["/q", `/q@${this.tgBot.me.username}`].includes(message2.message)) return;
+    const pair = this.instance.forwardPairs.find(message2.chat);
+    if (!pair) return;
+    if (!message2.replyTo) {
+      await message2.reply({
+        message: "\u8BF7\u56DE\u590D\u4E00\u6761\u6D88\u606F"
+      });
+      return true;
+    }
+    const sourceMessage = await db_default.message.findFirst({
+      where: {
+        instanceId: this.instance.id,
+        tgChatId: pair.tgId,
+        tgMsgId: message2.replyToMsgId
+      }
+    });
+    if (!sourceMessage) {
+      await message2.reply({
+        message: "\u65E0\u6CD5\u4ECE\u6570\u636E\u5E93\u627E\u5230\u539F\u6D88\u606F"
+      });
+      this.log.error("\u627E\u4E0D\u5230 sourceMessage");
+      return true;
+    }
+    if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_QUOTE_PIN)) {
+      this.pinMessageOnBothSide(pair, sourceMessage).then();
+    }
+    this.sendQuote(pair, sourceMessage).catch(async (e) => {
+      this.log.error(e);
+      posthog_default.capture("sendQuote \u9519\u8BEF", { error: e });
+      await message2.reply({
+        message: e.toString()
+      });
+    });
+    if (this.instance.workMode === "personal") return true;
+  };
+  async pinMessageOnBothSide(pair, sourceMessage) {
+    if ("gid" in pair.qq) {
+      try {
+      } catch (e) {
+        this.log.warn("\u65E0\u6CD5\u6DFB\u52A0\u7CBE\u534E\u6D88\u606F\uFF0C\u7FA4\uFF1A", pair.qqRoomId, e);
+      }
+    }
+    try {
+      const tgMessage = await pair.tg.getMessage({ ids: sourceMessage.tgMsgId });
+      await tgMessage.pin({ notify: false, pmOneSide: false });
+    } catch (e) {
+      this.log.warn("\u65E0\u6CD5\u7F6E\u9876\u6D88\u606F\uFF0C\u7FA4\uFF1A", pair.tgId, "\u6D88\u606F ID\uFF1A", sourceMessage.tgMsgId, e);
+    }
+  }
+  async genQuote(message2) {
+    const GROUP_ANONYMOUS_BOT = 1087968824n;
+    const backgroundColor = "#292232";
+    const emojiBrand = "apple";
+    const width = 512;
+    const height = 512 * 1.5;
+    const scale = 2;
+    const type = "quote";
+    const format2 = "png";
+    const originTgMessages = await this.tgBot.getMessage((0, import_big_integer2.default)(message2.tgChatId), {
+      ids: message2.tgMsgId
+    });
+    if (!originTgMessages.length) {
+      throw new Error("\u65E0\u6CD5\u83B7\u53D6 Tg \u539F\u6D88\u606F");
+    }
+    const originTgMessage = originTgMessages[0];
+    let messageFrom;
+    let quoteMessage = {
+      chatId: Number(message2.tgChatId),
+      avatar: true,
+      from: null,
+      // to be added
+      text: message2.tgMessageText
+    };
+    if (this.tgBot.me.id.eq(message2.tgSenderId)) {
+      messageFrom = {
+        id: Number(message2.qqSenderId),
+        name: message2.nick,
+        title: message2.nick,
+        photo: { url: getAvatarUrl(message2.qqSenderId) }
+      };
+      if (message2.qqRoomId > 0 || message2.richHeaderUsed) {
+        quoteMessage.text = message2.tgMessageText;
+      } else if (message2.tgMessageText.includes("\n")) {
+        quoteMessage.text = message2.tgMessageText.substring(message2.tgMessageText.indexOf("\n")).trim();
+      } else {
+        quoteMessage.text = null;
+      }
+    } else if (message2.tgSenderId === GROUP_ANONYMOUS_BOT || message2.tgSenderId === 777000n) {
+      const chat = originTgMessage.chat;
+      let photo;
+      if (chat.photo instanceof import_telegram14.Api.ChatPhoto) {
+        photo = await convert_default.cachedBuffer(`${chat.photo.photoId.toString(16)}.jpg`, () => this.tgBot.downloadEntityPhoto(chat));
+      }
+      messageFrom = {
+        id: Number(chat.id.toString()),
+        name: chat.title,
+        title: chat.title,
+        username: chat.username || null,
+        photo: photo ? { url: photo } : null
+      };
+      quoteMessage.entities = originTgMessage.entities;
+    } else {
+      const sender = originTgMessage.sender;
+      let photo;
+      if (sender.photo instanceof import_telegram14.Api.UserProfilePhoto) {
+        photo = await convert_default.cachedBuffer(`${sender.photo.photoId.toString(16)}.jpg`, () => this.tgBot.downloadEntityPhoto(sender));
+      }
+      messageFrom = {
+        id: sender.color?.color || Number(message2.tgSenderId),
+        name: message2.nick,
+        title: message2.nick,
+        username: sender.username,
+        first_name: sender.firstName,
+        last_name: sender.lastName,
+        photo: photo ? { url: photo } : null
+      };
+      if (originTgMessage.entities)
+        quoteMessage.entities = await Promise.all(originTgMessage.entities?.map?.(async (it) => {
+          let type2 = "";
+          let emoji = "";
+          switch (it.className) {
+            case "MessageEntityBold":
+              type2 = "bold";
+              break;
+            case "MessageEntityItalic":
+              type2 = "italic";
+              break;
+            case "MessageEntityStrike":
+              type2 = "strikethrough";
+              break;
+            case "MessageEntityUnderline":
+              type2 = "underline";
+              break;
+            case "MessageEntitySpoiler":
+              type2 = "spoiler";
+              break;
+            case "MessageEntityCode":
+            case "MessageEntityPre":
+              type2 = "code";
+              break;
+            case "MessageEntityMention":
+            case "MessageEntityMentionName":
+            case "InputMessageEntityMentionName":
+            case "MessageEntityHashtag":
+            case "MessageEntityEmail":
+            case "MessageEntityPhone":
+            case "MessageEntityBotCommand":
+            case "MessageEntityUrl":
+            case "MessageEntityTextUrl":
+              type2 = "mention";
+              break;
+            case "MessageEntityCustomEmoji":
+              type2 = "custom_emoji";
+              emoji = await convert_default.customEmoji(
+                it.documentId.toString(16),
+                () => this.tgBot.getCustomEmoji(it.documentId),
+                false
+              );
+              break;
+          }
+          return {
+            type: type2,
+            emoji,
+            offset: it.offset,
+            length: it.length
+          };
+        }));
+    }
+    if (originTgMessage.voice) {
+      const attribute = originTgMessage.voice.attributes.find((it) => it instanceof import_telegram14.Api.DocumentAttributeAudio);
+      quoteMessage.voice = { waveform: attribute.waveform };
+    } else if (originTgMessage.photo instanceof import_telegram14.Api.Photo || originTgMessage.document?.mimeType?.startsWith("image/")) {
+      if (originTgMessage.document?.mimeType === "image/webp") {
+        quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.document.id.toString(16)}.webp`, () => originTgMessage.downloadMedia({})) };
+      } else {
+        quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.photo.id.toString(16)}.jpg`, () => originTgMessage.downloadMedia({})) };
+      }
+    } else if (originTgMessage.video || originTgMessage.videoNote || originTgMessage.gif) {
+      const file2 = originTgMessage.video || originTgMessage.videoNote || originTgMessage.gif;
+      quoteMessage.media = { url: await convert_default.cachedBuffer(`${file2.id.toString(16)}-thumb.webp`, () => this.tgBot.downloadThumb(file2)) };
+    } else if (originTgMessage.sticker) {
+      quoteMessage.media = { url: await convert_default.cachedBuffer(`${originTgMessage.document.id.toString(16)}.tgs`, () => originTgMessage.downloadMedia({})) };
+    }
+    if (originTgMessage.sticker) {
+      quoteMessage.mediaType = "sticker";
+    }
+    quoteMessage.from = messageFrom;
+    if (!quoteMessage.text && !quoteMessage.media && !quoteMessage.voice) {
+      throw new Error("\u4E0D\u652F\u6301\u7684\u6D88\u606F\u7C7B\u578B");
+    }
+    const quotly = await getQuotly();
+    const res = await quotly({
+      botToken: env_default.TG_BOT_TOKEN,
+      type,
+      format: format2,
+      backgroundColor,
+      width,
+      height,
+      scale,
+      messages: [quoteMessage],
+      emojiBrand
+    });
+    return Buffer.from(res.image, "base64");
+  }
+  async sendQuote(pair, message2) {
+    const image = await this.genQuote(message2);
+    const tgMessage = await pair.tg.sendMessage({
+      file: new import_uploads8.CustomFile("quote.webp", image.length, void 0, image)
+    });
+    if (this.instance.workMode === "personal") return;
+    const qqMessage = await pair.qq.sendMsg({
+      type: "image",
+      file: image,
+      asface: true
+    });
+    await db_default.message.create({
+      data: {
+        qqRoomId: pair.qqRoomId,
+        qqSenderId: this.oicq.uin,
+        time: qqMessage.time,
+        brief: "[Quote]",
+        seq: qqMessage.seq,
+        rand: qqMessage.rand,
+        pktnum: 1,
+        tgChatId: pair.tgId,
+        tgMsgId: tgMessage.id,
+        instanceId: this.instance.id,
+        tgMessageText: tgMessage.message,
+        nick: "\u7CFB\u7EDF",
+        tgSenderId: BigInt(this.tgBot.me.id.toString())
+      }
+    });
+  }
+};
+
+// src/controllers/MiraiSkipFilterController.ts
+var MiraiSkipFilterController_default = class {
+  constructor(instance, tgBot, tgUser, qqBot) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.qqBot = qqBot;
+    qqBot.addNewMessageEventHandler(this.onQqMessage);
+  }
+  // 当 mapInstance 用同服务器其他个人模式账号发送消息后，message mirai 会带 q2tgSkip=true
+  // 防止 bot 重新收到消息再转一圈回来重新转发或者重新响应命令
+  onQqMessage = async (event) => {
+    if ("friend" in event) return;
+    if (!event.message) return;
+    const messageMirai = event.message.find((it) => it.type === "mirai");
+    if (messageMirai) {
+      try {
+        const miraiData = JSON.parse(messageMirai.data);
+        if (miraiData.q2tgSkip) return true;
+      } catch {
+      }
+    }
+  };
+};
+
+// src/models/Instance.ts
+init_env();
+
+// src/controllers/AliveCheckController.ts
+init_OicqClient();
+var AliveCheckController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    tgBot.addNewMessageEventHandler(this.handleMessage);
+  }
+  handleMessage = async (message2) => {
+    const senderId = message2.senderId || message2.sender?.id;
+    if (!senderId || !senderId.eq(this.instance.owner) || !message2.isPrivate) {
+      return false;
+    }
+    if (!["\u4F3C\u4E86\u5417", "/alive"].includes(message2.message)) {
+      return false;
+    }
+    await message2.reply({
+      message: await this.genMessage(this.instance.id === 0 ? Instance.instances : [this.instance])
+    });
+    return true;
+  };
+  async genMessage(instances) {
+    const boolToStr = (value) => {
+      return value ? "\u597D" : "\u574F";
+    };
+    const messageParts = [];
+    for (const instance of instances) {
+      const oicq = instance.oicq;
+      const tgBot = instance.tgBot;
+      const tgUser = instance.tgUser;
+      const sign = oicq instanceof OicqClient ? await oicq.oicq.getSign("MessageSvc.PbSendMsg", 233, Buffer.alloc(10)) : null;
+      const tgUserName = tgUser.me.username || tgUser.me.usernames.length ? "@" + (tgUser.me.username || tgUser.me.usernames[0].username) : tgUser.me.firstName;
+      messageParts.push([
+        `Instance #${instance.id} (${instance.workMode}) ${instance.isInit ? "" : "\u521D\u59CB\u5316\u672A\u5B8C\u6210"}`,
+        `QQ <code>${instance.qqUin}</code> (${oicq.constructor.name})	${boolToStr(await oicq.isOnline())}`,
+        ...oicq instanceof OicqClient ? [`\u7B7E\u540D\u670D\u52A1\u5668	${boolToStr(sign.length > 0)}`] : [],
+        `TG @${tgBot.me.username}	${boolToStr(tgBot.isOnline)}`,
+        `TG User ${tgUserName}	${boolToStr(tgBot.isOnline)}`
+      ].join("\n"));
+    }
+    return messageParts.join("\n\n");
+  }
+};
+
+// src/models/Instance.ts
+init_QQClient();
+init_posthog();
+
+// src/controllers/LoadingController.ts
+var LoadingController_default = class {
+  constructor(instance, tgBot, tgUser, qqBot) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.qqBot = qqBot;
+    this.initStickerPack();
+    tgBot.addNewMessageEventHandler(this.onTelegramMessage);
+  }
+  stickerPackHandles = null;
+  async initStickerPack() {
+    const pack = await this.tgBot.getStickerSet("Clansty_WEBM");
+    this.stickerPackHandles = pack.documents;
+  }
+  onTelegramMessage = async (message2) => {
+    if ((message2.isGroup || message2.isChannel) && this.instance.workMode === "group") return;
+    if (this.stickerPackHandles)
+      await message2.reply({
+        file: this.stickerPackHandles[0]
+      });
+    await message2.reply({
+      message: "Q2TG \u8FD8\u5728\u521D\u59CB\u5316\u4E2D\uFF0C\u6240\u4EE5\u6682\u65F6\u65E0\u6CD5\u5904\u7406\u4F60\u7684\u6D88\u606F\u3002\u8BF7\u7A0D\u540E\u518D\u8BD5"
+    });
+    return true;
+  };
+  off() {
+    this.tgBot.removeNewMessageEventHandler(this.onTelegramMessage);
+  }
+};
+
+// src/controllers/TypingController.ts
+var import_telegram15 = __toESM(require_telegram());
+var TypingController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    oicq.addInputStatusChangeHandler(this.handleInputStatusChange);
+  }
+  handleInputStatusChange = async (event) => {
+    const pair = this.instance.forwardPairs.find(event.chat);
+    if (!pair) return;
+    if ((pair.flags | this.instance.flags) & flags_default.DISABLE_Q2TG) return;
+    if (event.typing) {
+      await pair.tg.setTyping();
+    } else {
+      await pair.tg.setTyping(new import_telegram15.Api.SendMessageCancelAction());
+    }
+  };
+};
+
+// src/controllers/GroupNameRefreshController.ts
+init_NapCatClient();
+init_env();
+var import_log4js25 = __toESM(require_log4js());
+var GroupNameRefreshController = class {
+  constructor(instance, tgBot, tgUser, oicq) {
+    this.instance = instance;
+    this.tgBot = tgBot;
+    this.tgUser = tgUser;
+    this.oicq = oicq;
+    oicq.addGroupNameChangeHandler(this.handleGroupNameChange.bind(this));
+    this.log = (0, import_log4js25.getLogger)(`GroupNameRefreshController - ${instance.id}`);
+  }
+  log;
+  async handleGroupNameChange(event) {
+    this.log.debug(event);
+    const pair = this.instance.forwardPairs.find(event.group);
+    if (!pair) return;
+    if ((pair.flags | this.instance.flags) & flags_default.NAME_LOCKED) return;
+    await pair.tg.editTitle(event.newName);
+    if (event.operator instanceof NapCatGroupMember) {
+      const operatorInfo = await event.operator.renew();
+      let operatorName = operatorInfo.card || operatorInfo.nickname;
+      if (!((pair.flags | this.instance.flags) & flags_default.DISABLE_RICH_HEADER) && env_default.WEB_ENDPOINT) {
+        const richHeaderUrl = forwardHelper_default.generateRichHeaderUrl(pair.apiKey, operatorInfo.user_id, operatorName);
+        operatorName = `<a href="${richHeaderUrl}">${operatorName}</a>`;
+      }
+      await pair.tg.sendMessage({
+        message: `<i>${operatorName} \u4FEE\u6539\u7FA4\u540D\u4E3A <b>${event.newName}</b></i>`,
+        parseMode: "html",
+        silent: true
+      });
+    }
+  }
+};
+
+// src/models/Instance.ts
+var Instance = class _Instance {
+  constructor(id) {
+    this.id = id;
+    this.log = (0, import_log4js26.getLogger)(`Instance - ${this.id}`);
+  }
+  static instances = [];
+  _owner = 0;
+  _isSetup = false;
+  _workMode = "";
+  _botSessionId = 0;
+  _userSessionId = 0;
+  _qq;
+  _flags;
+  log;
+  tgBot;
+  tgUser;
+  oicq;
+  isInit = false;
+  _ownerChat;
+  forwardPairs;
+  setupController;
+  instanceManageController;
+  oicqErrorNotifyController;
+  requestController;
+  configController;
+  deleteMessageController;
+  inChatCommandsController;
+  forwardController;
+  fileAndFlashPhotoController;
+  hugController;
+  quotLyController;
+  miraiSkipFilterController;
+  aliveCheckController;
+  loadingController;
+  typingController;
+  groupNameRefreshController;
+  async load() {
+    const dbEntry = await db_default.instance.findFirst({
+      where: { id: this.id },
+      include: { qqBot: true }
+    });
+    if (!dbEntry) {
+      if (this.id === 0) {
+        await db_default.instance.create({
+          data: { id: 0 }
+        });
+        return;
+      } else
+        throw new Error("Instance not found");
+    }
+    this._owner = Number(dbEntry.owner);
+    this._qq = dbEntry.qqBot;
+    this._botSessionId = dbEntry.botSessionId;
+    this._userSessionId = dbEntry.userSessionId;
+    this._isSetup = dbEntry.isSetup;
+    this._workMode = dbEntry.workMode;
+    this._flags = dbEntry.flags;
+  }
+  init(botToken) {
+    (async () => {
+      this.log.debug("\u6B63\u5728\u767B\u5F55 TG Bot");
+      if (this.botSessionId) {
+        this.tgBot = await Telegram.connect(this._botSessionId);
+      } else {
+        const token = this.id === 0 ? env_default.TG_BOT_TOKEN : botToken;
+        if (!token) {
+          throw new Error("botToken \u672A\u6307\u5B9A");
+        }
+        this.tgBot = await Telegram.create({
+          botAuthToken: token
+        });
+        this.botSessionId = this.tgBot.sessionId;
+      }
+      this.log.info("TG Bot \u767B\u5F55\u5B8C\u6210");
+      if (!this.isSetup || !this._owner) {
+        this.log.info("\u5F53\u524D\u670D\u52A1\u5668\u672A\u914D\u7F6E\uFF0C\u8BF7\u5411 Bot \u53D1\u9001 /setup \u6765\u8BBE\u7F6E");
+        this.setupController = new SetupController(this, this.tgBot);
+        ({ tgUser: this.tgUser, oicq: this.oicq } = await this.setupController.waitForFinish());
+        this._ownerChat = await this.tgBot.getChat(this.owner);
+      } else {
+        this.log.debug("\u6B63\u5728\u767B\u5F55 TG UserBot");
+        this.tgUser = await Telegram.connect(this._userSessionId);
+        this.log.info("TG UserBot \u767B\u5F55\u5B8C\u6210");
+        this._ownerChat = await this.tgBot.getChat(this.owner);
+        this.log.debug("\u6B63\u5728\u767B\u5F55 OICQ");
+        this.oicq = await QQClient.create({
+          type: this.qq.type,
+          id: this.qq.id,
+          uin: Number(this.qq.uin),
+          password: this.qq.password,
+          platform: this.qq.platform,
+          signApi: this.qq.signApi,
+          signVer: this.qq.signVer,
+          signDockerId: this.qq.signDockerId,
+          onVerifyDevice: async (phone) => {
+            return await this.waitForOwnerInput(`\u8BF7\u8F93\u5165\u624B\u673A ${phone} \u6536\u5230\u7684\u9A8C\u8BC1\u7801`);
+          },
+          onVerifySlider: async (url2) => {
+            return await this.waitForOwnerInput(
+              `\u6536\u5230\u6ED1\u5757\u9A8C\u8BC1\u7801 <code>${url2}</code>
+\u8BF7\u4F7F\u7528<a href="https://github.com/mzdluo123/TxCaptchaHelper/releases">\u6B64\u8F6F\u4EF6</a>\u9A8C\u8BC1\u5E76\u8F93\u5165 Ticket`
+            );
+          },
+          wsUrl: this.qq.wsUrl
+        });
+        this.log.info("OICQ \u767B\u5F55\u5B8C\u6210");
+      }
+      this.aliveCheckController = new AliveCheckController(this, this.tgBot, this.tgUser, this.oicq);
+      this.loadingController = new LoadingController_default(this, this.tgBot, this.tgUser, this.oicq);
+      this.forwardPairs = await ForwardPairs.load(this.id, this.oicq, this.tgBot, this.tgUser);
+      this.setupCommands().then(() => this.log.info("\u547D\u4EE4\u8BBE\u7F6E\u6210\u529F")).catch((e) => {
+        this.log.error("\u547D\u4EE4\u8BBE\u7F6E\u9519\u8BEF", e);
+        posthog_default.capture("\u547D\u4EE4\u8BBE\u7F6E\u9519\u8BEF", { error: e });
+      });
+      if (this.id === 0) {
+        this.instanceManageController = new InstanceManageController(this, this.tgBot);
+      }
+      this.oicqErrorNotifyController = new OicqErrorNotifyController(this, this.oicq);
+      this.requestController = new RequestController(this, this.tgBot, this.oicq);
+      this.configController = new ConfigController(this, this.tgBot, this.tgUser, this.oicq);
+      this.deleteMessageController = new DeleteMessageController(this, this.tgBot, this.tgUser, this.oicq);
+      this.miraiSkipFilterController = new MiraiSkipFilterController_default(this, this.tgBot, this.tgUser, this.oicq);
+      this.inChatCommandsController = new InChatCommandsController(this, this.tgBot, this.tgUser, this.oicq);
+      this.quotLyController = new QuotLyController_default(this, this.tgBot, this.oicq);
+      this.typingController = new TypingController(this, this.tgBot, this.tgUser, this.oicq);
+      this.forwardController = new ForwardController(this, this.tgBot, this.tgUser, this.oicq);
+      if (this.workMode === "group") {
+        this.hugController = new HugController_default(this, this.tgBot, this.oicq);
+      } else {
+        this.groupNameRefreshController = new GroupNameRefreshController(this, this.tgBot, this.tgUser, this.oicq);
+      }
+      this.fileAndFlashPhotoController = new FileAndFlashPhotoController(this, this.tgBot, this.oicq);
+      this.isInit = true;
+      this.loadingController.off();
+    })().then(() => this.log.info("\u521D\u59CB\u5316\u5DF2\u5B8C\u6210"));
+  }
+  async login(botToken) {
+    await this.load();
+    this.init(botToken);
+  }
+  static async start(instanceId, botToken) {
+    const instance = new this(instanceId);
+    _Instance.instances.push(instance);
+    await instance.login(botToken);
+    return instance;
+  }
+  static async createNew(botToken) {
+    const dbEntry = await db_default.instance.create({ data: {} });
+    return await this.start(dbEntry.id, botToken);
+  }
+  async setupCommands() {
+    await this.tgBot.setCommands([], new import_telegram16.Api.BotCommandScopeUsers());
+    if (this.id === 0) {
+      await this.tgBot.setCommands(
+        this.workMode === "personal" ? commands_default.personalPrivateSuperAdminCommands : commands_default.groupPrivateSuperAdminCommands,
+        new import_telegram16.Api.BotCommandScopePeer({
+          peer: this.ownerChat.inputPeer
+        })
+      );
+    } else {
+      await this.tgBot.setCommands(
+        this.workMode === "personal" ? commands_default.personalPrivateCommands : commands_default.groupPrivateCommands,
+        new import_telegram16.Api.BotCommandScopePeer({
+          peer: this.ownerChat.inputPeer
+        })
+      );
+    }
+    await this.tgBot.setCommands(
+      this.workMode === "personal" ? commands_default.personalInChatCommands : commands_default.groupInChatCommands,
+      // 普通用户其实不需要这些命令，这样可以让用户的输入框少点东西
+      new import_telegram16.Api.BotCommandScopeChatAdmins()
+    );
+  }
+  async waitForOwnerInput(message2, buttons, remove = false) {
+    if (!this.owner) {
+      throw new Error("\u5E94\u8BE5\u4E0D\u4F1A\u8FD0\u884C\u5230\u8FD9\u91CC");
+    }
+    message2 && await this.ownerChat.sendMessage({ message: message2, buttons: buttons || import_button9.Button.clear(), linkPreview: false });
+    const reply = await this.ownerChat.waitForInput();
+    remove && await reply.delete({ revoke: true });
+    return reply.message;
+  }
+  get owner() {
+    return this._owner;
+  }
+  get qq() {
+    return this._qq;
+  }
+  get qqUin() {
+    return this.oicq.uin;
+  }
+  get isSetup() {
+    return this._isSetup;
+  }
+  get workMode() {
+    return this._workMode;
+  }
+  get botMe() {
+    return this.tgBot.me;
+  }
+  get userMe() {
+    return this.tgUser.me;
+  }
+  get ownerChat() {
+    return this._ownerChat;
+  }
+  get botSessionId() {
+    return this._botSessionId;
+  }
+  get userSessionId() {
+    return this._userSessionId;
+  }
+  get flags() {
+    return this._flags;
+  }
+  set owner(owner) {
+    this._owner = owner;
+    db_default.instance.update({
+      data: { owner },
+      where: { id: this.id }
+    }).then(() => this.log.trace(owner));
+  }
+  set isSetup(isSetup) {
+    this._isSetup = isSetup;
+    db_default.instance.update({
+      data: { isSetup },
+      where: { id: this.id }
+    }).then(() => this.log.trace(isSetup));
+  }
+  set workMode(workMode) {
+    this._workMode = workMode;
+    db_default.instance.update({
+      data: { workMode },
+      where: { id: this.id }
+    }).then(() => this.log.trace(workMode));
+  }
+  set botSessionId(sessionId) {
+    this._botSessionId = sessionId;
+    db_default.instance.update({
+      data: { botSessionId: sessionId },
+      where: { id: this.id }
+    }).then(() => this.log.trace(sessionId));
+  }
+  set userSessionId(sessionId) {
+    this._userSessionId = sessionId;
+    db_default.instance.update({
+      data: { userSessionId: sessionId },
+      where: { id: this.id }
+    }).then(() => this.log.trace(sessionId));
+  }
+  set qqBotId(id) {
+    db_default.instance.update({
+      data: { qqBotId: id },
+      where: { id: this.id }
+    }).then(() => this.log.trace(id));
+  }
+  set flags(value) {
+    this._flags = value;
+    db_default.instance.update({
+      data: { flags: value },
+      where: { id: this.id }
+    }).then(() => this.log.trace(value));
+  }
+};
+
+// src/api/index.ts
+var import_log4js29 = __toESM(require_log4js());
+init_env();
+
+// src/api/richHeader.tsx
+var import_icqq6 = require("@icqqjs/icqq");
+init_NapCatClient();
+
 // ../node_modules/.pnpm/@elysiajs+html@1.1.1_elysia@1.1.26_@sinclair+typebox@0.34.13_typescript@5.7.2__typescript@5.7.2/node_modules/@elysiajs/html/dist/index.mjs
 var import_node_stream = require("node:stream");
 var import_suspense = __toESM(require_suspense(), 1);
@@ -105513,9 +105816,9 @@ function html(options = {}) {
 }
 
 // src/api/richHeader.tsx
-var import_log4js26 = __toESM(require_log4js());
+var import_log4js27 = __toESM(require_log4js());
 init_posthog();
-var logger2 = (0, import_log4js26.getLogger)("Rich Header");
+var logger2 = (0, import_log4js27.getLogger)("Rich Header");
 var richHeader_default = new Elysia().use(html()).get("/richHeader/:apiKey/:userId", async ({ params, error: error2 }) => {
   try {
     const pair = Pair.getByApiKey(params.apiKey);
@@ -105649,9 +105952,9 @@ var richHeader_default = new Elysia().use(html()).get("/richHeader/:apiKey/:user
 // src/api/telegramAvatar.ts
 var import_telegram17 = __toESM(require_telegram());
 var import_big_integer3 = __toESM(require_BigInteger());
-var import_log4js27 = __toESM(require_log4js());
-var import_fs5 = __toESM(require("fs"));
-var log3 = (0, import_log4js27.getLogger)("telegramAvatar");
+var import_log4js28 = __toESM(require_log4js());
+var import_fs6 = __toESM(require("fs"));
+var log3 = (0, import_log4js28.getLogger)("telegramAvatar");
 var userAvatarFileIdCache = /* @__PURE__ */ new Map();
 var getUserAvatarFileId = async (tgBot, userId) => {
   let cached = userAvatarFileIdCache.get(userId);
@@ -105681,7 +105984,7 @@ var telegramAvatar_default = new Elysia().get("/telegramAvatar/:instanceId/:user
     return error2(404);
   }
   set2.headers["content-type"] = "image/jpeg";
-  return import_fs5.default.createReadStream(avatar);
+  return import_fs6.default.createReadStream(avatar);
 });
 
 // src/api/index.ts
@@ -105689,12 +105992,12 @@ var import_node2 = require("@bogeychan/elysia-polyfills/node/index.js");
 
 // src/api/ui.ts
 init_env();
-var import_fs6 = __toESM(require("fs"));
+var import_fs7 = __toESM(require("fs"));
 var import_path7 = __toESM(require("path"));
 var import_mime_types = __toESM(require_mime_types());
-var app = new Elysia();
+var app2 = new Elysia();
 if (env_default.UI_PROXY) {
-  app = app.mount("/ui/", (req) => {
+  app2 = app2.mount("/ui/", (req) => {
     const url2 = new URL(req.url);
     const baseUrl = new URL(env_default.UI_PROXY);
     url2.hostname = baseUrl.hostname;
@@ -105704,83 +106007,21 @@ if (env_default.UI_PROXY) {
     return fetch(url2.toString(), req);
   });
 } else if (env_default.UI_PATH) {
-  for (const asset of import_fs6.default.readdirSync(import_path7.default.join(env_default.UI_PATH, "assets"))) {
-    app = app.get("/ui/assets/" + asset, ({ set: set2 }) => {
+  for (const asset of import_fs7.default.readdirSync(import_path7.default.join(env_default.UI_PATH, "assets"))) {
+    app2 = app2.get("/ui/assets/" + asset, ({ set: set2 }) => {
       set2.headers["content-type"] = import_mime_types.default.lookup(asset) || void 0;
-      return import_fs6.default.createReadStream(import_path7.default.join(env_default.UI_PATH, "assets", asset));
+      return import_fs7.default.createReadStream(import_path7.default.join(env_default.UI_PATH, "assets", asset));
     });
   }
-  app = app.get("/ui/*", ({ set: set2 }) => {
+  app2 = app2.get("/ui/*", ({ set: set2 }) => {
     set2.headers["content-type"] = "text/html";
-    return import_fs6.default.createReadStream(import_path7.default.join(env_default.UI_PATH, "index.html"));
+    return import_fs7.default.createReadStream(import_path7.default.join(env_default.UI_PATH, "index.html"));
   });
 }
-var ui_default = app;
-
-// src/api/q2tgServlet/index.ts
-init_OicqClient();
-
-// src/utils/processNestedForward.ts
-var processNestedForward_default = async (messages, fromPairId) => {
-  for (const message2 of messages) {
-    for (const elem of message2.message) {
-      if (elem.type !== "json") continue;
-      const parsed = forwardHelper_default.processJson(elem.data);
-      if (parsed.type !== "forward") continue;
-      let entity = await db_default.forwardMultiple.findFirst({ where: { resId: parsed.resId } });
-      if (!entity) {
-        entity = await db_default.forwardMultiple.create({
-          data: {
-            resId: parsed.resId,
-            fileName: parsed.fileName,
-            fromPairId
-          }
-        });
-      }
-      elem.data = JSON.stringify({ type: "forward", uuid: entity.id });
-    }
-  }
-};
-
-// src/api/q2tgServlet/index.ts
-var forwardCache = /* @__PURE__ */ new Map();
-var app2 = new Elysia().post("/Q2tgServlet/GetForwardMultipleMessageApi", async ({ body }) => {
-  const uuid = body.uuid;
-  if (!forwardCache.has(uuid)) {
-    const data = await db_default.forwardMultiple.findFirst({
-      where: { id: uuid }
-    });
-    if (!data) {
-      return { error: "Record not found" };
-    }
-    const pair = Pair.getByDbId(data.fromPairId);
-    if (!pair || !pair.qq) {
-      return { error: "Pair not found" };
-    }
-    const messages = await pair.qq.getForwardMsg(data.resId, data.fileName);
-    if (!messages) {
-      return { error: "Message not found" };
-    }
-    if (pair.qqClient instanceof OicqClient) {
-      await pair.qqClient.refreshImageRKey(messages);
-    }
-    await processNestedForward_default(messages, data.fromPairId);
-    forwardCache.set(uuid, messages);
-    setTimeout(() => {
-      forwardCache.delete(uuid);
-    }, 1e3 * 60);
-  }
-  return forwardCache.get(uuid);
-}, {
-  body: t.Object({
-    // 不许注入
-    uuid: t.String({ format: "uuid" })
-  })
-});
-var q2tgServlet_default = app2;
+var ui_default = app2;
 
 // src/api/index.ts
-var log4 = (0, import_log4js28.getLogger)("Web Api");
+var log4 = (0, import_log4js29.getLogger)("Web Api");
 var app3 = new Elysia().onError((error2) => {
   log4.error(error2.request.method, error2.request.url, error2.error.message);
   log4.debug(error2.error);
@@ -105799,7 +106040,7 @@ init_env();
 init_posthog();
 init_OicqClient();
 (async () => {
-  (0, import_log4js29.configure)({
+  (0, import_log4js30.configure)({
     appenders: {
       console: { type: "console" }
     },
@@ -105807,7 +106048,7 @@ init_OicqClient();
       default: { level: env_default.LOG_LEVEL, appenders: ["console"] }
     }
   });
-  const log5 = (0, import_log4js29.getLogger)("Main");
+  const log5 = (0, import_log4js30.getLogger)("Main");
   process.on("unhandledRejection", (error2) => {
     log5.error("UnhandledRejection: ", error2);
     posthog_default.capture("UnhandledRejection", { error: error2 });

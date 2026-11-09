@@ -1,4 +1,4 @@
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent, inject, type PropType } from 'vue';
 import type { MessageElemExt } from '../types/MessageElemExt';
 import styles from './MessageElement.module.sass';
 import getImageUrlByMd5 from '../utils/getImageUrlByMd5';
@@ -12,6 +12,8 @@ export default defineComponent({
     elem: { required: true, type: Object as PropType<MessageElemExt> },
   },
   setup(props) {
+    const openForward = inject<(uuid: string, title?: string) => void>('openForward', () => {});
+
     return () => {
       switch (props.elem.type) {
         case 'text':
@@ -50,7 +52,14 @@ export default defineComponent({
         case 'video':
           return <div>[视频]</div>;
         case 'record':
-          return <div>[语音]</div>;
+          if (props.elem.url) {
+            return (
+              <div class="my-1">
+                <audio controls src={props.elem.url} class="max-w-240px block" />
+              </div>
+            );
+          }
+          return <div>🎙 [语音消息]</div>;
         case 'file':
           return <div>[文件] {props.elem.name}</div>;
         case 'location':
@@ -69,6 +78,19 @@ export default defineComponent({
           return <JsonElement json={props.elem.data}/>;
         case 'xml':
           return <XmlElement xml={props.elem.data}/>;
+        case 'forward': {
+          const uuid = (props.elem as any).uuid || (props.elem as any).id;
+          const title = (props.elem as any).title || (props.elem as any).brief || '聊天记录 (合并转发)';
+          return (
+            <div
+              class="c-blue-5 cursor-pointer font-500 hover:underline flex items-center gap-1 my-1"
+              onClick={() => openForward(uuid, title)}
+            >
+              <span>📁</span>
+              <span>[{title}]</span>
+            </div>
+          );
+        }
         default:
           return <></>;
       }

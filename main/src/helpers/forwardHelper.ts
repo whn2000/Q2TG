@@ -162,7 +162,7 @@ export default {
       text = xml.match(urlRegex)[1].replace(/\\\//g, '/');
     if (xml.includes('action="viewMultiMsg"')) {
       text = '[Forward multiple messages]';
-      const resIdRegex = /m_resid="([\w+=/]+)"/;
+      const resIdRegex = /m_resid="([^"]+)"/;
       if (resIdRegex.test(xml)) {
         const resId = xml.match(resIdRegex)![1];
         return {
@@ -170,6 +170,10 @@ export default {
           resId,
         };
       }
+      return {
+        type: 'text',
+        text,
+      };
     }
     else if (text) {
       text = text.replace(/&amp;/g, '&');
@@ -215,15 +219,18 @@ export default {
   },
 
   generateForwardBrief(messages: ForwardMessage[]) {
+    if (!Array.isArray(messages)) return '<b>转发的消息记录</b>';
     const count = messages.length;
     // 取前四条
-    messages = messages.slice(0, 4);
+    const displayMessages = messages.slice(0, 4);
     let result = '<b>转发的消息记录</b>';
-    for (const message of messages) {
-      result += `\n<b>${message.nickname}: </b>` +
-        `${htmlEscape(message.raw_message.length > 10 ? message.raw_message.substring(0, 10) + '…' : message.raw_message)}`;
+    for (const message of displayMessages) {
+      const nick = message.nickname || 'QQ用户';
+      const raw = message.raw_message || (Array.isArray(message.message) ? message.message.map(m => (m as any).text || `[${m.type}]`).join('') : '');
+      result += `\n<b>${htmlEscape(nick)}: </b>` +
+        `${htmlEscape(raw.length > 10 ? raw.substring(0, 10) + '…' : raw)}`;
     }
-    if (count > messages.length) {
+    if (count > displayMessages.length) {
       result += `\n<b>共 ${count} 条消息记录</b>`;
     }
     return result;

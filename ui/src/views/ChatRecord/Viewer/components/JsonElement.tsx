@@ -1,4 +1,4 @@
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, inject } from 'vue';
 import type BilibiliMiniApp from '../types/BilibiliMiniApp';
 import type StructMessageCard from '../types/StructMessageCard';
 import { NSpace } from 'naive-ui';
@@ -9,18 +9,38 @@ export default defineComponent({
     json: { required: true, type: String },
   },
   setup(props) {
-    const jsonObj = computed(() => JSON.parse(props.json));
+    const jsonObj = computed(() => {
+      try {
+        return JSON.parse(props.json);
+      } catch {
+        return {};
+      }
+    });
     const location = useBrowserLocation();
 
-    const openForward = (uuid: string) => {
-      const params = new URLSearchParams(location.value.search);
+    const openForwardInject = inject<(uuid: string, title?: string) => void>('openForward', (uuid) => {
+      const search = location.value.search || window.location.search;
+      const params = new URLSearchParams(search);
       params.set('tgWebAppStartParam', uuid);
       location.value.search = params.toString();
+    });
+
+    const openForward = (uuid: string, title?: string) => {
+      openForwardInject(uuid, title);
     };
 
     return () => {
       if (jsonObj.value.type === 'forward') {
-        return <div class="c-blue-5 cursor-pointer" onClick={() => openForward(jsonObj.value.uuid)}>[嵌套合并转发消息]</div>;
+        const title = jsonObj.value.title || '嵌套合并转发消息';
+        return (
+          <div
+            class="c-blue-5 cursor-pointer font-500 hover:underline flex items-center gap-1 my-1"
+            onClick={() => openForward(jsonObj.value.uuid, title)}
+          >
+            <span>📁</span>
+            <span>[{title}]</span>
+          </div>
+        );
       }
       if (jsonObj.value.app === 'com.tencent.mannounce') {
         try {

@@ -4,7 +4,15 @@ import { Pair } from '../../models/Pair';
 import OicqClient from '../../client/OicqClient';
 import processNestedForward from '../../utils/processNestedForward';
 
-const forwardCache = new Map<string, any>();
+export const forwardCache = new Map<string, any>();
+
+export const setForwardCache = (uuid: string, data: any) => {
+  forwardCache.set(uuid, data);
+  const timer = setTimeout(() => {
+    forwardCache.delete(uuid);
+  }, 1000 * 60 * 5);
+  timer?.unref?.();
+};
 
 let app = new Elysia()
   .post('/Q2tgServlet/GetForwardMultipleMessageApi', async ({ body }) => {
@@ -21,19 +29,21 @@ let app = new Elysia()
       if (!pair || !pair.qq) {
         return { error: 'Pair not found' };
       }
-      const messages = await pair.qq.getForwardMsg(data.resId, data.fileName);
-      if (!messages) {
+      let messages: any;
+      try {
+        messages = await pair.qq.getForwardMsg(data.resId, data.fileName);
+      }
+      catch (e: any) {
+        return { error: 'Failed to fetch forward message: ' + e?.message };
+      }
+      if (!messages || !messages.length) {
         return { error: 'Message not found' };
       }
       if (pair.qqClient instanceof OicqClient) {
         await pair.qqClient.refreshImageRKey(messages);
       }
       await processNestedForward(messages, data.fromPairId);
-      forwardCache.set(uuid, messages);
-
-      setTimeout(() => {
-        forwardCache.delete(uuid);
-      }, 1000 * 60);
+      setForwardCache(uuid, messages);
     }
     return forwardCache.get(uuid);
   }, {

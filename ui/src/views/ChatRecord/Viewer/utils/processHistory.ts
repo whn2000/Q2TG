@@ -7,6 +7,7 @@ import getUserAvatarUrl from './getUserAvatarUrl';
 const USER_ID_PRIVATE = 1094950020;
 
 export default function processHistory(history: ForwardMessage[]) {
+  if (!Array.isArray(history)) return [];
   const data: DateGroup[] = [];
   let currentDateGroup: DateGroup | undefined;
   let currentSenderGroup: SenderGroup | undefined;

@@ -1,3 +1,5 @@
+/** @jsx Html.createElement */
+/** @jsxFrag Html.Fragment */
 import { Pair } from '../models/Pair';
 import { Member as OicqMember } from '@icqqjs/icqq';
 import { format } from 'date-fns';

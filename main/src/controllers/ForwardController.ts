@@ -113,6 +113,13 @@ export default class ForwardController {
       if (!pair) return false;
       if ((pair.flags | this.instance.flags) & flags.DISABLE_TG2Q) return;
       this.log.debug('收到 TG 消息', message);
+      if (typeof this.oicq.isOnline === 'function') {
+        const online = await this.oicq.isOnline().catch(() => false);
+        if (!online) {
+          this.log.warn(`QQ 处于离线状态，跳过转发 TG 消息 [${message.id}]`);
+          return false;
+        }
+      }
       const qqMessagesSent = await this.forwardService.forwardFromTelegram(message, pair);
       if (qqMessagesSent) {
         // 更新数据库

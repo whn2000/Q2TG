@@ -82,6 +82,28 @@ export abstract class QQClient {
     }
   }
 
+  // Offline & Online events
+  protected readonly onOfflineHandlers: Array<(message: string) => Promise<void | boolean> | void> = [];
+  protected readonly onOnlineHandlers: Array<() => Promise<void | boolean> | void> = [];
+
+  public addOfflineEventHandler(handler: (message: string) => Promise<void | boolean> | void) {
+    this.onOfflineHandlers.push(handler);
+  }
+
+  public removeOfflineEventHandler(handler: (message: string) => Promise<void | boolean> | void) {
+    this.onOfflineHandlers.includes(handler) &&
+    this.onOfflineHandlers.splice(this.onOfflineHandlers.indexOf(handler), 1);
+  }
+
+  public addOnlineEventHandler(handler: () => Promise<void | boolean> | void) {
+    this.onOnlineHandlers.push(handler);
+  }
+
+  public removeOnlineEventHandler(handler: () => Promise<void | boolean> | void) {
+    this.onOnlineHandlers.includes(handler) &&
+    this.onOnlineHandlers.splice(this.onOnlineHandlers.indexOf(handler), 1);
+  }
+
   // Handlers
   protected readonly onMessageHandlers: Array<(e: MessageEvent) => Promise<void | boolean>> = [];
 

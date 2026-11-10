@@ -15,6 +15,7 @@ import {
 } from '../client/QQClient';
 import { MessageEvent } from '../client/QQClient';
 import OicqClient from '../client/OicqClient';
+import { NapCatClient } from '../client/NapCatClient';
 
 export default class ConfigController {
   private readonly configService: ConfigService;
@@ -60,6 +61,28 @@ export default class ConfigController {
           await message.reply({
             message: await editFlags(messageSplit, this.instance),
           });
+          return true;
+        case '/login':
+          if (this.oicq instanceof OicqClient) {
+            await this.oicq.oicq.login();
+            await message.reply({ message: '<i>正在尝试重新登录 OICQ...</i>' });
+          }
+          else if (this.oicq instanceof NapCatClient) {
+            const online = await this.oicq.isOnline().catch(() => false);
+            if (online) {
+              await message.reply({ message: `<i>QQ <code>${this.oicq.uin}</code> 当前处于在线状态</i>` });
+            }
+            else {
+              await message.reply({
+                message: `<i>QQ 当前处于离线状态</i>\n` +
+                  `NapCat WS: ${this.oicq.isWsConnected ? '已连接' : '未连接/断开'}\n\n` +
+                  `请访问 NapCat Web 控制台（默认端口 6099，如 <code>http://[服务器IP]:6099/webui/</code>）进行扫码登录或查看容器日志。`,
+              });
+            }
+          }
+          else {
+            await message.reply({ message: '<i>未识别的 QQ 客户端类型</i>' });
+          }
           return true;
         case '/import_stickers':
         case '/import_emojis':

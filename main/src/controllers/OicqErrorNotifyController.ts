@@ -10,15 +10,46 @@ export default class OicqErrorNotifyController {
                      private readonly oicq: QQClient) {
     if (oicq instanceof OicqClient) {
       oicq.oicq.on('system.offline', async ({ message }) => {
-        if (this.locked) return;
-        this.locked = true;
-        if (!(instance.flags & flags.DISABLE_OFFLINE_NOTICE))
-          await this.instance.ownerChat.sendMessage(`<i>QQ 机器人掉线</i>\n${message}`);
+        await this.handleOffline(message);
       });
       oicq.oicq.on('system.online', async () => {
-        this.locked = false;
+        await this.handleOnline();
       });
     }
-    // TODO: NapCat
+
+    oicq.addOfflineEventHandler(async (message) => {
+      await this.handleOffline(message);
+    });
+
+    oicq.addOnlineEventHandler(async () => {
+      await this.handleOnline();
+    });
+  }
+
+  private async handleOffline(message?: string) {
+    if (this.locked) return;
+    this.locked = true;
+    if (!(this.instance.flags & flags.DISABLE_OFFLINE_NOTICE)) {
+      try {
+        await this.instance.ownerChat.sendMessage(
+          `<i>QQ 机器人掉线</i>\n${message || '与 QQ 服务端连接断开或处于离线状态'}\n\n` +
+          `提示：请检查 NapCat 状态或访问 NapCat Web 控制台（端口 6099）重新扫码登录。`
+        );
+      }
+      catch {
+      }
+    }
+  }
+
+  private async handleOnline() {
+    if (!this.locked) return;
+    this.locked = false;
+    if (!(this.instance.flags & flags.DISABLE_OFFLINE_NOTICE)) {
+      try {
+        await this.instance.ownerChat.sendMessage(`<i>QQ 机器人已恢复在线</i>`);
+      }
+      catch {
+      }
+    }
   }
 }

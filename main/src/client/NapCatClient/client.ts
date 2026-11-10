@@ -15,11 +15,47 @@ export interface CreateNapCatParams extends CreateQQClientParamsBase {
 }
 
 export class NapCatClient extends QQClient {
+  private _isWsConnected = false;
+  private _isOnline = false;
+
+  public get isWsConnected(): boolean {
+    return this._isWsConnected;
+  }
+
   private constructor(id: number, private readonly wsUrl: string) {
     super(id);
     this.logger = getLogger(`NapCatClient - ${id}`);
-    this.ws = new ReconnectingWebSocket(wsUrl);
+    this.ws = new ReconnectingWebSocket(wsUrl, [], {
+      maxEnqueuedMessages: 100,
+    });
     this.ws.onmessage = (e) => this.handleWebSocketMessage(e.data);
+    this.ws.onopen = async () => {
+      this._isWsConnected = true;
+      this.logger.info('WS 连接成功');
+      try {
+        await this.refreshSelf();
+        this._isOnline = true;
+        await this.emitOnline();
+      }
+      catch (e) {
+        this.logger.warn('NapCat WS 连接成功，但尚未完成 QQ 登录', e);
+        this._isOnline = false;
+        await this.emitOffline('NapCat 已连接，但 QQ 处于离线状态');
+      }
+    };
+    this.ws.onclose = async (e) => {
+      const wasOnline = this._isOnline;
+      this._isWsConnected = false;
+      this._isOnline = false;
+      this.logger.warn(`NapCat WS 连接断开 (code: ${e?.code || 'unknown'})`);
+      this.cleanupPendingCalls(new Error('NapCat WebSocket 连接已断开'));
+      if (wasOnline) {
+        await this.emitOffline('NapCat WebSocket 连接已断开');
+      }
+    };
+    this.ws.onerror = (e) => {
+      this.logger.error('NapCat WS 出错', e);
+    };
   }
 
   private readonly ws: ReconnectingWebSocket;
@@ -28,18 +64,31 @@ export class NapCatClient extends QQClient {
   public static async create(params: CreateNapCatParams) {
     const instance = new this(params.id, params.wsUrl);
     return new Promise<NapCatClient>((resolve, reject) => {
-      instance.ws.onopen = async () => {
-        instance.logger.info('WS 连接成功');
-        instance.ws.onerror = null;
-        await instance.refreshSelf();
+      const onInitialOpen = () => {
+        cleanup();
         resolve(instance);
       };
-      instance.ws.onerror = (e) => {
-        instance.logger.error('WS 连接出错', e);
+      const onInitialError = (e: any) => {
+        cleanup();
+        instance.logger.error('WS 首次连接出错', e);
         posthog.capture('WS 连接出错', { error: e });
         reject(e);
       };
+      const cleanup = () => {
+        instance.ws.removeEventListener('open', onInitialOpen);
+        instance.ws.removeEventListener('error', onInitialError);
+      };
+      instance.ws.addEventListener('open', onInitialOpen);
+      instance.ws.addEventListener('error', onInitialError);
     });
+  }
+
+  private cleanupPendingCalls(err: Error) {
+    for (const [echo, item] of this.echoMap.entries()) {
+      if (item.timer) clearTimeout(item.timer);
+      item.reject(err);
+    }
+    this.echoMap.clear();
   }
 
   private readonly echoMap = new Map<string, {
@@ -50,6 +99,9 @@ export class NapCatClient extends QQClient {
   private echoSeq = 0;
 
   public async callApi<T extends keyof WSSendReturn>(action: T, params?: WSSendParam[T], timeoutMs = 30000): Promise<WSSendReturn[T]> {
+    if (this.ws && typeof (this.ws as any).readyState === 'number' && (this.ws as any).readyState > 1) {
+      return Promise.reject(new Error(`NapCat 未连接，无法调用 API [${action}]`));
+    }
     return new Promise<WSSendReturn[T]>((resolve, reject) => {
       const echo = `${new Date().getTime()}-${this.echoSeq++}-${random.int(100000, 999999)}`;
       const timer = setTimeout(() => {
@@ -68,14 +120,21 @@ export class NapCatClient extends QQClient {
       catch (err) {
         clearTimeout(timer);
         this.echoMap.delete(echo);
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
   }
 
   private async handleWebSocketMessage(message: string) {
     this.logger.debug('receive', message);
-    const data = JSON.parse(message) as WSReceiveHandler[keyof WSReceiveHandler] & { echo: string; status: 'ok' | 'error'; data: any; message: string };
+    const data = JSON.parse(message) as WSReceiveHandler[keyof WSReceiveHandler] & {
+      echo: string;
+      status: 'ok' | 'error';
+      data: any;
+      message: string;
+      meta_event_type?: string;
+      sub_type?: string;
+    };
     if (data.echo) {
       const promise = this.echoMap.get(data.echo);
       if (!promise) return;
@@ -85,7 +144,33 @@ export class NapCatClient extends QQClient {
         promise.resolve(data.data);
       }
       else {
-        promise.reject(data.message);
+        promise.reject(new Error(data.message || `NapCat API 调用失败 [${data.status}]`));
+      }
+      return;
+    }
+
+    if (data.post_type === 'meta_event') {
+      if (data.meta_event_type === 'heartbeat') {
+        const isOnline = !!(data as any).status?.online;
+        if (isOnline !== this._isOnline) {
+          this._isOnline = isOnline;
+          if (isOnline) {
+            this.logger.info('NapCat 心跳检测：QQ 处于在线状态');
+            await this.refreshSelf().catch(() => {});
+            await this.emitOnline();
+          }
+          else {
+            this.logger.warn('NapCat 心跳检测：QQ 处于离线状态');
+            await this.emitOffline('NapCat 心跳报告 QQ 已离线');
+          }
+        }
+      }
+      else if (data.meta_event_type === 'lifecycle') {
+        this.logger.info(`NapCat 生命周期事件: ${data.sub_type}`);
+        if (data.sub_type === 'connect') {
+          this._isWsConnected = true;
+          await this.refreshSelf().catch(() => {});
+        }
       }
       return;
     }
@@ -219,8 +304,41 @@ export class NapCatClient extends QQClient {
   }
 
   public async isOnline(): Promise<boolean> {
-    const data = await this.callApi('get_status');
-    return data.online;
+    if (!this._isWsConnected && this.ws.readyState !== 1) {
+      return false;
+    }
+    try {
+      const data = await this.callApi('get_status', {}, 3000);
+      this._isOnline = !!data?.online;
+      return this._isOnline;
+    }
+    catch (e) {
+      this.logger.warn('获取在线状态失败，判定为离线', e);
+      this._isOnline = false;
+      return false;
+    }
+  }
+
+  private async emitOffline(msg: string) {
+    for (const handler of this.onOfflineHandlers) {
+      try {
+        await handler(msg);
+      }
+      catch (e) {
+        this.logger.error('触发 offline handler 出错', e);
+      }
+    }
+  }
+
+  private async emitOnline() {
+    for (const handler of this.onOnlineHandlers) {
+      try {
+        await handler();
+      }
+      catch (e) {
+        this.logger.error('触发 online handler 出错', e);
+      }
+    }
   }
 
   public async getFriendsWithCluster(): Promise<{ name: string; friends: Friend[]; }[]> {

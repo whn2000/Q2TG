@@ -63636,6 +63636,21 @@ var init_QQClient = __esm({
           if (await handler(e)) return;
         }
       }
+      // Offline & Online events
+      onOfflineHandlers = [];
+      onOnlineHandlers = [];
+      addOfflineEventHandler(handler) {
+        this.onOfflineHandlers.push(handler);
+      }
+      removeOfflineEventHandler(handler) {
+        this.onOfflineHandlers.includes(handler) && this.onOfflineHandlers.splice(this.onOfflineHandlers.indexOf(handler), 1);
+      }
+      addOnlineEventHandler(handler) {
+        this.onOnlineHandlers.push(handler);
+      }
+      removeOnlineEventHandler(handler) {
+        this.onOnlineHandlers.includes(handler) && this.onOnlineHandlers.splice(this.onOnlineHandlers.indexOf(handler), 1);
+      }
       // Handlers
       onMessageHandlers = [];
       addNewMessageEventHandler(handler) {
@@ -65254,30 +65269,78 @@ var init_client = __esm({
         super(id);
         this.wsUrl = wsUrl;
         this.logger = (0, import_log4js4.getLogger)(`NapCatClient - ${id}`);
-        this.ws = new import_reconnecting_websocket.default(wsUrl);
+        this.ws = new import_reconnecting_websocket.default(wsUrl, [], {
+          maxEnqueuedMessages: 100
+        });
         this.ws.onmessage = (e) => this.handleWebSocketMessage(e.data);
+        this.ws.onopen = async () => {
+          this._isWsConnected = true;
+          this.logger.info("WS \u8FDE\u63A5\u6210\u529F");
+          try {
+            await this.refreshSelf();
+            this._isOnline = true;
+            await this.emitOnline();
+          } catch (e) {
+            this.logger.warn("NapCat WS \u8FDE\u63A5\u6210\u529F\uFF0C\u4F46\u5C1A\u672A\u5B8C\u6210 QQ \u767B\u5F55", e);
+            this._isOnline = false;
+            await this.emitOffline("NapCat \u5DF2\u8FDE\u63A5\uFF0C\u4F46 QQ \u5904\u4E8E\u79BB\u7EBF\u72B6\u6001");
+          }
+        };
+        this.ws.onclose = async (e) => {
+          const wasOnline = this._isOnline;
+          this._isWsConnected = false;
+          this._isOnline = false;
+          this.logger.warn(`NapCat WS \u8FDE\u63A5\u65AD\u5F00 (code: ${e?.code || "unknown"})`);
+          this.cleanupPendingCalls(new Error("NapCat WebSocket \u8FDE\u63A5\u5DF2\u65AD\u5F00"));
+          if (wasOnline) {
+            await this.emitOffline("NapCat WebSocket \u8FDE\u63A5\u5DF2\u65AD\u5F00");
+          }
+        };
+        this.ws.onerror = (e) => {
+          this.logger.error("NapCat WS \u51FA\u9519", e);
+        };
+      }
+      _isWsConnected = false;
+      _isOnline = false;
+      get isWsConnected() {
+        return this._isWsConnected;
       }
       ws;
       logger;
       static async create(params) {
         const instance = new this(params.id, params.wsUrl);
         return new Promise((resolve, reject) => {
-          instance.ws.onopen = async () => {
-            instance.logger.info("WS \u8FDE\u63A5\u6210\u529F");
-            instance.ws.onerror = null;
-            await instance.refreshSelf();
+          const onInitialOpen = () => {
+            cleanup();
             resolve(instance);
           };
-          instance.ws.onerror = (e) => {
-            instance.logger.error("WS \u8FDE\u63A5\u51FA\u9519", e);
+          const onInitialError = (e) => {
+            cleanup();
+            instance.logger.error("WS \u9996\u6B21\u8FDE\u63A5\u51FA\u9519", e);
             posthog_default.capture("WS \u8FDE\u63A5\u51FA\u9519", { error: e });
             reject(e);
           };
+          const cleanup = () => {
+            instance.ws.removeEventListener("open", onInitialOpen);
+            instance.ws.removeEventListener("error", onInitialError);
+          };
+          instance.ws.addEventListener("open", onInitialOpen);
+          instance.ws.addEventListener("error", onInitialError);
         });
+      }
+      cleanupPendingCalls(err) {
+        for (const [echo, item] of this.echoMap.entries()) {
+          if (item.timer) clearTimeout(item.timer);
+          item.reject(err);
+        }
+        this.echoMap.clear();
       }
       echoMap = /* @__PURE__ */ new Map();
       echoSeq = 0;
       async callApi(action, params, timeoutMs = 3e4) {
+        if (this.ws && typeof this.ws.readyState === "number" && this.ws.readyState > 1) {
+          return Promise.reject(new Error(`NapCat \u672A\u8FDE\u63A5\uFF0C\u65E0\u6CD5\u8C03\u7528 API [${action}]`));
+        }
         return new Promise((resolve, reject) => {
           const echo = `${(/* @__PURE__ */ new Date()).getTime()}-${this.echoSeq++}-${random_default.int(1e5, 999999)}`;
           const timer = setTimeout(() => {
@@ -65294,7 +65357,7 @@ var init_client = __esm({
           } catch (err) {
             clearTimeout(timer);
             this.echoMap.delete(echo);
-            reject(err);
+            reject(err instanceof Error ? err : new Error(String(err)));
           }
         });
       }
@@ -65309,7 +65372,32 @@ var init_client = __esm({
           if (data.status === "ok") {
             promise.resolve(data.data);
           } else {
-            promise.reject(data.message);
+            promise.reject(new Error(data.message || `NapCat API \u8C03\u7528\u5931\u8D25 [${data.status}]`));
+          }
+          return;
+        }
+        if (data.post_type === "meta_event") {
+          if (data.meta_event_type === "heartbeat") {
+            const isOnline = !!data.status?.online;
+            if (isOnline !== this._isOnline) {
+              this._isOnline = isOnline;
+              if (isOnline) {
+                this.logger.info("NapCat \u5FC3\u8DF3\u68C0\u6D4B\uFF1AQQ \u5904\u4E8E\u5728\u7EBF\u72B6\u6001");
+                await this.refreshSelf().catch(() => {
+                });
+                await this.emitOnline();
+              } else {
+                this.logger.warn("NapCat \u5FC3\u8DF3\u68C0\u6D4B\uFF1AQQ \u5904\u4E8E\u79BB\u7EBF\u72B6\u6001");
+                await this.emitOffline("NapCat \u5FC3\u8DF3\u62A5\u544A QQ \u5DF2\u79BB\u7EBF");
+              }
+            }
+          } else if (data.meta_event_type === "lifecycle") {
+            this.logger.info(`NapCat \u751F\u547D\u5468\u671F\u4E8B\u4EF6: ${data.sub_type}`);
+            if (data.sub_type === "connect") {
+              this._isWsConnected = true;
+              await this.refreshSelf().catch(() => {
+              });
+            }
           }
           return;
         }
@@ -65428,8 +65516,36 @@ var init_client = __esm({
         this.nickname = data.nickname;
       }
       async isOnline() {
-        const data = await this.callApi("get_status");
-        return data.online;
+        if (!this._isWsConnected && this.ws.readyState !== 1) {
+          return false;
+        }
+        try {
+          const data = await this.callApi("get_status", {}, 3e3);
+          this._isOnline = !!data?.online;
+          return this._isOnline;
+        } catch (e) {
+          this.logger.warn("\u83B7\u53D6\u5728\u7EBF\u72B6\u6001\u5931\u8D25\uFF0C\u5224\u5B9A\u4E3A\u79BB\u7EBF", e);
+          this._isOnline = false;
+          return false;
+        }
+      }
+      async emitOffline(msg) {
+        for (const handler of this.onOfflineHandlers) {
+          try {
+            await handler(msg);
+          } catch (e) {
+            this.logger.error("\u89E6\u53D1 offline handler \u51FA\u9519", e);
+          }
+        }
+      }
+      async emitOnline() {
+        for (const handler of this.onOnlineHandlers) {
+          try {
+            await handler();
+          } catch (e) {
+            this.logger.error("\u89E6\u53D1 online handler \u51FA\u9519", e);
+          }
+        }
       }
       async getFriendsWithCluster() {
         const data = await this.callApi("get_friends_with_category");
@@ -81668,6 +81784,7 @@ var editFlags = async (params, target) => {
 
 // src/controllers/ConfigController.ts
 init_OicqClient();
+init_NapCatClient();
 var ConfigController = class {
   constructor(instance, tgBot, tgUser, oicq) {
     this.instance = instance;
@@ -81709,6 +81826,26 @@ var ConfigController = class {
           await message2.reply({
             message: await editFlags(messageSplit, this.instance)
           });
+          return true;
+        case "/login":
+          if (this.oicq instanceof OicqClient) {
+            await this.oicq.oicq.login();
+            await message2.reply({ message: "<i>\u6B63\u5728\u5C1D\u8BD5\u91CD\u65B0\u767B\u5F55 OICQ...</i>" });
+          } else if (this.oicq instanceof NapCatClient) {
+            const online = await this.oicq.isOnline().catch(() => false);
+            if (online) {
+              await message2.reply({ message: `<i>QQ <code>${this.oicq.uin}</code> \u5F53\u524D\u5904\u4E8E\u5728\u7EBF\u72B6\u6001</i>` });
+            } else {
+              await message2.reply({
+                message: `<i>QQ \u5F53\u524D\u5904\u4E8E\u79BB\u7EBF\u72B6\u6001</i>
+NapCat WS: ${this.oicq.isWsConnected ? "\u5DF2\u8FDE\u63A5" : "\u672A\u8FDE\u63A5/\u65AD\u5F00"}
+
+\u8BF7\u8BBF\u95EE NapCat Web \u63A7\u5236\u53F0\uFF08\u9ED8\u8BA4\u7AEF\u53E3 6099\uFF0C\u5982 <code>http://[\u670D\u52A1\u5668IP]:6099/webui/</code>\uFF09\u8FDB\u884C\u626B\u7801\u767B\u5F55\u6216\u67E5\u770B\u5BB9\u5668\u65E5\u5FD7\u3002`
+              });
+            }
+          } else {
+            await message2.reply({ message: "<i>\u672A\u8BC6\u522B\u7684 QQ \u5BA2\u6237\u7AEF\u7C7B\u578B</i>" });
+          }
           return true;
         case "/import_stickers":
         case "/import_emojis":
@@ -82437,26 +82574,42 @@ var Telegram = class {
   }
   onMessage = async (event) => {
     for (const handler of this.onMessageHandlers) {
-      const res = await handler(event.message);
-      if (res) return;
+      try {
+        const res = await handler(event.message);
+        if (res) return;
+      } catch (e) {
+        this.client.logger.error(`Error in onMessage handler: ${e?.message || e}`);
+      }
     }
   };
   onEditedMessage = async (event) => {
     for (const handler of this.onEditedMessageHandlers) {
-      const res = await handler(event.message);
-      if (res) return;
+      try {
+        const res = await handler(event.message);
+        if (res) return;
+      } catch (e) {
+        this.client.logger.error(`Error in onEditedMessage handler: ${e?.message || e}`);
+      }
     }
   };
   onServiceMessage = async (event) => {
     for (const handler of this.onServiceMessageHandlers) {
-      const res = await handler(event.message);
-      if (res) return;
+      try {
+        const res = await handler(event.message);
+        if (res) return;
+      } catch (e) {
+        this.client.logger.error(`Error in onServiceMessage handler: ${e?.message || e}`);
+      }
     }
   };
   onChannelUserTyping = async (event) => {
     for (const handler of this.onChannelUserTypingHandlers) {
-      const res = await handler(event);
-      if (res) return;
+      try {
+        const res = await handler(event);
+        if (res) return;
+      } catch (e) {
+        this.client.logger.error(`Error in onChannelUserTyping handler: ${e?.message || e}`);
+      }
     }
   };
   /**
@@ -103739,6 +103892,13 @@ var ForwardController = class {
       if (!pair) return false;
       if ((pair.flags | this.instance.flags) & flags_default.DISABLE_TG2Q) return;
       this.log.debug("\u6536\u5230 TG \u6D88\u606F", message2);
+      if (typeof this.oicq.isOnline === "function") {
+        const online = await this.oicq.isOnline().catch(() => false);
+        if (!online) {
+          this.log.warn(`QQ \u5904\u4E8E\u79BB\u7EBF\u72B6\u6001\uFF0C\u8DF3\u8FC7\u8F6C\u53D1 TG \u6D88\u606F [${message2.id}]`);
+          return false;
+        }
+      }
       const qqMessagesSent = await this.forwardService.forwardFromTelegram(message2, pair);
       if (qqMessagesSent) {
         for (const qqMessageSent of qqMessagesSent) {
@@ -104747,18 +104907,45 @@ var OicqErrorNotifyController = class {
     this.oicq = oicq;
     if (oicq instanceof OicqClient) {
       oicq.oicq.on("system.offline", async ({ message: message2 }) => {
-        if (this.locked) return;
-        this.locked = true;
-        if (!(instance.flags & flags_default.DISABLE_OFFLINE_NOTICE))
-          await this.instance.ownerChat.sendMessage(`<i>QQ \u673A\u5668\u4EBA\u6389\u7EBF</i>
-${message2}`);
+        await this.handleOffline(message2);
       });
       oicq.oicq.on("system.online", async () => {
-        this.locked = false;
+        await this.handleOnline();
       });
     }
+    oicq.addOfflineEventHandler(async (message2) => {
+      await this.handleOffline(message2);
+    });
+    oicq.addOnlineEventHandler(async () => {
+      await this.handleOnline();
+    });
   }
   locked = false;
+  async handleOffline(message2) {
+    if (this.locked) return;
+    this.locked = true;
+    if (!(this.instance.flags & flags_default.DISABLE_OFFLINE_NOTICE)) {
+      try {
+        await this.instance.ownerChat.sendMessage(
+          `<i>QQ \u673A\u5668\u4EBA\u6389\u7EBF</i>
+${message2 || "\u4E0E QQ \u670D\u52A1\u7AEF\u8FDE\u63A5\u65AD\u5F00\u6216\u5904\u4E8E\u79BB\u7EBF\u72B6\u6001"}
+
+\u63D0\u793A\uFF1A\u8BF7\u68C0\u67E5 NapCat \u72B6\u6001\u6216\u8BBF\u95EE NapCat Web \u63A7\u5236\u53F0\uFF08\u7AEF\u53E3 6099\uFF09\u91CD\u65B0\u626B\u7801\u767B\u5F55\u3002`
+        );
+      } catch {
+      }
+    }
+  }
+  async handleOnline() {
+    if (!this.locked) return;
+    this.locked = false;
+    if (!(this.instance.flags & flags_default.DISABLE_OFFLINE_NOTICE)) {
+      try {
+        await this.instance.ownerChat.sendMessage(`<i>QQ \u673A\u5668\u4EBA\u5DF2\u6062\u590D\u5728\u7EBF</i>`);
+      } catch {
+      }
+    }
+  }
 };
 
 // src/models/Instance.ts
@@ -105314,12 +105501,25 @@ var AliveCheckController = class {
     if (!senderId || !senderId.eq(this.instance.owner) || !message2.isPrivate) {
       return false;
     }
-    if (!["\u4F3C\u4E86\u5417", "/alive"].includes(message2.message)) {
+    const text = message2.message ? message2.message.trim().split("@")[0] : "";
+    if (!["\u4F3C\u4E86\u5417", "/alive"].includes(text)) {
       return false;
     }
-    await message2.reply({
-      message: await this.genMessage(this.instance.id === 0 ? Instance.instances : [this.instance])
-    });
+    try {
+      const replyMessage = await this.genMessage(this.instance.id === 0 ? Instance.instances : [this.instance]);
+      await message2.reply({ message: replyMessage });
+    } catch (e) {
+      try {
+        await message2.reply({
+          message: `<b>\u5B58\u6D3B\u68C0\u67E5\u9047\u5230\u5F02\u5E38</b>
+<code>${e?.message || e}</code>
+
+TG Bot: \u597D
+QQ: \u574F (\u68C0\u67E5\u8D85\u65F6\u6216\u5F02\u5E38)`
+        });
+      } catch {
+      }
+    }
     return true;
   };
   async genMessage(instances) {
@@ -105331,15 +105531,41 @@ var AliveCheckController = class {
       const oicq = instance.oicq;
       const tgBot = instance.tgBot;
       const tgUser = instance.tgUser;
-      const sign = oicq instanceof OicqClient ? await oicq.oicq.getSign("MessageSvc.PbSendMsg", 233, Buffer.alloc(10)) : null;
-      const tgUserName = tgUser.me.username || tgUser.me.usernames.length ? "@" + (tgUser.me.username || tgUser.me.usernames[0].username) : tgUser.me.firstName;
-      messageParts.push([
+      let sign = null;
+      try {
+        if (oicq instanceof OicqClient) {
+          sign = await oicq.oicq.getSign("MessageSvc.PbSendMsg", 233, Buffer.alloc(10));
+        }
+      } catch {
+      }
+      let qqOnline = false;
+      try {
+        qqOnline = !!oicq && await oicq.isOnline();
+      } catch {
+      }
+      let tgBotOnline = false;
+      try {
+        tgBotOnline = !!tgBot?.isOnline;
+      } catch {
+      }
+      let tgUserOnline = false;
+      try {
+        tgUserOnline = !!tgUser?.isOnline;
+      } catch {
+      }
+      const tgUserName = tgUser?.me?.username || tgUser?.me?.usernames?.length ? "@" + (tgUser.me.username || tgUser.me.usernames[0].username) : tgUser?.me?.firstName || "UserBot";
+      const lines = [
         `Instance #${instance.id} (${instance.workMode}) ${instance.isInit ? "" : "\u521D\u59CB\u5316\u672A\u5B8C\u6210"}`,
-        `QQ <code>${instance.qqUin}</code> (${oicq.constructor.name})	${boolToStr(await oicq.isOnline())}`,
-        ...oicq instanceof OicqClient ? [`\u7B7E\u540D\u670D\u52A1\u5668	${boolToStr(sign.length > 0)}`] : [],
-        `TG @${tgBot.me.username}	${boolToStr(tgBot.isOnline)}`,
-        `TG User ${tgUserName}	${boolToStr(tgBot.isOnline)}`
-      ].join("\n"));
+        `QQ <code>${instance.qqUin || "\u672A\u767B\u5F55"}</code> (${oicq ? oicq.constructor.name : "None"})	${boolToStr(qqOnline)}${qqOnline ? "" : " (\u5DF2\u6389\u7EBF/\u79BB\u7EBF)"}`,
+        ...oicq instanceof OicqClient ? [`\u7B7E\u540D\u670D\u52A1\u5668	${boolToStr(sign && sign.length > 0)}`] : [],
+        `TG @${tgBot?.me?.username || "Bot"}	${boolToStr(tgBotOnline)}`,
+        `TG User ${tgUserName}	${boolToStr(tgUserOnline)}`
+      ];
+      if (!qqOnline) {
+        lines.push(`
+<i>\u63D0\u793A\uFF1AQQ \u673A\u5668\u4EBA\u5F53\u524D\u6389\u7EBF\u3002\u53EF\u79C1\u804A\u53D1\u9001 /login \u67E5\u770B\u767B\u5F55\u6307\u5F15\u6216\u767B\u5F55 NapCat \u63A7\u5236\u53F0\uFF08\u7AEF\u53E3 6099\uFF09\u91CD\u65B0\u626B\u7801\u3002</i>`);
+      }
+      messageParts.push(lines.join("\n"));
     }
     return messageParts.join("\n\n");
   }

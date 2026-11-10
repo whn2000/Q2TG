@@ -107,29 +107,49 @@ export default class Telegram {
   private onMessage = async (event: NewMessageEvent) => {
     // 能用的东西基本都在 message 里面，直接调用 event 里的会 undefined
     for (const handler of this.onMessageHandlers) {
-      const res = await handler(event.message);
-      if (res) return;
+      try {
+        const res = await handler(event.message);
+        if (res) return;
+      }
+      catch (e) {
+        this.client.logger.error(`Error in onMessage handler: ${e?.message || e}`);
+      }
     }
   };
 
   private onEditedMessage = async (event: EditedMessageEvent) => {
     for (const handler of this.onEditedMessageHandlers) {
-      const res = await handler(event.message);
-      if (res) return;
+      try {
+        const res = await handler(event.message);
+        if (res) return;
+      }
+      catch (e) {
+        this.client.logger.error(`Error in onEditedMessage handler: ${e?.message || e}`);
+      }
     }
   };
 
   private onServiceMessage = async (event: Api.UpdateNewMessage) => {
     for (const handler of this.onServiceMessageHandlers) {
-      const res = await handler(event.message as Api.MessageService);
-      if (res) return;
+      try {
+        const res = await handler(event.message as Api.MessageService);
+        if (res) return;
+      }
+      catch (e) {
+        this.client.logger.error(`Error in onServiceMessage handler: ${e?.message || e}`);
+      }
     }
   };
 
   private onChannelUserTyping = async (event: Api.UpdateChannelUserTyping) => {
     for (const handler of this.onChannelUserTypingHandlers) {
-      const res = await handler(event);
-      if (res) return;
+      try {
+        const res = await handler(event);
+        if (res) return;
+      }
+      catch (e) {
+        this.client.logger.error(`Error in onChannelUserTyping handler: ${e?.message || e}`);
+      }
     }
   };
 

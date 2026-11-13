@@ -99,12 +99,24 @@ export default {
         return { type: 'text', text: '[群公告]' };
       }
     }
-    else if (jsonObj.app === 'com.tencent.multimsg') {
+    else if (jsonObj.app === 'com.tencent.multimsg'
+      || jsonObj.app === 'com.tencent.c2c.multimsg'
+      || (typeof jsonObj.app === 'string' && jsonObj.app.includes('multimsg'))
+      || (typeof jsonObj.desc === 'string' && jsonObj.desc.includes('聊天记录'))
+      || (typeof jsonObj.prompt === 'string' && jsonObj.prompt.includes('聊天记录'))) {
       try {
-        const resId = jsonObj.meta?.detail?.resid;
-        const fileName = jsonObj.meta?.detail?.uniseq;
+        let extraObj: any = {};
+        if (typeof jsonObj.extra === 'string') {
+          try { extraObj = JSON.parse(jsonObj.extra); } catch {}
+        }
+        const detail = jsonObj.meta?.detail || jsonObj.meta?.detail_1 || jsonObj.meta?.news || jsonObj.meta || {};
+        const resId = detail.resid || detail.resId || detail.m_resid || detail.res_id
+          || extraObj.resid || extraObj.resId || extraObj.res_id
+          || jsonObj.meta?.resid || jsonObj.meta?.resId;
+        const fileName = detail.uniseq || detail.fileName || detail.file_name
+          || extraObj.filename || extraObj.fileName || extraObj.uniseq;
         if (resId) {
-          return { type: 'forward', resId, fileName };
+          return { type: 'forward', resId: String(resId), fileName: fileName ? String(fileName) : undefined };
         }
         else {
           return { type: 'text', text: '[解析转发消息时出错：没有 resId]' };
@@ -154,20 +166,23 @@ export default {
   },
 
   processXml(xml: string):
-    { type: 'forward', resId: string } | { type: 'text', text: string } | { type: 'image', md5: string } {
+    { type: 'forward', resId: string, fileName?: string } | { type: 'text', text: string } | { type: 'image', md5: string } {
     const urlRegex = /url="([^"]+)"/;
     const md5ImageRegex = /image md5="([A-F\d]{32})"/;
     let text: string;
     if (urlRegex.test(xml))
       text = xml.match(urlRegex)[1].replace(/\\\//g, '/');
-    if (xml.includes('action="viewMultiMsg"')) {
+    if (xml.includes('action="viewMultiMsg"') || xml.includes('serviceID="35"') || xml.includes('multiMsgFlag') || /brief="\[(?:聊天记录|转发的消息记录)\]"/.test(xml)) {
       text = '[Forward multiple messages]';
-      const resIdRegex = /m_resid="([^"]+)"/;
+      const resIdRegex = /(?:m_resid|resid|res_id)="([^"]+)"/i;
+      const fileNameRegex = /(?:uniseq|filename|file_name)="([^"]+)"/i;
       if (resIdRegex.test(xml)) {
         const resId = xml.match(resIdRegex)![1];
+        const fileNameMatch = xml.match(fileNameRegex);
         return {
           type: 'forward',
           resId,
+          fileName: fileNameMatch ? fileNameMatch[1] : undefined,
         };
       }
       return {
@@ -320,5 +335,42 @@ export default {
       fileType = await fileTypeFromFile(file);
     }
     return fileType;
+  },
+
+  async resolveForwardVideos(messages: ForwardMessage[], pair: any) {
+    if (!Array.isArray(messages) || !pair?.qq) return;
+    for (const message of messages) {
+      if (!message || !Array.isArray(message.message)) continue;
+      for (const elem of message.message) {
+        if (!elem) continue;
+        if (elem.type === 'video') {
+          const videoElem = elem as any;
+          if (!videoElem.url || !/^https?:\/\//.test(videoElem.url)) {
+            try {
+              const fid = videoElem.fid || videoElem.file || '';
+              const md5 = videoElem.md5 || '';
+              if (fid || md5) {
+                let url = await pair.qq.getVideoUrl(fid, md5);
+                if (url && typeof url === 'string' && /^https?:\/\//.test(url)) {
+                  if (url.startsWith('http://') && (url.includes('.qq.com') || url.includes('.qpic.cn'))) {
+                    url = url.replace(/^http:\/\//i, 'https://');
+                  }
+                  videoElem.url = url;
+                }
+              }
+            }
+            catch (e) {
+              log.debug('获取聊天记录中视频URL失败', e);
+            }
+          }
+          else if (typeof videoElem.url === 'string' && videoElem.url.startsWith('http://') && (videoElem.url.includes('.qq.com') || videoElem.url.includes('.qpic.cn'))) {
+            videoElem.url = videoElem.url.replace(/^http:\/\//i, 'https://');
+          }
+        }
+        else if ((elem as any).type === 'forward' && Array.isArray((elem as any).content)) {
+          await this.resolveForwardVideos((elem as any).content, pair);
+        }
+      }
+    }
   },
 };

@@ -44,18 +44,56 @@ export default defineComponent({
             imgProps={{ referrerpolicy: 'no-referrer' }}
           />;
         }
-        case 'video-loop':
-          return <video src={props.elem.url} autoplay muted loop width={200}/>;
+        case 'video-loop': {
+          let url = props.elem.url;
+          if (url && url.startsWith('http://') && (url.includes('.qq.com') || url.includes('.qpic.cn'))) {
+            url = url.replace(/^http:\/\//i, 'https://');
+          }
+          return <video src={url} autoplay muted loop width={200} playsinline referrerpolicy="no-referrer" />;
+        }
         case 'tgs':
           return <tgs-player autoplay={true} loop={true} mode="normal" src={props.elem.url}
                              style={{ width: 200, height: 200 }}/>;
-        case 'video':
-          return <div>[视频]</div>;
+        case 'video': {
+          let url = props.elem.url || (props.elem as any).src;
+          if (!url && typeof props.elem.file === 'string' && /^https?:\/\//.test(props.elem.file)) {
+            url = props.elem.file;
+          }
+          if (url) {
+            if (url.startsWith('http://') && (url.includes('.qq.com') || url.includes('.qpic.cn'))) {
+              url = url.replace(/^http:\/\//i, 'https://');
+            }
+            return (
+              <div class="my-2 max-w-full">
+                <video
+                  controls
+                  playsinline
+                  preload="metadata"
+                  referrerpolicy="no-referrer"
+                  poster={(props.elem as any).thumb || (props.elem as any).cover}
+                  src={url}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '400px',
+                    borderRadius: '8px',
+                    display: 'block',
+                    backgroundColor: '#000',
+                  }}
+                />
+              </div>
+            );
+          }
+          return <div>🎬 [视频]</div>;
+        }
         case 'record':
           if (props.elem.url) {
+            let url = props.elem.url;
+            if (url.startsWith('http://') && (url.includes('.qq.com') || url.includes('.qpic.cn'))) {
+              url = url.replace(/^http:\/\//i, 'https://');
+            }
             return (
               <div class="my-1">
-                <audio controls src={props.elem.url} class="max-w-240px block" />
+                <audio controls src={url} class="max-w-240px block" referrerpolicy="no-referrer" />
               </div>
             );
           }

@@ -134,7 +134,8 @@ export type ImageElemEx = ImageElem & {
 }
 
 export const napCatReceiveToMessageElem = (data: Receive[keyof Receive]): MessageElem | NapCatForwardElem | FaceElemEx => {
-  switch (data.type) {
+  const elem = data as any;
+  switch (elem.type) {
     case 'text':
     case 'face':
     case 'image':
@@ -142,70 +143,116 @@ export const napCatReceiveToMessageElem = (data: Receive[keyof Receive]): Messag
     case 'json':
     case 'markdown':
       return {
-        ...data.data,
-        type: data.type,
-        asface: 'sub_type' in data.data && parseInt(data.data.sub_type) > 0,
+        ...elem.data,
+        type: elem.type,
+        asface: elem.data && 'sub_type' in elem.data && parseInt(elem.data.sub_type) > 0,
       } as any;
     // @ts-ignore
     case 'mface':
       return {
         type: 'image',
-        url: (data as any).data.url,
-        file: (data as any).data.url,
-      };
+        url: elem.data?.url,
+        file: elem.data?.url,
+      } as any;
     case 'at':
-      const qqNum = Number(data.data.qq);
+      const qqNum = Number(elem.data?.qq);
       return {
-        type: data.type,
-        qq: isNaN(qqNum) ? data.data.qq as any : qqNum,
-      };
+        type: elem.type,
+        qq: isNaN(qqNum) ? elem.data?.qq : qqNum,
+      } as any;
     case 'file':
       return {
-        ...data.data,
+        ...elem.data,
         type: 'file',
         duration: 0,
-        name: data.data.file,
-        fid: data.data.file_id,
-        size: Number(data.data.file_size),
+        name: elem.data?.file,
+        fid: elem.data?.file_id,
+        size: Number(elem.data?.file_size),
         md5: '',
-      };
-    case 'video':
+      } as any;
+    case 'video': {
+      const videoData = elem.data || {};
+      const url = videoData.url || (/^https?:\/\//.test(videoData.file) ? videoData.file : '');
+      const fid = videoData.url || videoData.file_id || videoData.file || '';
       return {
-        type: data.type,
-        // 我们不需要 fileId，直接能拿到 url，url 进 getVideoUrl 转一圈拿回来自己，保持兼容性
-        fid: data.data.url,
-        file: data.data.url,
-      };
+        ...videoData,
+        type: 'video',
+        fid,
+        file: videoData.file || url,
+        url,
+      } as any;
+    }
     case 'dice':
     case 'rps':
       return {
-        id: Number(data.data.result),
-        type: data.type,
-      };
+        id: Number(elem.data?.result),
+        type: elem.type,
+      } as any;
     case 'forward':
       return {
         type: 'forward',
-        id: (data.data as any).id || (data.data as any).res_id || (data.data as any).resid || '',
-        content: 'content' in data.data && Array.isArray((data.data as any).content)
-          ? napCatForwardMultiple((data.data as any).content)
+        id: elem.data?.id || elem.data?.res_id || elem.data?.resid || '',
+        content: elem.data?.content && Array.isArray(elem.data.content)
+          ? napCatForwardMultiple(elem.data.content)
           : undefined,
-      };
+      } as any;
+    case 'node':
+      return {
+        type: 'forward',
+        id: elem.data?.id || elem.data?.res_id || elem.data?.resid || '',
+        content: Array.isArray(elem.data?.content)
+          ? napCatForwardMultiple(elem.data.content)
+          : undefined,
+      } as any;
     case 'reply':
       return {
         type: 'reply',
-        id: data.data.id,
-      };
+        id: elem.data?.id,
+      } as any;
+    case 'location':
+      return {
+        type: 'location',
+        ...elem.data,
+      } as any;
+    case 'xml':
+      return {
+        type: 'xml',
+        data: elem.data?.data || '',
+      } as any;
+    case 'poke':
+      return {
+        type: 'poke',
+        text: elem.data?.name || '戳一戳',
+      } as any;
+    case 'share':
+      return {
+        type: 'share',
+        url: elem.data?.url || '',
+        title: elem.data?.title || '',
+      } as any;
     default:
-      throw new Error('不支持此元素');
+      return {
+        type: 'text',
+        text: elem?.data?.text || elem?.text || `[${elem?.type || '未知消息'}]`,
+      } as any;
   }
 };
 
-export const napCatForwardMultiple = (messages: WSSendReturn['get_forward_msg']['messages']): ForwardMessage[] => (messages || []).map(it => ({
-  group_id: it.message_type === 'group' ? it.group_id : undefined,
-  nickname: it.sender?.card || it.sender?.nickname || 'QQ用户',
-  time: it.time || 0,
-  user_id: it.sender?.user_id || 0,
-  seq: it.message_id || 0,
-  raw_message: it.raw_message || '',
-  message: ((it as any).content || (it as any).message || []).map(napCatReceiveToMessageElem),
-}));
+export const napCatForwardMultiple = (messages: any[]): ForwardMessage[] => (messages || []).map(it => {
+  const data = it.data || it;
+  const sender = it.sender || data.sender || {};
+  let content = it.content || it.message || data.content || data.message;
+  if (!content && it.type && it.type !== 'node') {
+    content = [it];
+  }
+  const normalizedContent = Array.isArray(content) ? content : (content ? [content] : []);
+  return {
+    group_id: it.message_type === 'group' ? it.group_id : (data.group_id || undefined),
+    nickname: sender.card || sender.nickname || data.nickname || data.card || data.name || it.nickname || 'QQ用户',
+    time: it.time || data.time || 0,
+    user_id: sender.user_id || data.user_id || data.uin || it.user_id || 0,
+    seq: it.message_id || data.message_id || data.seq || it.seq || 0,
+    raw_message: it.raw_message || data.raw_message || '',
+    message: normalizedContent.map(napCatReceiveToMessageElem) as any,
+  };
+});

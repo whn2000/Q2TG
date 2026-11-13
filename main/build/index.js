@@ -7956,8 +7956,8 @@ var require_CryptoFile = __commonJS({
       return result;
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    var crypto4 = __importStar2(require("crypto"));
-    exports2.default = crypto4;
+    var crypto6 = __importStar2(require("crypto"));
+    exports2.default = crypto6;
   }
 });
 
@@ -25186,7 +25186,7 @@ var require_WebSocketConnection = __commonJS({
 // ../node_modules/.pnpm/websocket@1.0.35/node_modules/websocket/lib/WebSocketRequest.js
 var require_WebSocketRequest = __commonJS({
   "../node_modules/.pnpm/websocket@1.0.35/node_modules/websocket/lib/WebSocketRequest.js"(exports2, module2) {
-    var crypto4 = require("crypto");
+    var crypto6 = require("crypto");
     var util4 = require("util");
     var url2 = require("url");
     var EventEmitter2 = require("events").EventEmitter;
@@ -25412,7 +25412,7 @@ var require_WebSocketRequest = __commonJS({
         protocolFullCase = acceptedProtocol;
       }
       this.protocolFullCaseMap = null;
-      var sha1 = crypto4.createHash("sha1");
+      var sha1 = crypto6.createHash("sha1");
       sha1.update(this.key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
       var acceptKey = sha1.digest("base64");
       var response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + acceptKey + "\r\n";
@@ -25815,7 +25815,7 @@ var require_WebSocketClient = __commonJS({
     var http2 = require("http");
     var https3 = require("https");
     var url2 = require("url");
-    var crypto4 = require("crypto");
+    var crypto6 = require("crypto");
     var WebSocketConnection = require_WebSocketConnection();
     var bufferAllocUnsafe = utils4.bufferAllocUnsafe;
     var protocolSeparators = [
@@ -26062,7 +26062,7 @@ var require_WebSocketClient = __commonJS({
         this.failHandshake("Expected an Upgrade: websocket header from the server");
         return;
       }
-      var sha1 = crypto4.createHash("sha1");
+      var sha1 = crypto6.createHash("sha1");
       sha1.update(this.base64nonce + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
       var expectedKey = sha1.digest("base64");
       if (!headers["sec-websocket-accept"]) {
@@ -33999,13 +33999,13 @@ var require_CTR = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.CTR = void 0;
-    var crypto4 = __importStar2(require_crypto());
+    var crypto6 = __importStar2(require_crypto());
     var CTR = class {
       constructor(key, iv) {
         if (!Buffer.isBuffer(key) || !Buffer.isBuffer(iv) || iv.length !== 16) {
           throw new Error("Key and iv need to be a buffer");
         }
-        this.cipher = crypto4.createCipheriv("AES-256-CTR", key, iv);
+        this.cipher = crypto6.createCipheriv("AES-256-CTR", key, iv);
       }
       encrypt(data) {
         return Buffer.from(this.cipher.update(data));
@@ -63578,23 +63578,35 @@ var init_OicqClient = __esm({
           this.log.warn("\u672A\u83B7\u53D6\u5230 QQNT Rkey\uFF0C\u65E0\u6CD5\u5237\u65B0\u56FE\u7247 rkey");
           return;
         }
-        for (const message2 of messages) {
-          for (const element of message2.message) {
-            if (element.type !== "image") continue;
-            if (!element.url) continue;
-            const url2 = new URL(element.url);
-            if (url2.host !== "multimedia.nt.qq.com.cn") continue;
-            switch (url2.searchParams.get("appid")) {
-              case "1406":
-                url2.searchParams.set("rkey", rKey.offNTPicRkey);
-                break;
-              case "1407":
-                url2.searchParams.set("rkey", rKey.groupNTPicRkey);
-                break;
+        const processList = (list) => {
+          if (!Array.isArray(list)) return;
+          for (const message2 of list) {
+            if (!message2 || !Array.isArray(message2.message)) continue;
+            for (const element of message2.message) {
+              if (!element) continue;
+              if (element.type === "image" && element.url) {
+                try {
+                  const url2 = new URL(element.url);
+                  if (url2.host === "multimedia.nt.qq.com.cn") {
+                    switch (url2.searchParams.get("appid")) {
+                      case "1406":
+                        url2.searchParams.set("rkey", rKey.offNTPicRkey);
+                        break;
+                      case "1407":
+                        url2.searchParams.set("rkey", rKey.groupNTPicRkey);
+                        break;
+                    }
+                    element.url = url2.toString();
+                  }
+                } catch {
+                }
+              } else if (element.type === "forward" && Array.isArray(element.content)) {
+                processList(element.content);
+              }
             }
-            element.url = url2.toString();
           }
-        }
+        };
+        processList(messages);
       }
     };
   }
@@ -63765,7 +63777,7 @@ var require_tmp = __commonJS({
     var fs8 = require("fs");
     var os4 = require("os");
     var path8 = require("path");
-    var crypto4 = require("crypto");
+    var crypto6 = require("crypto");
     var _c = { fs: fs8.constants, os: os4.constants };
     var RANDOM_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     var TEMPLATE_PATTERN = /XXXXXX/;
@@ -63947,9 +63959,9 @@ var require_tmp = __commonJS({
     function _randomChars(howMany) {
       let value = [], rnd = null;
       try {
-        rnd = crypto4.randomBytes(howMany);
+        rnd = crypto6.randomBytes(howMany);
       } catch (e) {
-        rnd = crypto4.pseudoRandomBytes(howMany);
+        rnd = crypto6.pseudoRandomBytes(howMany);
       }
       for (var i = 0; i < howMany; i++) {
         value.push(RANDOM_CHARS[rnd[i] % RANDOM_CHARS.length]);
@@ -64232,7 +64244,8 @@ var init_convert = __esm({
       }
     };
     napCatReceiveToMessageElem = (data) => {
-      switch (data.type) {
+      const elem = data;
+      switch (elem.type) {
         case "text":
         case "face":
         case "image":
@@ -64240,70 +64253,114 @@ var init_convert = __esm({
         case "json":
         case "markdown":
           return {
-            ...data.data,
-            type: data.type,
-            asface: "sub_type" in data.data && parseInt(data.data.sub_type) > 0
+            ...elem.data,
+            type: elem.type,
+            asface: elem.data && "sub_type" in elem.data && parseInt(elem.data.sub_type) > 0
           };
         // @ts-ignore
         case "mface":
           return {
             type: "image",
-            url: data.data.url,
-            file: data.data.url
+            url: elem.data?.url,
+            file: elem.data?.url
           };
         case "at":
-          const qqNum = Number(data.data.qq);
+          const qqNum = Number(elem.data?.qq);
           return {
-            type: data.type,
-            qq: isNaN(qqNum) ? data.data.qq : qqNum
+            type: elem.type,
+            qq: isNaN(qqNum) ? elem.data?.qq : qqNum
           };
         case "file":
           return {
-            ...data.data,
+            ...elem.data,
             type: "file",
             duration: 0,
-            name: data.data.file,
-            fid: data.data.file_id,
-            size: Number(data.data.file_size),
+            name: elem.data?.file,
+            fid: elem.data?.file_id,
+            size: Number(elem.data?.file_size),
             md5: ""
           };
-        case "video":
+        case "video": {
+          const videoData = elem.data || {};
+          const url2 = videoData.url || (/^https?:\/\//.test(videoData.file) ? videoData.file : "");
+          const fid = videoData.url || videoData.file_id || videoData.file || "";
           return {
-            type: data.type,
-            // 我们不需要 fileId，直接能拿到 url，url 进 getVideoUrl 转一圈拿回来自己，保持兼容性
-            fid: data.data.url,
-            file: data.data.url
+            ...videoData,
+            type: "video",
+            fid,
+            file: videoData.file || url2,
+            url: url2
           };
+        }
         case "dice":
         case "rps":
           return {
-            id: Number(data.data.result),
-            type: data.type
+            id: Number(elem.data?.result),
+            type: elem.type
           };
         case "forward":
           return {
             type: "forward",
-            id: data.data.id || data.data.res_id || data.data.resid || "",
-            content: "content" in data.data && Array.isArray(data.data.content) ? napCatForwardMultiple(data.data.content) : void 0
+            id: elem.data?.id || elem.data?.res_id || elem.data?.resid || "",
+            content: elem.data?.content && Array.isArray(elem.data.content) ? napCatForwardMultiple(elem.data.content) : void 0
+          };
+        case "node":
+          return {
+            type: "forward",
+            id: elem.data?.id || elem.data?.res_id || elem.data?.resid || "",
+            content: Array.isArray(elem.data?.content) ? napCatForwardMultiple(elem.data.content) : void 0
           };
         case "reply":
           return {
             type: "reply",
-            id: data.data.id
+            id: elem.data?.id
+          };
+        case "location":
+          return {
+            type: "location",
+            ...elem.data
+          };
+        case "xml":
+          return {
+            type: "xml",
+            data: elem.data?.data || ""
+          };
+        case "poke":
+          return {
+            type: "poke",
+            text: elem.data?.name || "\u6233\u4E00\u6233"
+          };
+        case "share":
+          return {
+            type: "share",
+            url: elem.data?.url || "",
+            title: elem.data?.title || ""
           };
         default:
-          throw new Error("\u4E0D\u652F\u6301\u6B64\u5143\u7D20");
+          return {
+            type: "text",
+            text: elem?.data?.text || elem?.text || `[${elem?.type || "\u672A\u77E5\u6D88\u606F"}]`
+          };
       }
     };
-    napCatForwardMultiple = (messages) => (messages || []).map((it) => ({
-      group_id: it.message_type === "group" ? it.group_id : void 0,
-      nickname: it.sender?.card || it.sender?.nickname || "QQ\u7528\u6237",
-      time: it.time || 0,
-      user_id: it.sender?.user_id || 0,
-      seq: it.message_id || 0,
-      raw_message: it.raw_message || "",
-      message: (it.content || it.message || []).map(napCatReceiveToMessageElem)
-    }));
+    napCatForwardMultiple = (messages) => (messages || []).map((it) => {
+      const data = it.data || it;
+      const sender = it.sender || data.sender || {};
+      let content = it.content || it.message || data.content || data.message;
+      if (!content && it.type && it.type !== "node") {
+        content = [it];
+      }
+      const normalizedContent = Array.isArray(content) ? content : content ? [content] : [];
+      return {
+        group_id: it.message_type === "group" ? it.group_id : data.group_id || void 0,
+        nickname: sender.card || sender.nickname || data.nickname || data.card || data.name || it.nickname || "QQ\u7528\u6237",
+        time: it.time || data.time || 0,
+        user_id: sender.user_id || data.user_id || data.uin || it.user_id || 0,
+        seq: it.message_id || data.message_id || data.seq || it.seq || 0,
+        raw_message: it.raw_message || data.raw_message || "",
+        message: normalizedContent.map(napCatReceiveToMessageElem)
+      };
+    });
   }
 });
 
@@ -64354,7 +64411,14 @@ var init_entity2 = __esm({
         }
       }
       async getVideoUrl(fid, md52) {
-        return fid;
+        if (!fid) return "";
+        if (/^https?:\/\//.test(fid)) return fid;
+        try {
+          const data = await this.client.callApi("get_file", { file_id: fid });
+          return data?.url || data?.file || fid;
+        } catch {
+          return fid;
+        }
       }
       async recallMsg(paramOrMessageId, rand, timeOrPktNum) {
         try {
@@ -83207,6 +83271,7 @@ ${e.message}`);
 };
 
 // src/services/ForwardService.ts
+var import_crypto5 = __toESM(require("crypto"));
 var import_icqq4 = require("@icqqjs/icqq");
 var import_internal = require("@icqqjs/icqq/lib/internal");
 var import_log4js14 = __toESM(require_log4js());
@@ -87215,12 +87280,20 @@ var forwardHelper_default = {
         posthog_default.capture("\u89E3\u6790\u7FA4\u516C\u544A\u65F6\u51FA\u9519", { error: err });
         return { type: "text", text: "[\u7FA4\u516C\u544A]" };
       }
-    } else if (jsonObj.app === "com.tencent.multimsg") {
+    } else if (jsonObj.app === "com.tencent.multimsg" || jsonObj.app === "com.tencent.c2c.multimsg" || typeof jsonObj.app === "string" && jsonObj.app.includes("multimsg") || typeof jsonObj.desc === "string" && jsonObj.desc.includes("\u804A\u5929\u8BB0\u5F55") || typeof jsonObj.prompt === "string" && jsonObj.prompt.includes("\u804A\u5929\u8BB0\u5F55")) {
       try {
-        const resId = jsonObj.meta?.detail?.resid;
-        const fileName = jsonObj.meta?.detail?.uniseq;
+        let extraObj = {};
+        if (typeof jsonObj.extra === "string") {
+          try {
+            extraObj = JSON.parse(jsonObj.extra);
+          } catch {
+          }
+        }
+        const detail = jsonObj.meta?.detail || jsonObj.meta?.detail_1 || jsonObj.meta?.news || jsonObj.meta || {};
+        const resId = detail.resid || detail.resId || detail.m_resid || detail.res_id || extraObj.resid || extraObj.resId || extraObj.res_id || jsonObj.meta?.resid || jsonObj.meta?.resId;
+        const fileName = detail.uniseq || detail.fileName || detail.file_name || extraObj.filename || extraObj.fileName || extraObj.uniseq;
         if (resId) {
-          return { type: "forward", resId, fileName };
+          return { type: "forward", resId: String(resId), fileName: fileName ? String(fileName) : void 0 };
         } else {
           return { type: "text", text: "[\u89E3\u6790\u8F6C\u53D1\u6D88\u606F\u65F6\u51FA\u9519\uFF1A\u6CA1\u6709 resId]" };
         }
@@ -87268,14 +87341,17 @@ var forwardHelper_default = {
     let text;
     if (urlRegex.test(xml))
       text = xml.match(urlRegex)[1].replace(/\\\//g, "/");
-    if (xml.includes('action="viewMultiMsg"')) {
+    if (xml.includes('action="viewMultiMsg"') || xml.includes('serviceID="35"') || xml.includes("multiMsgFlag") || /brief="\[(?:聊天记录|转发的消息记录)\]"/.test(xml)) {
       text = "[Forward multiple messages]";
-      const resIdRegex = /m_resid="([^"]+)"/;
+      const resIdRegex = /(?:m_resid|resid|res_id)="([^"]+)"/i;
+      const fileNameRegex = /(?:uniseq|filename|file_name)="([^"]+)"/i;
       if (resIdRegex.test(xml)) {
         const resId = xml.match(resIdRegex)[1];
+        const fileNameMatch = xml.match(fileNameRegex);
         return {
           type: "forward",
-          resId
+          resId,
+          fileName: fileNameMatch ? fileNameMatch[1] : void 0
         };
       }
       return {
@@ -87406,6 +87482,39 @@ var forwardHelper_default = {
       fileType = await fileTypeFromFile(file2);
     }
     return fileType;
+  },
+  async resolveForwardVideos(messages, pair) {
+    if (!Array.isArray(messages) || !pair?.qq) return;
+    for (const message2 of messages) {
+      if (!message2 || !Array.isArray(message2.message)) continue;
+      for (const elem of message2.message) {
+        if (!elem) continue;
+        if (elem.type === "video") {
+          const videoElem = elem;
+          if (!videoElem.url || !/^https?:\/\//.test(videoElem.url)) {
+            try {
+              const fid = videoElem.fid || videoElem.file || "";
+              const md52 = videoElem.md5 || "";
+              if (fid || md52) {
+                let url2 = await pair.qq.getVideoUrl(fid, md52);
+                if (url2 && typeof url2 === "string" && /^https?:\/\//.test(url2)) {
+                  if (url2.startsWith("http://") && (url2.includes(".qq.com") || url2.includes(".qpic.cn"))) {
+                    url2 = url2.replace(/^http:\/\//i, "https://");
+                  }
+                  videoElem.url = url2;
+                }
+              }
+            } catch (e) {
+              log.debug("\u83B7\u53D6\u804A\u5929\u8BB0\u5F55\u4E2D\u89C6\u9891URL\u5931\u8D25", e);
+            }
+          } else if (typeof videoElem.url === "string" && videoElem.url.startsWith("http://") && (videoElem.url.includes(".qq.com") || videoElem.url.includes(".qpic.cn"))) {
+            videoElem.url = videoElem.url.replace(/^http:\/\//i, "https://");
+          }
+        } else if (elem.type === "forward" && Array.isArray(elem.content)) {
+          await this.resolveForwardVideos(elem.content, pair);
+        }
+      }
+    }
   }
 };
 
@@ -102626,8 +102735,17 @@ var Pair = class _Pair {
 init_OicqClient();
 
 // src/utils/processNestedForward.ts
+var import_crypto4 = __toESM(require("crypto"));
+init_OicqClient();
 var processNestedForward = async (messages, fromPairId) => {
   if (!Array.isArray(messages)) return;
+  const pair = Pair.getByDbId(fromPairId);
+  if (pair) {
+    await forwardHelper_default.resolveForwardVideos(messages, pair);
+    if (pair.qqClient instanceof OicqClient) {
+      await pair.qqClient.refreshImageRKey(messages);
+    }
+  }
   for (const message2 of messages) {
     if (!message2 || !Array.isArray(message2.message)) continue;
     for (const elem of message2.message) {
@@ -102645,7 +102763,7 @@ var processNestedForward = async (messages, fromPairId) => {
         const parsed = forwardHelper_default.processXml(elem.data);
         if (parsed?.type === "forward") {
           resId = parsed.resId;
-          fileName = "";
+          fileName = parsed.fileName || "";
         }
       } else if (elem.type === "forward") {
         resId = elem.id || elem.resId || elem.resid;
@@ -102654,12 +102772,14 @@ var processNestedForward = async (messages, fromPairId) => {
           nestedContent = elem.content;
         }
       }
-      if (resId) {
-        let entity = await db_default.forwardMultiple.findFirst({ where: { resId } });
+      const validResId = resId && typeof resId === "string" && resId.trim().length > 0 ? resId.trim() : "";
+      if (validResId || nestedContent) {
+        let entity = validResId ? await db_default.forwardMultiple.findFirst({ where: { resId: validResId } }) : null;
         if (!entity) {
+          const finalResId = validResId || (nestedContent ? `nested_${import_crypto4.default.randomUUID()}` : `fwd_${import_crypto4.default.randomUUID()}`);
           entity = await db_default.forwardMultiple.create({
             data: {
-              resId,
+              resId: finalResId,
               fileName,
               fromPairId
             }
@@ -102667,12 +102787,18 @@ var processNestedForward = async (messages, fromPairId) => {
         }
         elem.uuid = entity.id;
         if (elem.type === "json") {
-          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId, fileName });
+          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId: entity.resId, fileName });
         } else if (elem.type === "xml") {
           elem.type = "forward";
-          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId });
+          elem.data = JSON.stringify({ type: "forward", uuid: entity.id, resId: entity.resId });
         }
         if (nestedContent) {
+          if (pair) {
+            await forwardHelper_default.resolveForwardVideos(nestedContent, pair);
+            if (pair.qqClient instanceof OicqClient) {
+              await pair.qqClient.refreshImageRKey(nestedContent);
+            }
+          }
           setForwardCache(entity.id, nestedContent);
           await processNestedForward(nestedContent, fromPairId);
         }
@@ -102688,7 +102814,7 @@ var setForwardCache = (uuid, data) => {
   forwardCache.set(uuid, data);
   const timer = setTimeout(() => {
     forwardCache.delete(uuid);
-  }, 1e3 * 60 * 5);
+  }, 1e3 * 60 * 60);
   timer?.unref?.();
 };
 var app = new Elysia().post("/Q2tgServlet/GetForwardMultipleMessageApi", async ({ body }) => {
@@ -102716,8 +102842,20 @@ var app = new Elysia().post("/Q2tgServlet/GetForwardMultipleMessageApi", async (
     if (pair.qqClient instanceof OicqClient) {
       await pair.qqClient.refreshImageRKey(messages);
     }
+    await forwardHelper_default.resolveForwardVideos(messages, pair);
     await processNestedForward_default(messages, data.fromPairId);
     setForwardCache(uuid, messages);
+  } else {
+    const cached = forwardCache.get(uuid);
+    const data = await db_default.forwardMultiple.findFirst({
+      where: { id: uuid }
+    });
+    if (data) {
+      const pair = Pair.getByDbId(data.fromPairId);
+      if (pair) {
+        await forwardHelper_default.resolveForwardVideos(cached, pair);
+      }
+    }
   }
   return forwardCache.get(uuid);
 }, {
@@ -102833,7 +102971,11 @@ var ForwardService = class {
         }
       };
       const useForward = async (resId, fileName, messages) => {
-        if (!messages) {
+        if (!resId && !messages) {
+          message2 = "[<i>\u8F6C\u53D1\u591A\u6761\u6D88\u606F\uFF08\u65E0\u5185\u5BB9\uFF09</i>]";
+          return;
+        }
+        if (!messages && resId) {
           try {
             messages = await pair.qq.getForwardMsg(resId, fileName);
           } catch (e) {
@@ -102844,17 +102986,23 @@ var ForwardService = class {
         if (messages)
           message2 = forwardHelper_default.generateForwardBrief(messages);
         if (env_default.WEB_ENDPOINT) {
-          let dbEntry = await db_default.forwardMultiple.findFirst({
-            where: { resId }
-          });
+          const validResId = resId && typeof resId === "string" && resId.trim().length > 0 ? resId.trim() : "";
+          let dbEntry = validResId ? await db_default.forwardMultiple.findFirst({
+            where: { resId: validResId }
+          }) : null;
           if (!dbEntry) {
+            const finalResId = validResId || (messages ? `mem_${import_crypto5.default.randomUUID()}` : `fwd_${import_crypto5.default.randomUUID()}`);
             dbEntry = await db_default.forwardMultiple.create({
-              data: { resId, fileName: fileName || "", fromPairId: pair.dbId }
+              data: { resId: finalResId, fileName: fileName || "", fromPairId: pair.dbId }
             });
           }
           if (messages && messages.length) {
-            setForwardCache(dbEntry.id, messages);
+            await forwardHelper_default.resolveForwardVideos(messages, pair);
+            if (pair.qqClient instanceof OicqClient) {
+              await pair.qqClient.refreshImageRKey(messages);
+            }
             await processNestedForward_default(messages, pair.dbId);
+            setForwardCache(dbEntry.id, messages);
           }
           const hash = dbEntry.id;
           const viewerUrl = env_default.CRV_VIEWER_APP ? `${env_default.CRV_VIEWER_APP}?startapp=${hash}` : `${env_default.WEB_ENDPOINT}/ui/chatRecord?tgWebAppStartParam=${hash}`;
@@ -102978,11 +103126,13 @@ var ForwardService = class {
             break;
           }
           case "video":
-            if (!elem.url) {
-              url2 = await pair.qq.getVideoUrl(elem.fid, elem.md5);
+            if (elem.url) {
+              url2 = elem.url;
+            } else {
+              url2 = await pair.qq.getVideoUrl(elem.fid || elem.file, elem.md5);
             }
           case "image":
-            if ("url" in elem)
+            if (elem.type === "image" && "url" in elem)
               url2 = elem.url;
             if (this.oicq instanceof NapCatClient && !url2.startsWith("http")) {
               const ret = await this.oicq.callApi("download_file", { url: "file://" + url2 });
@@ -103272,7 +103422,7 @@ ${this.instance.workMode === "group" ? "\u6BCF\u4EBA" : ""}\u53EA\u80FD\u67E5\u7
             break;
           case "forward":
             await useForward(elem.id, "", elem.content);
-            break;
+            break messageElemLoop;
         }
       }
       this.crhPlayerInfo.delete(pair);
@@ -103439,8 +103589,15 @@ ${this.instance.workMode === "group" ? "\u6BCF\u4EBA" : ""}\u53EA\u80FD\u67E5\u7
       if (senderId === pair.tgId && !message2.sender) {
         userDisplayName = forwardHelper_default.getUserDisplayName(message2.chat);
       }
-      let messageHeader = (userDisplayName.length > 25 ? userDisplayName.substring(0, 25) + "\u2026" : userDisplayName) + (message2.forward ? " \u8F6C\u53D1\u81EA " + // 要是隐私设置了，应该会有这个，然后下面两个都获取不到
-      (message2.fwdFrom?.fromName || forwardHelper_default.getUserDisplayName(await message2.forward.getChat() || await message2.forward.getSender())) : "");
+      let forwardSenderName = message2.fwdFrom?.fromName || "";
+      if (!forwardSenderName && message2.forward) {
+        try {
+          const forwardEntity = await (message2.forward.getChat?.() || message2.forward.getSender?.());
+          if (forwardEntity) forwardSenderName = forwardHelper_default.getUserDisplayName(forwardEntity);
+        } catch {
+        }
+      }
+      let messageHeader = (userDisplayName.length > 25 ? userDisplayName.substring(0, 25) + "\u2026" : userDisplayName) + (message2.forward ? " \u8F6C\u53D1\u81EA " + (forwardSenderName || "\u672A\u77E5\u7528\u6237") : "");
       messageHeader += ": \n";
       if ((pair.flags | this.instance.flags) & flags_default.COLOR_EMOJI_PREFIX) {
         let emoji1 = emoji_default.tgColor(message2.sender?.color?.color || senderId);
@@ -103614,7 +103771,7 @@ ${err.message}` });
           }
           chain.push(messageLeft, ...newChain);
           brief += message2.message;
-        } else if (message2.forward?.senderId?.eq?.(this.tgBot.me.id) && /^.*: ?$/.test(message2.message.split("\n")[0])) {
+        } else if (message2.forward && (message2.forward.senderId?.eq?.(this.tgBot.me.id) || message2.forward.fromId instanceof import_telegram9.Api.PeerUser && message2.forward.fromId.userId.eq(this.tgBot.me.id)) && /^.*: ?$/.test(message2.message.split("\n")[0])) {
           const originalMessage = message2.message.includes("\n") ? message2.message.substring(message2.message.indexOf("\n") + 1) : "";
           useText(originalMessage);
           brief += originalMessage;

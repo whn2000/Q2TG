@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import Telegram from '../client/Telegram';
 import {
   FaceElem,
@@ -183,7 +184,11 @@ export default class ForwardService {
         }
       };
       const useForward = async (resId: string, fileName?: string, messages?: ForwardMessage[]) => {
-        if (!messages) {
+        if (!resId && !messages) {
+          message = '[<i>转发多条消息（无内容）</i>]';
+          return;
+        }
+        if (!messages && resId) {
           try {
             messages = await pair.qq.getForwardMsg(resId, fileName);
           }
@@ -196,17 +201,23 @@ export default class ForwardService {
           message = helper.generateForwardBrief(messages);
 
         if (env.WEB_ENDPOINT) {
-          let dbEntry = await db.forwardMultiple.findFirst({
-            where: { resId },
-          });
+          const validResId = resId && typeof resId === 'string' && resId.trim().length > 0 ? resId.trim() : '';
+          let dbEntry = validResId ? await db.forwardMultiple.findFirst({
+            where: { resId: validResId },
+          }) : null;
           if (!dbEntry) {
+            const finalResId = validResId || (messages ? `mem_${crypto.randomUUID()}` : `fwd_${crypto.randomUUID()}`);
             dbEntry = await db.forwardMultiple.create({
-              data: { resId, fileName: fileName || '', fromPairId: pair.dbId },
+              data: { resId: finalResId, fileName: fileName || '', fromPairId: pair.dbId },
             });
           }
           if (messages && messages.length) {
-            setForwardCache(dbEntry.id, messages);
+            await helper.resolveForwardVideos(messages, pair);
+            if (pair.qqClient instanceof OicqClient) {
+              await pair.qqClient.refreshImageRKey(messages);
+            }
             await processNestedForward(messages, pair.dbId);
+            setForwardCache(dbEntry.id, messages);
           }
           const hash = dbEntry.id;
           const viewerUrl = env.CRV_VIEWER_APP ? `${env.CRV_VIEWER_APP}?startapp=${hash}` : `${env.WEB_ENDPOINT}/ui/chatRecord?tgWebAppStartParam=${hash}`;
@@ -354,11 +365,14 @@ export default class ForwardService {
           }
           case 'video':
             // 先获取 URL，要传给下面
-            if (!(elem as any).url) {
-              url = await pair.qq.getVideoUrl(elem.fid, elem.md5);
+            if ((elem as any).url) {
+              url = (elem as any).url;
+            }
+            else {
+              url = await pair.qq.getVideoUrl(elem.fid || (elem as any).file, elem.md5);
             }
           case 'image':
-            if ('url' in elem)
+            if (elem.type === 'image' && 'url' in elem)
               url = elem.url;
             if (this.oicq instanceof NapCatClient && !url.startsWith('http')) {
               const ret = await this.oicq.callApi('download_file', { url: 'file://' + url });
@@ -475,7 +489,7 @@ export default class ForwardService {
           }
           case 'record': {
             let bufAudio: Buffer | undefined;
-            const audioDuration = Number(elem.duration) || 0;
+            const audioDuration = Number((elem as any).duration) || 0;
 
             // 1. 尝试从本地路径/文件获取
             if (typeof elem.file === 'string' && !elem.file.startsWith('http')) {
@@ -691,7 +705,7 @@ export default class ForwardService {
             break;
           case 'forward':
             await useForward(elem.id, '', elem.content);
-            break;
+            break messageElemLoop;
         }
       }
       this.crhPlayerInfo.delete(pair);
@@ -894,12 +908,16 @@ export default class ForwardService {
       if (senderId === pair.tgId && !message.sender) {
         userDisplayName = helper.getUserDisplayName(message.chat);
       }
+      let forwardSenderName = message.fwdFrom?.fromName || '';
+      if (!forwardSenderName && message.forward) {
+        try {
+          const forwardEntity = await (message.forward.getChat?.() || message.forward.getSender?.());
+          if (forwardEntity) forwardSenderName = helper.getUserDisplayName(forwardEntity);
+        }
+        catch {}
+      }
       let messageHeader = (userDisplayName.length > 25 ? userDisplayName.substring(0, 25) + '…' : userDisplayName) +
-        (message.forward ? ' 转发自 ' +
-          // 要是隐私设置了，应该会有这个，然后下面两个都获取不到
-          (message.fwdFrom?.fromName ||
-            helper.getUserDisplayName(await message.forward.getChat() || await message.forward.getSender())) :
-          '');
+        (message.forward ? ' 转发自 ' + (forwardSenderName || '未知用户') : '');
       messageHeader += ': \n';
       if ((pair.flags | this.instance.flags) & flags.COLOR_EMOJI_PREFIX) {
         let emoji1 = emoji.tgColor((message.sender as Api.User)?.color?.color || senderId);
@@ -1102,7 +1120,7 @@ export default class ForwardService {
           brief += message.message;
         }
         // Q2TG Bot 转发的消息目前不会包含 custom emoji
-        else if (message.forward?.senderId?.eq?.(this.tgBot.me.id) && /^.*: ?$/.test(message.message.split('\n')[0])) {
+        else if (message.forward && (((message.forward as any).senderId?.eq?.(this.tgBot.me.id)) || ((message.forward as any).fromId instanceof Api.PeerUser && (message.forward as any).fromId.userId.eq(this.tgBot.me.id))) && /^.*: ?$/.test(message.message.split('\n')[0])) {
           // 复读了某一条来自 QQ 的消息 (Repeat as forward)
           const originalMessage = message.message.includes('\n') ?
             message.message.substring(message.message.indexOf('\n') + 1) : '';

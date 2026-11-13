@@ -425,23 +425,35 @@ export default class OicqClient extends QQClient {
       this.log.warn('未获取到 QQNT Rkey，无法刷新图片 rkey');
       return;
     }
-    for (const message of messages) {
-      for (const element of message.message) {
-        if (element.type !== 'image') continue;
-        if (!element.url) continue;
-        const url = new URL(element.url);
-        if (url.host !== 'multimedia.nt.qq.com.cn') continue;
-
-        switch (url.searchParams.get('appid')) {
-          case '1406':
-            url.searchParams.set('rkey', rKey.offNTPicRkey);
-            break;
-          case '1407':
-            url.searchParams.set('rkey', rKey.groupNTPicRkey);
-            break;
+    const processList = (list: ForwardMessage[]) => {
+      if (!Array.isArray(list)) return;
+      for (const message of list) {
+        if (!message || !Array.isArray(message.message)) continue;
+        for (const element of message.message) {
+          if (!element) continue;
+          if (element.type === 'image' && element.url) {
+            try {
+              const url = new URL(element.url);
+              if (url.host === 'multimedia.nt.qq.com.cn') {
+                switch (url.searchParams.get('appid')) {
+                  case '1406':
+                    url.searchParams.set('rkey', rKey.offNTPicRkey);
+                    break;
+                  case '1407':
+                    url.searchParams.set('rkey', rKey.groupNTPicRkey);
+                    break;
+                }
+                element.url = url.toString();
+              }
+            }
+            catch {}
+          }
+          else if ((element as any).type === 'forward' && Array.isArray((element as any).content)) {
+            processList((element as any).content);
+          }
         }
-        element.url = url.toString();
       }
-    }
+    };
+    processList(messages);
   }
 }

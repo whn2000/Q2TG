@@ -3,6 +3,7 @@ import db from '../../models/db';
 import { Pair } from '../../models/Pair';
 import OicqClient from '../../client/OicqClient';
 import processNestedForward from '../../utils/processNestedForward';
+import forwardHelper from '../../helpers/forwardHelper';
 
 export const forwardCache = new Map<string, any>();
 
@@ -10,7 +11,7 @@ export const setForwardCache = (uuid: string, data: any) => {
   forwardCache.set(uuid, data);
   const timer = setTimeout(() => {
     forwardCache.delete(uuid);
-  }, 1000 * 60 * 5);
+  }, 1000 * 60 * 60);
   timer?.unref?.();
 };
 
@@ -42,8 +43,21 @@ let app = new Elysia()
       if (pair.qqClient instanceof OicqClient) {
         await pair.qqClient.refreshImageRKey(messages);
       }
+      await forwardHelper.resolveForwardVideos(messages, pair);
       await processNestedForward(messages, data.fromPairId);
       setForwardCache(uuid, messages);
+    }
+    else {
+      const cached = forwardCache.get(uuid);
+      const data = await db.forwardMultiple.findFirst({
+        where: { id: uuid },
+      });
+      if (data) {
+        const pair = Pair.getByDbId(data.fromPairId);
+        if (pair) {
+          await forwardHelper.resolveForwardVideos(cached, pair);
+        }
+      }
     }
     return forwardCache.get(uuid);
   }, {

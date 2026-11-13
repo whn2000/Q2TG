@@ -54,7 +54,15 @@ export abstract class NapCatEntity implements QQEntity {
   }
 
   async getVideoUrl(fid: string, md5?: string | Buffer): Promise<string> {
-    return fid;
+    if (!fid) return '';
+    if (/^https?:\/\//.test(fid)) return fid;
+    try {
+      const data = await this.client.callApi('get_file', { file_id: fid });
+      return data?.url || data?.file || fid;
+    }
+    catch {
+      return fid;
+    }
   }
 
   async recallMsg(paramOrMessageId: number, rand?: number, timeOrPktNum?: number): Promise<boolean> {
